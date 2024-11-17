@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require('express');
 const authRoute = require("./src/routes/auth-route");
 const orderRoute = require("./src/routes/order-route");
+const orderlistRoute = require("./src/routes/orderlist-route");
 const planRoute = require("./src/routes/plan-route");
 const procureRoute = require("./src/routes/procure-route");
 const coatingRoute = require("./src/routes/coating-route");
@@ -31,6 +32,7 @@ app.use(logger); // Apply the logger middleware
 
 app.use('/auth', authRoute);
 app.use('/order', orderRoute);
+app.use('/orderlist', orderlistRoute);
 app.use('/plan', planRoute);
 app.use('/procure', procureRoute);
 app.use('/coating', coatingRoute);
