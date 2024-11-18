@@ -126,6 +126,15 @@ model TD_Order {
   // ความสัมพันธ์กับ TD_Procure
   procure TD_Procure[] @relation("OrderToProcure")
   Plan    TD_Plan[]    @relation("OrderToPlan")
+
+  // เชื่อมโยงกับ TM_Item1
+  TM_Item1      tm_item1?   @relation(fields: [Item1_CD], references: [Item1_CD])
+
+  // เชื่อมโยงกับ TM_WorkG
+  TM_WorkG      TM_WorkG?   @relation(fields: [Product_Grp_CD], references: [WorkG_CD])
+
+  // เชื่อมโยงกับ TM_Customer
+  TM_Customer   TM_Customer? @relation(fields: [Customer_CD], references: [Customer_CD])
 }
 
 model TD_Procure {
@@ -995,12 +1004,17 @@ model TM_WorkG {
   WorkG_Name   String?
   WorkG_Abb    String?
   WorkG_Symbol String?
+  Pl_Object_Grp  String?
+  Pl_Object      Boolean?
+  Target_Amount  Float?
   WorkG_Mark   String?
 
   // One-to-Many relationship with TM_Worker
   workers TM_Worker[] @relation("WorkGroupWorkers")
 
   TM_Worker TM_Worker[]
+
+  TD_Order TD_Order[]
 }
 
 model TM_Worker {
@@ -1029,11 +1043,6 @@ model TM_WorkerG {
   WorkerG_CD     String   @id
   WorkerG_Name   String?
   WorkerG_Abb    String?
-  WorkG_Symbol   String?
-  WorkG_Mark     String?
-  Pl_Object_Grp  String?
-  Pl_Object      Boolean?
-  Target_Amount  Float?
   WorkerG_Remark String?
 
   // Many-to-One relationship with TM_Worker
@@ -1060,6 +1069,8 @@ model TM_Customer {
   Customer_Group   String? // กลุ่มลูกค้า
   VAT_Reg_No       String? // หมายเลขการลงทะเบียน VAT
   Customer_Remark  String? // หมายเหตุของลูกค้า
+
+  TD_Order TD_Order[]
 }
 
 model TS_Set {
@@ -1273,6 +1284,8 @@ model tm_item1 {
   Item1_Type    String?  @db.VarChar(20)
   Item1_Grp     String?  @db.VarChar(50)
   Item1_Remark  String?  @db.VarChar(50)
+
+  TD_Order TD_Order[]
 }
 
 model tm_coating {
