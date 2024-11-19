@@ -1387,6 +1387,18 @@ model tm_vendor {
   Vendor_Remark  String?  @db.VarChar(50)
 }
 
+model tm_schedule {
+  Schedule_CD       String  @id @db.VarChar(2) // Primary Key
+  Schedule_Name     String?  @db.VarChar(20)
+  Schedule_Abb      String?  @db.VarChar(20)
+  Schedule_Symbol   String?  @db.VarChar(15)
+  Schedule_Mark     String?  @db.VarChar(5)
+  Stagnat_Scale     Float?
+  ManHour_Scale     Float?
+  Standard          Float?
+  Schedule_Remark   String? @db.VarChar(50) // Optional field
+}
+
 model TM_User {
   User_ID     String   @id
   User_Name   String? // ชื่อผู้ใช้
