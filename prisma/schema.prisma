@@ -128,13 +128,19 @@ model TD_Order {
   Plan    TD_Plan[]    @relation("OrderToPlan")
 
   // เชื่อมโยงกับ TM_Item1
-  TM_Item1      tm_item1?   @relation(fields: [Item1_CD], references: [Item1_CD])
+  TM_Item1 tm_item1? @relation(fields: [Item1_CD], references: [Item1_CD])
 
   // เชื่อมโยงกับ TM_WorkG
-  TM_WorkG      TM_WorkG?   @relation(fields: [Product_Grp_CD], references: [WorkG_CD])
+  TM_WorkG TM_WorkG? @relation(fields: [Product_Grp_CD], references: [WorkG_CD])
 
   // เชื่อมโยงกับ TM_Customer
-  TM_Customer   TM_Customer? @relation(fields: [Customer_CD], references: [Customer_CD])
+  TM_Customer TM_Customer? @relation(fields: [Customer_CD], references: [Customer_CD])
+
+ 
+
+  TD_Cost TD_Cost[]
+  TT_NAV_Od_FG TT_NAV_Od_FG[]
+  TT_NAV_Od_WI TT_NAV_Od_WI[]
 }
 
 model TD_Procure {
@@ -568,8 +574,10 @@ model TD_Cost {
   Sequence_No           Float? // ลำดับ (Number)
   // เชื่อมความสัมพันธ์กับ TD_Plan (Many-to-One)
   plan                  TD_Plan   @relation(fields: [Order_No, Parts_No], references: [Order_No, Parts_No], name: "PlanToCost")
-
+  TD_Order   TD_Order? @relation(fields: [Order_No], references: [Order_No]) // ความสัมพันธ์กับ TD_Order
+  TM_Resource     TM_Resource? @relation(fields: [CMC], references: [Resource_CD])
   @@id([Order_No, Parts_No, Cost_No]) // กำหนดคีย์หลักร่วมกัน
+
 }
 
 model TD_Schedule {
@@ -983,6 +991,8 @@ model TM_Resource {
   Resource_Remark String? // Resource Remark
 
   TM_Process TM_Process[] // ความสัมพันธ์กับ TM_Process
+
+  TD_Cost TD_Cost[]
 }
 
 model TM_CostG {
@@ -1000,14 +1010,14 @@ model TM_CostG {
 }
 
 model TM_WorkG {
-  WorkG_CD     String  @id
-  WorkG_Name   String?
-  WorkG_Abb    String?
-  WorkG_Symbol String?
-  Pl_Object_Grp  String?
-  Pl_Object      Boolean?
-  Target_Amount  Float?
-  WorkG_Mark   String?
+  WorkG_CD      String   @id
+  WorkG_Name    String?
+  WorkG_Abb     String?
+  WorkG_Symbol  String?
+  Pl_Object_Grp String?
+  Pl_Object     Boolean?
+  Target_Amount Float?
+  WorkG_Mark    String?
 
   // One-to-Many relationship with TM_Worker
   workers TM_Worker[] @relation("WorkGroupWorkers")
@@ -1040,7 +1050,7 @@ model TM_Worker {
 }
 
 model TM_WorkerG {
-  WorkerG_CD     String   @id
+  WorkerG_CD     String  @id
   WorkerG_Name   String?
   WorkerG_Abb    String?
   WorkerG_Remark String?
@@ -1388,26 +1398,66 @@ model tm_vendor {
 }
 
 model tm_schedule {
-  Schedule_CD       String  @id @db.VarChar(2) // Primary Key
-  Schedule_Name     String?  @db.VarChar(20)
-  Schedule_Abb      String?  @db.VarChar(20)
-  Schedule_Symbol   String?  @db.VarChar(15)
-  Schedule_Mark     String?  @db.VarChar(5)
-  Stagnat_Scale     Float?
-  ManHour_Scale     Float?
-  Standard          Float?
-  Schedule_Remark   String? @db.VarChar(50) // Optional field
+  Schedule_CD     String  @id @db.VarChar(2) // Primary Key
+  Schedule_Name   String? @db.VarChar(20)
+  Schedule_Abb    String? @db.VarChar(20)
+  Schedule_Symbol String? @db.VarChar(15)
+  Schedule_Mark   String? @db.VarChar(5)
+  Stagnat_Scale   Float?
+  ManHour_Scale   Float?
+  Standard        Float?
+  Schedule_Remark String? @db.VarChar(50) // Optional field
 }
 
 model tm_parts {
-  Parts_CD       String  @id @db.VarChar(3)  // Primary Key
-  Parts_Name     String?  @db.VarChar(200)
-  Parts_Abb      String? @db.VarChar(200)   // Optional field
-  Parts_Symbol   String? @db.VarChar(200)   // Optional field
-  Parts_Mark     String? @db.VarChar(200)   // Optional field
-  Parts_CAT      String? @db.VarChar(200)   // Optional field
-  Money_Object   String? @db.VarChar(50)    // Optional field
-  Parts_Remark   Boolean? @db.Bit(1)            // Boolean field (BIT(1))
+  Parts_CD     String   @id @db.VarChar(3) // Primary Key
+  Parts_Name   String?  @db.VarChar(200)
+  Parts_Abb    String?  @db.VarChar(200) // Optional field
+  Parts_Symbol String?  @db.VarChar(200) // Optional field
+  Parts_Mark   String?  @db.VarChar(200) // Optional field
+  Parts_CAT    String?  @db.VarChar(200) // Optional field
+  Money_Object String?  @db.VarChar(50) // Optional field
+  Parts_Remark Boolean? @db.Bit(1) // Boolean field (BIT(1))
+}
+
+model TT_NAV_Od_FG  {
+  Item_Name        String?   @db.VarChar(50)
+  Customer_Name    String?   @db.VarChar(50)
+  Order_Date       DateTime?
+  Order_No         String    @db.VarChar(20)
+  Request_Delivery DateTime?
+  I_Completed_Date DateTime?
+  Date_of_Delay    Int?      @db.SmallInt
+  NAV_Name         String?   @db.VarChar(50)
+  NAV_Size         String?   @db.VarChar(50)
+  Item1_CD         String?   @db.VarChar(20)
+  Quantity         Float?
+  Unit_Price       Float?
+  Amount           Float?
+
+
+  TD_Order TD_Order @relation(fields: [Order_No], references: [Order_No])
+
+  @@id([Order_No]) 
+  
+}
+
+model TT_NAV_Od_WI {
+  Item_Name        String?   @db.VarChar(50)
+  Customer_Name    String?   @db.VarChar(50)
+  Order_No         String    @db.VarChar(20)
+  Order_Date       DateTime?
+  Request_Delivery DateTime?
+  NAV_Name         String?   @db.VarChar(50)
+  NAV_Size         String?   @db.VarChar(50)
+  Item1_CD         String?   @db.VarChar(20)
+  Quantity         Float?
+  Unit_Price       Float?
+  Amount           Float?
+
+  TD_Order TD_Order @relation(fields: [Order_No], references: [Order_No])
+
+  @@id([Order_No]) 
 }
 
 model TM_User {
