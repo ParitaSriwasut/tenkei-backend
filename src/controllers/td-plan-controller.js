@@ -7,14 +7,7 @@ exports.Search_Order_No_AfterUpdate = async (req, res, next) => {
     // ล็อกข้อมูลที่รับเข้ามา
     console.log("Request Body:", req.body);
 
-    // ตรวจสอบข้อมูลที่รับเข้ามา
-    const { error } = td_planSchema.validate(req.body);
-    if (error) {
-      console.error("Validation Error:", error.details[0].message);
-      return next(createError(400, error.details[0].message));
-    }
 
-    // ดึงหมายเลขคำสั่งซื้อจากคำขอ
     let { Order_No: orderNo } = req.body; // ใช้ destructuring เพื่อดึง Order_No
 
     // ตรวจสอบว่า orderNo เป็นสตริงและมีความยาวที่เหมาะสม
@@ -37,36 +30,23 @@ exports.Search_Order_No_AfterUpdate = async (req, res, next) => {
     }
 
     // ค้นหาในฐานข้อมูลโดยใช้ Prisma (จอยตาราง TD_Plan)
-    const orderWithPlans = await prisma.tD_Order.findUnique({
+    const partsNo = await prisma.tD_Plan.findMany({
       where: { Order_No: orderNo },
-      include: {
-        Plan: {
-          where: {
-            Order_No: orderNo, // กำหนดเงื่อนไขการจอยด้วย Order_No
-          },
-        },
-      },
+     
     });
 
-    // หากไม่พบหมายเลขคำสั่งซื้อ ส่งข้อผิดพลาด
-    if (!orderWithPlans) {
-      return next(createError(404, "Order not found"));
-    }
+   
 
-    // ตรวจสอบว่า Plan มีข้อมูลหรือไม่
-    if (!orderWithPlans.Plan || orderWithPlans.Plan.length === 0) {
-      return next(createError(404, "No plans found for this order"));
-    }
 
     // ส่งข้อมูลหมายเลขคำสั่งซื้อกลับไปยังผู้ใช้
     return res.status(200).json({
       status: "success",
       data: {
-        order: orderWithPlans,
+        partsNo: partsNo,
       },
     });
   } catch (err) {
-    console.error("Error searching order:", err);
+    console.error("Error searching partsNo:", err);
     return next(createError(500, "Internal Server Error"));
   }
 };
