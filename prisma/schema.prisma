@@ -1399,6 +1399,17 @@ model tm_schedule {
   Schedule_Remark   String? @db.VarChar(50) // Optional field
 }
 
+model tm_parts {
+  Parts_CD       String  @id @db.VarChar(3)  // Primary Key
+  Parts_Name     String?  @db.VarChar(200)
+  Parts_Abb      String? @db.VarChar(200)   // Optional field
+  Parts_Symbol   String? @db.VarChar(200)   // Optional field
+  Parts_Mark     String? @db.VarChar(200)   // Optional field
+  Parts_CAT      String? @db.VarChar(200)   // Optional field
+  Money_Object   String? @db.VarChar(50)    // Optional field
+  Parts_Remark   Boolean? @db.Bit(1)            // Boolean field (BIT(1))
+}
+
 model TM_User {
   User_ID     String   @id
   User_Name   String? // ชื่อผู้ใช้

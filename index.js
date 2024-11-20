@@ -21,6 +21,7 @@ const vendorRoute = require("./src/routes/vendor-route");
 const inoutsideRoute = require("./src/routes/inoutside-route");
 const pcprogressRoute = require("./src/routes/pcprogress-route");
 const scheduleRoute = require("./src/routes/schedule-route");
+const partsRoute = require("./src/routes/parts-route");
 const logger = require('./src/middlewares/logger');
 
 const cors = require("cors");
@@ -52,6 +53,6 @@ app.use('/vendor', vendorRoute);
 app.use('/inoutside', inoutsideRoute);
 app.use('/pcprogress', pcprogressRoute);
 app.use('/schedule', scheduleRoute);
-
+app.use('/parts', partsRoute);
 const PORT = process.env.PORT || "4000";
 app.listen(PORT, () => console.log(`server running on port: ${PORT}`));
