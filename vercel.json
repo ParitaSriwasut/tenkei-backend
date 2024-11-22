@@ -11,5 +11,8 @@
         "src": "/(.*)",
         "dest": "index.js"
       }
-    ]
+    ],
+    "env": {
+      "DATABASE_URL": "mysql://root:1234@localhost:3308/TENKEI"
+    }
   }
