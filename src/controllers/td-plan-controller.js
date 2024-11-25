@@ -7,7 +7,6 @@ exports.Search_Order_No_AfterUpdate = async (req, res, next) => {
     // ล็อกข้อมูลที่รับเข้ามา
     console.log("Request Body:", req.body);
 
-
     let { Order_No: orderNo } = req.body; // ใช้ destructuring เพื่อดึง Order_No
 
     // ตรวจสอบว่า orderNo เป็นสตริงและมีความยาวที่เหมาะสม
@@ -32,11 +31,7 @@ exports.Search_Order_No_AfterUpdate = async (req, res, next) => {
     // ค้นหาในฐานข้อมูลโดยใช้ Prisma (จอยตาราง TD_Plan)
     const partsNo = await prisma.tD_Plan.findMany({
       where: { Order_No: orderNo },
-     
     });
-
-   
-
 
     // ส่งข้อมูลหมายเลขคำสั่งซื้อกลับไปยังผู้ใช้
     return res.status(200).json({
@@ -395,7 +390,6 @@ exports.editplan = async (req, res, next) => {
       return res.status(400).json({ message: "Pl_Ed_Rev_Day is required." });
     }
 
-    
     // อัปเดตข้อมูลในฐานข้อมูล
     const updatedplan = await prisma.tD_Plan.update({
       where: { OdPt_No: OdPt_No }, // ระบุเงื่อนไขในการค้นหา
@@ -547,6 +541,167 @@ exports.deletePlans = async (req, res, next) => {
     });
   } catch (err) {
     console.error("Error deleting order:", err);
+    return next(createError(500, "Internal Server Error"));
+  }
+};
+
+exports.createPlan = async (req, res, next) => {
+  try {
+    const { Order_No, Parts_No, ...otherFields } = req.body;
+
+    const OdPt_No = Order_No + Parts_No;
+    let Pl_Progress_CD = 0;
+    let FG = 0; // ใช้สำหรับตรวจสอบ Money_Object
+    let KN = 0; // ตัวแปรสำหรับการนับ
+    let End_No = 0; // ตัวแปร End_No
+    let Now_No = 0; // ตัวแปร Now_No
+    
+    // ตรวจสอบค่า PPD1 ถึง PPD36
+    for (let PD = 1; PD <= 36; PD++) {
+      if (req.body[`PPD${PD}`] != null) {
+        Pl_Progress_CD = 1;
+        break;
+      }
+    }
+
+    // ตรวจสอบค่า RPD1 ถึง RPD36 หากยังไม่ได้อัปเดต
+    if (Pl_Progress_CD < 2) {
+      for (let PD = 1; PD <= 36; PD++) {
+        if (req.body[`RPD${PD}`] != null) {
+          Pl_Progress_CD = 2;
+          break;
+        }
+      }
+    }
+
+    // ตรวจสอบ Od_Progress_CD
+    const Od_Progress_CD = await prisma.tD_Order.findUnique({
+      where: { Order_No },
+      select: { Od_Progress_CD: true },
+    });
+
+    if (Od_Progress_CD && Od_Progress_CD.Od_Progress_CD > 3) {
+      Od_Progress_CD.Od_Progress_CD = 3;
+    } else if (!Od_Progress_CD || Od_Progress_CD.Od_Progress_CD < 1) {
+      Od_Progress_CD.Od_Progress_CD = 1;
+    }
+
+    // ตรวจสอบค่า PPC1 ถึง PPC36 และอัปเดต PMT, PPT
+    let Max_No = "0";
+    for (let N = 1; N <= 36; N++) {
+      const PPC = req.body[`PPC${N}`];
+
+      if (PPC) {
+        Max_No = N;
+
+        // อัปเดต PMT
+        if (!req.body[`PMT${N}`]) {
+          req.body[`PMT${N}`] =
+            (await prisma.tM_Process.findUnique({
+              where: { Process_CD: PPC },
+              select: { Std_M_Time: true },
+            }).Std_M_Time) || null;
+        }
+
+        // อัปเดต PPT
+        if (!req.body[`PPT${N}`]) {
+          req.body[`PPT${N}`] =
+            (await prisma.tM_Process.findUnique({
+              where: { Process_CD: PPC },
+              select: { Std_P_Time: true },
+            }).Std_P_Time) || null;
+        }
+
+        // ตรวจสอบ End
+        const isEnd = await prisma.tM_Process.findUnique({
+          where: { Process_CD: PPC },
+          select: { End: true },
+        }).End;
+
+        if (isEnd === -1) FG++;
+      } else {
+        // ล้างค่า PMT, PPT, T_Type, P_Type, S_Type
+        req.body[`PMT${N}`] = null;
+        req.body[`PPT${N}`] = null;
+        req.body[`T_Type${N}`] = null;
+        req.body[`P_Type${N}`] = null;
+        req.body[`S_Type${N}`] = null;
+      }
+    }
+
+    // จัดการ Money_Object
+    if (FG === 0 && req.body.Money_Object === -1) {
+      req.body.Money_Object = 0; // เปลี่ยนค่าเป็น Off
+    } else if (FG > 0 && req.body.Money_Object === 0) {
+      req.body.Money_Object = -1; // เปลี่ยนค่าเป็น On
+    }
+
+    // Logic to determine End_No (based on PPC1 to PPC36)
+    FG = 0;
+    KN = 0;
+    while (FG < 1) {
+      KN++;
+      if (KN !== 36) {
+        if (req.body[`PPC${KN}`] === null) {
+          FG = 1;
+        } else {
+          End_No = KN;
+        }
+      } else {
+        End_No = KN;
+        FG = 1;
+      }
+    }
+
+    // Logic to determine Now_No (based on RPD1 to RPD36)
+    FG = 0;
+    KN = 0;
+    while (FG < 1) {
+      KN++;
+      if (KN !== 37) {
+        if (req.body[`RPD${KN}`] === null) {
+          Now_No = KN;
+          FG = 1;
+        }
+      } else {
+        Now_No = KN;
+        FG = 1;
+      }
+    }
+
+    // กำหนดค่า End_No และ Now_No ในข้อมูลที่เตรียมจะบันทึก
+    req.body.End_No = End_No;
+    req.body.Now_No = Now_No;
+
+    if (!otherFields.Pl_Reg_Date) {
+      Od_Progress_CD.Pl_Reg_Date = new Date();
+    }
+    Od_Progress_CD.Pl_Upd_Date = new Date();
+
+    // เตรียมข้อมูลสำหรับการบันทึก
+    const planData = {
+      ...otherFields,
+      Order_No,
+      Parts_No,
+      OdPt_No,
+      Pl_Progress_CD,
+      Max_No,
+    };
+
+    // ตรวจสอบ schema
+    const { error, value } = td_planSchema.validate(planData);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    // สร้างแผนใหม่ในฐานข้อมูล
+    const newPlan = await prisma.tD_Plan.create({ data: value });
+
+    return res
+      .status(201)
+      .json({ message: "Plan created successfully", plan: newPlan });
+  } catch (err) {
+    console.error("Error creating Plan:", err);
     return next(createError(500, "Internal Server Error"));
   }
 };
