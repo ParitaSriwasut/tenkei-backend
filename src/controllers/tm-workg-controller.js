@@ -41,7 +41,7 @@ exports.updateworkG = async (req, res, next) => {
     // ข้อมูลที่ตรวจสอบแล้ว
     const workGData = value;
 
-    console.log("NAVWI Data to be updated:", workGData);
+    console.log("WorkG Data to be updated:", workGData);
 
     // อัปเดตข้อมูลในฐานข้อมูล
     const updateworkG = await prisma.tM_WorkG.update({
