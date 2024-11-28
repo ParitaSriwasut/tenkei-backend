@@ -580,7 +580,8 @@ model TD_Cost {
 
 model TD_Schedule {
   Order_No         String // หมายเลขคำสั่ง
-  Parts_No         String // หมายเลขชิ้นส่วน (Short Text)
+  Parts_No         String 
+  OdPt_No          String? // หมายเลขชิ้นส่วน (Short Text)
   Schedule_No      String? // หมายเลขกำหนดการ
   Sc_Choice        String? // ตัวเลือกกำหนดการ
   Schedule_CD      String? // รหัสกำหนดการ
