@@ -41,9 +41,9 @@ exports.updateSet = async (req, res, next) => {
     // ส่งคำตอบกลับ
     return res
       .status(200)
-      .json({ message: "workG updated successfully", set: updateSet });
+      .json({ message: "Set updated successfully", set: updateSet });
   } catch (err) {
-    console.error("Error updating workG:", err);
+    console.error("Error updating Set:", err);
     return next(createError(500, "Internal Server Error"));
   }
 };
