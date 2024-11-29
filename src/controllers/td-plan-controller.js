@@ -497,15 +497,59 @@ exports.graph = async (req, res, next) => {
   }
 };
 
+// exports.deletePlans = async (req, res, next) => {
+//   try {
+//     // ล็อกข้อมูลที่รับเข้ามา
+//     console.log("Request Body:", req.body);
+
+//     // ดึงหมายเลขคำสั่งซื้อจากคำขอ
+//     const { Order_No: orderNo, Parts_No: partsNo } = req.body;
+
+//     // ตรวจสอบว่า orderNo และ partsNo เป็นสตริงและมีความยาวที่เหมาะสม
+//     if (typeof orderNo !== "string" || orderNo.length < 10) {
+//       return next(
+//         createError(
+//           400,
+//           "Order number is required and must be at least 10 characters long"
+//         )
+//       );
+//     }
+
+//     if (typeof partsNo !== "string") {
+//       return next(createError(400, "Parts number is required"));
+//     }
+
+//     // ค้นหาในฐานข้อมูลเพื่อดูว่ามี order นี้อยู่หรือไม่
+//     const existingOrder = await prisma.tD_Order.findUnique({
+//       where: { Order_No: orderNo },
+//     });
+
+//     // หากไม่พบหมายเลขคำสั่งซื้อ ส่งข้อผิดพลาด
+//     if (!existingOrder) {
+//       return next(createError(404, "Order not found"));
+//     }
+
+//     // ลบข้อมูลใน TD_Plan ที่เกี่ยวข้องกับ Order_No
+//     await prisma.tD_Plan.deleteMany({
+//       where: { Order_No: orderNo },
+//     });
+
+//     // ส่งข้อมูลการลบกลับไปยังผู้ใช้
+//     return res.status(200).json({
+//       status: "success",
+//       message: "Order and related plans deleted successfully",
+//     });
+//   } catch (err) {
+//     console.error("Error deleting order:", err);
+//     return next(createError(500, "Internal Server Error"));
+//   }
+// };
+
+// soft delete
 exports.deletePlans = async (req, res, next) => {
   try {
-    // ล็อกข้อมูลที่รับเข้ามา
-    console.log("Request Body:", req.body);
-
-    // ดึงหมายเลขคำสั่งซื้อจากคำขอ
     const { Order_No: orderNo, Parts_No: partsNo } = req.body;
 
-    // ตรวจสอบว่า orderNo และ partsNo เป็นสตริงและมีความยาวที่เหมาะสม
     if (typeof orderNo !== "string" || orderNo.length < 10) {
       return next(
         createError(
@@ -519,28 +563,31 @@ exports.deletePlans = async (req, res, next) => {
       return next(createError(400, "Parts number is required"));
     }
 
-    // ค้นหาในฐานข้อมูลเพื่อดูว่ามี order นี้อยู่หรือไม่
+    // Check if the order exists
     const existingOrder = await prisma.tD_Order.findUnique({
       where: { Order_No: orderNo },
     });
 
-    // หากไม่พบหมายเลขคำสั่งซื้อ ส่งข้อผิดพลาด
     if (!existingOrder) {
       return next(createError(404, "Order not found"));
     }
 
-    // ลบข้อมูลใน TD_Plan ที่เกี่ยวข้องกับ Order_No
-    await prisma.tD_Plan.deleteMany({
-      where: { Order_No: orderNo },
+    // Update the soft delete flag in the database
+    const updatedPlan = await prisma.tD_Plan.updateMany({
+      where: { Order_No: orderNo, Parts_No: partsNo },
+      data: { isDeleted: true, deletedAt: new Date() }, // Soft delete
     });
 
-    // ส่งข้อมูลการลบกลับไปยังผู้ใช้
+    if (updatedPlan.count === 0) {
+      return next(createError(404, "No matching plan found to delete"));
+    }
+
     return res.status(200).json({
       status: "success",
-      message: "Order and related plans deleted successfully",
+      message: "Plan soft deleted successfully",
     });
   } catch (err) {
-    console.error("Error deleting order:", err);
+    console.error("Error performing soft delete:", err);
     return next(createError(500, "Internal Server Error"));
   }
 };
