@@ -584,10 +584,10 @@ exports.deletePlans = async (req, res, next) => {
 
     return res.status(200).json({
       status: "success",
-      message: "Plan soft deleted successfully",
+      message: "Plan deleted successfully",
     });
   } catch (err) {
-    console.error("Error performing soft delete:", err);
+    console.error("Error performing delete:", err);
     return next(createError(500, "Internal Server Error"));
   }
 };
