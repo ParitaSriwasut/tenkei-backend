@@ -136,9 +136,7 @@ model TD_Order {
   // เชื่อมโยงกับ TM_Customer
   TM_Customer TM_Customer? @relation(fields: [Customer_CD], references: [Customer_CD])
 
- 
-
-  TD_Cost TD_Cost[]
+  TD_Cost      TD_Cost[]
   TT_NAV_Od_FG TT_NAV_Od_FG[]
   TT_NAV_Od_WI TT_NAV_Od_WI[]
 }
@@ -573,11 +571,11 @@ model TD_Cost {
   Cs_Upd_Person_CD      String? // รหัสผู้ปรับปรุง (Short Text)
   Sequence_No           Float? // ลำดับ (Number)
   // เชื่อมความสัมพันธ์กับ TD_Plan (Many-to-One)
-  plan                  TD_Plan   @relation(fields: [Order_No, Parts_No], references: [Order_No, Parts_No], name: "PlanToCost")
-  TD_Order   TD_Order? @relation(fields: [Order_No], references: [Order_No]) // ความสัมพันธ์กับ TD_Order
-  TM_Resource     TM_Resource? @relation(fields: [CMC], references: [Resource_CD])
-  @@id([Order_No, Parts_No, Cost_No]) // กำหนดคีย์หลักร่วมกัน
+  plan                  TD_Plan      @relation(fields: [Order_No, Parts_No], references: [Order_No, Parts_No], name: "PlanToCost")
+  TD_Order              TD_Order?    @relation(fields: [Order_No], references: [Order_No]) // ความสัมพันธ์กับ TD_Order
+  TM_Resource           TM_Resource? @relation(fields: [CMC], references: [Resource_CD])
 
+  @@id([Order_No, Parts_No, Cost_No]) // กำหนดคีย์หลักร่วมกัน
 }
 
 model TD_Schedule {
@@ -874,7 +872,7 @@ model TD_WIP {
 
 // Lookup tables like TM_Process can remain without relations
 model TM_Process {
-  Process_CD     String  @id
+  Process_CD     String   @id
   Change_CD      String? // Change Code
   ProcessG_CD    String // Process Group Code
   ResourceG_CD   String // Resource Group Code
@@ -885,26 +883,26 @@ model TM_Process {
   Process_Abb    String? // Process Abbreviation
   Process_Symbol String? // Process Symbol
   Process_Mark   String? // Process Mark
-  Use            String? // Use
-  For_Plan       String? // For Plan
-  For_Info       String? // For Information
-  Graph          String? // Graph
-  List           String? // List
-  Outside_On     String? // Outside On
-  Outside_Off    String? // Outside Off
-  End            String? // End
-  Coefficient    String? // Coefficient
-  M_Coefficient  String? // M Coefficient
-  P_Coefficient  String? // P Coefficient
-  Before         String? // Before
+  Use            Boolean? @db.Bit(1) // Use
+  For_Plan       Boolean? @db.Bit(1) // For Plan
+  For_Info       Boolean? @db.Bit(1) // For Information
+  Graph          Boolean? @db.Bit(1) // Graph
+  List           Boolean? @db.Bit(1) // List
+  Outside_On     Boolean? @db.Bit(1) // Outside On
+  Outside_Off    Boolean? @db.Bit(1) // Outside Off
+  End            Boolean? @db.Bit(1) // End
+  Coefficient    Float? // Coefficient
+  M_Coefficient  Float? // M Coefficient
+  P_Coefficient  Float? // P Coefficient
+  Before         Float? // Before
 
   // ฟิลด์ใหม่ที่เพิ่มเข้ามา
   After          Float? // After
-  Operation_Time Float? // Operation Time
-  Std_M_CAT      Float? // Standard M Category
-  Std_M_Time     Float? // Standard M Time
-  Std_P_CAT      Float? // Standard P Category
-  Std_P_Time     Float? // Standard P Time
+  Operation_Time Int?    @db.SmallInt // Operation Time
+  Std_M_CAT      Int?    @db.TinyInt // Standard M Category
+  Std_M_Time     Int?    @db.SmallInt // Standard M Time
+  Std_P_CAT      Int?    @db.TinyInt // Standard P Category
+  Std_P_Time     Int?    @db.SmallInt // Standard P Time
   T_Type         String? // Type T
   P_Type         String? // Type P
   S_Type         String? // Type S
@@ -1368,6 +1366,15 @@ model tm_pc_progress {
   Pc_Progress_Remark String? @db.VarChar(50)
 }
 
+model tm_pl_progress {
+  Pl_Progress_CD     String  @id @db.VarChar(2)
+  Pl_Progress_Name   String? @db.VarChar(25)
+  Pl_Progress_Abb    String? @db.VarChar(15)
+  Pl_Progress_Symbol String? @db.VarChar(5)
+  Pl_Progress_Mark   String? @db.VarChar(5)
+  Pl_Progress_Remark String? @db.VarChar(50)
+}
+
 model tm_inoutside {
   InOutside_CD     String  @id @db.VarChar(2)
   InOutside_Name   String? @db.VarChar(5)
@@ -1416,11 +1423,11 @@ model tm_parts {
   Parts_Symbol String?  @db.VarChar(200) // Optional field
   Parts_Mark   String?  @db.VarChar(200) // Optional field
   Parts_CAT    String?  @db.VarChar(200) // Optional field
-  Money_Object String?  @db.VarChar(50) // Optional field
-  Parts_Remark Boolean? @db.Bit(1) // Boolean field (BIT(1))
+  Money_Object Boolean? @db.Bit(1) // Optional field   
+  Parts_Remark String?  @db.VarChar(50) // Boolean field (BIT(1))
 }
 
-model TT_NAV_Od_FG  {
+model TT_NAV_Od_FG {
   Item_Name        String?   @db.VarChar(50)
   Customer_Name    String?   @db.VarChar(50)
   Order_Date       DateTime?
@@ -1435,11 +1442,9 @@ model TT_NAV_Od_FG  {
   Unit_Price       Float?
   Amount           Float?
 
-
   TD_Order TD_Order @relation(fields: [Order_No], references: [Order_No])
 
-  @@id([Order_No]) 
-  
+  @@id([Order_No])
 }
 
 model TT_NAV_Od_WI {
@@ -1457,7 +1462,7 @@ model TT_NAV_Od_WI {
 
   TD_Order TD_Order @relation(fields: [Order_No], references: [Order_No])
 
-  @@id([Order_No]) 
+  @@id([Order_No])
 }
 
 model TM_User {

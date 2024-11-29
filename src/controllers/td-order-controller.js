@@ -1,6 +1,8 @@
 const createError = require("../utils/create-error");
 const prisma = require("../models/prisma");
 const { td_orderSchema } = require("../validators/order-validator");
+const { tm_customerSchema } = require("../validators/customer-validator");
+const { tm_workerSchema } = require("../validators/worker-validator");
 
 const formatDate = (date) => {
   const day = String(date.getDate()).padStart(2, "0"); // แปลงวันที่เป็นรูปแบบ 2 หลัก
@@ -156,8 +158,6 @@ exports.tm_request3 = async (req, res, next) => {
   }
 };
 
-
-
 exports.tm_worker = async (req, res, next) => {
   try {
     // ดึงข้อมูลทั้งหมดจาก TD_Order โดยไม่ต้องใช้เงื่อนไข
@@ -176,6 +176,37 @@ exports.tm_worker = async (req, res, next) => {
   }
 };
 
+exports.updateWorker = async (req, res, next) => {
+  try {
+    // ตรวจสอบข้อมูล
+    const { error, value } = tm_workerSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    // ข้อมูลที่ตรวจสอบแล้ว
+    const workerData = value;
+
+    console.log("Worker Data to be updated:", workerData);
+
+    // อัปเดตข้อมูลในฐานข้อมูล
+    const updateWorker = await prisma.tM_Worker.update({
+      where: { Worker_CD: workerData.Worker_CD }, // ระบุเงื่อนไขการค้นหา
+      data: {
+        ...workerData, // ข้อมูลที่ต้องการอัปเดต
+      },
+    });
+
+    // ส่งคำตอบกลับ
+    return res
+      .status(200)
+      .json({ message: "Worker updated successfully", worker: updateWorker });
+  } catch (err) {
+    console.error("Error updating Worker:", err);
+    return next(createError(500, "Internal Server Error"));
+  }
+};
+
 exports.tm_customer = async (req, res, next) => {
   try {
     // ดึงข้อมูลเฉพาะคอลัมน์ WorkG_CD จากตาราง tm_workerg
@@ -190,6 +221,37 @@ exports.tm_customer = async (req, res, next) => {
     });
   } catch (err) {
     console.error("Error searching customer:", err);
+    return next(createError(500, "Internal Server Error"));
+  }
+};
+
+exports.updateCustomer = async (req, res, next) => {
+  try {
+    // ตรวจสอบข้อมูล
+    const { error, value } = tm_customerSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    // ข้อมูลที่ตรวจสอบแล้ว
+    const customerData = value;
+
+    console.log("Customer Data to be updated:", customerData);
+
+    // อัปเดตข้อมูลในฐานข้อมูล
+    const updateCustomer = await prisma.tM_Customer.update({
+      where: { Customer_CD: customerData.Customer_CD }, // ระบุเงื่อนไขการค้นหา
+      data: {
+        ...customerData, // ข้อมูลที่ต้องการอัปเดต
+      },
+    });
+
+    // ส่งคำตอบกลับ
+    return res
+      .status(200)
+      .json({ message: "Customer updated successfully", customer: updateCustomer });
+  } catch (err) {
+    console.error("Error updating Customer:", err);
     return next(createError(500, "Internal Server Error"));
   }
 };
