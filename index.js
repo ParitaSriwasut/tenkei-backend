@@ -26,6 +26,9 @@ const navfgRoute = require("./src/routes/navfg-route");
 const navwiRoute = require("./src/routes/navwi-route");
 const processRoute = require("./src/routes/process-route");
 const plprogressRoute = require("./src/routes/plprogress-route");
+const setRoute = require("./src/routes/set-route");
+const processgRoute = require("./src/routes/processg-route");
+const resourceRoute = require("./src/routes/resource-route");
 const logger = require('./src/middlewares/logger');
 
 const cors = require("cors");
@@ -62,6 +65,9 @@ app.use('/navfg', navfgRoute);
 app.use('/navwi', navwiRoute);
 app.use('/process', processRoute);
 app.use('/plprogress', plprogressRoute);
+app.use('/set', setRoute);
+app.use('/processg', processgRoute);
+app.use('/resource', resourceRoute);
 const PORT = process.env.PORT || "4000";
 app.listen(PORT, () => console.log(`server running on port: ${PORT}`));
 
