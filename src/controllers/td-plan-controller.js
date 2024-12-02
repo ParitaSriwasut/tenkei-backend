@@ -83,18 +83,19 @@ exports.Search_Parts_No_AfterUpdate = async (req, res, next) => {
     let N = 0;
     while (N < 36) {
       N += 1;
+      
 
       // ตรวจสอบค่า PPC
       if (planpartsNO[`PPC${N}`] !== null) {
         // ใช้ Prisma DLookup แทน DLookup ใน VBA
         planpartsNO[`INN${N}`] = await prisma.tD_Schedule
-          .findUnique({
+          .findFirst({
             where: { OdPt_No: planpartsNO.OdPt_No },
             select: { [`INN${N}`]: true },
           })
           .then((result) => (result ? result[`INN${N}`] : null));
 
-        const ptpData = await prisma.tD_Plan.findUnique({
+        const ptpData = await prisma.tD_Plan.findFirst({
           where: { OdPt_No: planpartsNO.OdPt_No },
           select: {
             [`PTP${N}`]: true,
@@ -115,96 +116,97 @@ exports.Search_Parts_No_AfterUpdate = async (req, res, next) => {
           .then((result) => (result ? result[`PPD${N}`] : null));
 
         planpartsNO[`RPD${N}`] = await prisma.tD_Result
-          .findUnique({
+          .findFirst({
             where: { OdPt_No: planpartsNO.OdPt_No },
             select: { [`RPD${N}`]: true },
           })
           .then((result) => (result ? result[`RPD${N}`] : null));
 
         planpartsNO[`RMT${N}`] = await prisma.tD_Result
-          .findUnique({
+          .findFirst({
             where: { OdPt_No: planpartsNO.OdPt_No },
             select: { [`RMT${N}`]: true },
           })
           .then((result) => (result ? result[`RMT${N}`] : null));
 
         planpartsNO[`RPT${N}`] = await prisma.tD_Result
-          .findUnique({
+          .findFirst({
             where: { OdPt_No: planpartsNO.OdPt_No },
             select: { [`RPT${N}`]: true },
           })
           .then((result) => (result ? result[`RPT${N}`] : null));
 
         planpartsNO[`RPN${N}`] = await prisma.tD_Result
-          .findUnique({
+          .findFirst({
             where: { OdPt_No: planpartsNO.OdPt_No },
             select: { [`RPN${N}`]: true },
           })
           .then((result) => (result ? result[`RPN${N}`] : null));
       }
+
     }
 
     // ดึงค่าจาก TD_Plan
     planpartsNO.End_No = await prisma.tD_Plan
-      .findUnique({
+      .findFirst ({
         where: { OdPt_No: planpartsNO.OdPt_No },
         select: { End_No: true },
       })
       .then((result) => (result ? result.End_No : null));
 
     planpartsNO.Now_No = await prisma.tD_Plan
-      .findUnique({
+      .findFirst({
         where: { OdPt_No: planpartsNO.OdPt_No },
         select: { Now_No: true },
       })
       .then((result) => (result ? result.Now_No : null));
 
     planpartsNO.Re_Pr_Qty = await prisma.tD_Plan
-      .findUnique({
+      .findFirst({
         where: { OdPt_No: planpartsNO.OdPt_No },
         select: { Re_Pr_Qty: true },
       })
       .then((result) => (result ? result.Re_Pr_Qty : null));
 
     planpartsNO.Total_M_Time = await prisma.tD_Plan
-      .findUnique({
+      .findFirst({
         where: { OdPt_No: planpartsNO.OdPt_No },
         select: { Total_M_Time: true },
       })
       .then((result) => (result ? result.Total_M_Time : null));
 
     planpartsNO.Total_P_Time = await prisma.tD_Plan
-      .findUnique({
+      .findFirst({
         where: { OdPt_No: planpartsNO.OdPt_No },
         select: { Total_P_Time: true },
       })
       .then((result) => (result ? result.Total_P_Time : null));
 
     planpartsNO.Re_Total_M_Time = await prisma.tD_Plan
-      .findUnique({
+      .findFirst({
         where: { OdPt_No: planpartsNO.OdPt_No },
         select: { Re_Total_M_Time: true },
       })
       .then((result) => (result ? result.Re_Total_M_Time : null));
 
     planpartsNO.Re_Total_P_Time = await prisma.tD_Plan
-      .findUnique({
+      .findFirst({
         where: { OdPt_No: planpartsNO.OdPt_No },
         select: { Re_Total_P_Time: true },
       })
       .then((result) => (result ? result.Re_Total_P_Time : null));
 
     planpartsNO.Re_Total_N_Time = await prisma.tD_Plan
-      .findUnique({
+      .findFirst({
         where: { OdPt_No: planpartsNO.OdPt_No },
         select: { Re_Total_N_Time: true },
       })
       .then((result) => (result ? result.Re_Total_N_Time : null));
 
-    // ส่งข้อมูลกลับ
     return res.status(200).json({
       status: "success",
       data: planpartsNO,
+      
     });
   } catch (err) {
     console.error("Error searching parts number:", err);
@@ -634,7 +636,7 @@ exports.createPlan = async (req, res, next) => {
     }
 
     // ตรวจสอบค่า PPC1 ถึง PPC36 และอัปเดต PMT, PPT
-    let Max_No = "0";
+    let Max_No = 0
     for (let N = 1; N <= 36; N++) {
       const PPC = req.body[`PPC${N}`];
 
@@ -732,7 +734,7 @@ exports.createPlan = async (req, res, next) => {
       Parts_No,
       OdPt_No,
       Pl_Progress_CD,
-      Max_No,
+      Max_No: Max_No.toString(),
     };
 
     // ตรวจสอบ schema
@@ -740,15 +742,444 @@ exports.createPlan = async (req, res, next) => {
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
+    const existingPlan= await prisma.tD_Plan.findFirst({
+      where: {
+        OdPt_No: OdPt_No,  
+      },
+    });
 
-    // สร้างแผนใหม่ในฐานข้อมูล
-    const newPlan = await prisma.tD_Plan.create({ data: value });
+    if (existingPlan) {
+      const updatedPlan  = await prisma.tD_Plan.updateMany({
+        where: {
+          
+          OdPt_No: OdPt_No,
+        },
+        data: value, 
+      });
+      return res.status(200).json({
+        message: "Plan updated successfully",
+        result: updatedPlan,
+      });
+    }else{
+      const newPlan = await prisma.tD_Plan.create({ data: value });
 
-    return res
-      .status(201)
-      .json({ message: "Plan created successfully", plan: newPlan });
+      return res
+        .status(201)
+        .json({ message: "Plan created successfully", plan: newPlan });
+    }
+ 
   } catch (err) {
     console.error("Error creating Plan:", err);
     return next(createError(500, "Internal Server Error"));
+  }
+};
+
+
+exports.createSchedule = async (req, res, next) => {
+  try {
+    const {
+      Order_No,
+      Parts_No,
+      PPD,
+      INN,
+    } = req.body;
+    const OdPt_No = Order_No + Parts_No;
+ 
+    // สร้างอ็อบเจ็กต์ข้อมูลสำหรับการบันทึก
+    const scheduleData = {
+      Order_No,
+      Parts_No,
+      OdPt_No,
+      Sc_Reg_Date: new Date().toISOString(),
+      Sc_Upd_Date: new Date().toISOString(),
+      ...Object.fromEntries(
+        Array.from({ length: 36 }, (_, i) => [`PPD${i + 1}`, PPD?.[i + 1] || null])
+      ),
+      ...Object.fromEntries(
+        Array.from({ length: 36 }, (_, i) => [`INN${i + 1}`, INN?.[i + 1] || null])
+      ),
+    };
+
+    const existingSchedule= await prisma.tD_Schedule.findFirst({
+      where: {
+        OdPt_No: OdPt_No,  
+      },
+    });
+
+    if (existingSchedule) {
+      const updatedSchedule  = await prisma.tD_Schedule.updateMany({
+        where: {
+          
+          OdPt_No: OdPt_No,
+        },
+        data: scheduleData, 
+      });
+      return res.status(200).json({
+        message: "Schedule updated successfully",
+        result: updatedSchedule,
+      });
+    }else{
+      const newSchedule = await prisma.tD_Schedule.create({
+        data: scheduleData,
+      });
+  
+      return res.status(201).json({ message: "Schedule created successfully", newSchedule });
+    }
+ 
+  } catch (err) {
+    console.error("Error creating Schedule:", err);
+    return next(createError(500, "Internal Server Error"));
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+
+exports.createResult = async (req, res, next) => {
+  try {
+    const {
+      Order_No,
+      Parts_No,
+      RPD,
+      RMT,
+      RPT,
+      RPN,
+    } = req.body;
+    const OdPt_No = Order_No + Parts_No;
+
+    const resultData = {
+      Order_No,
+      Parts_No,
+      OdPt_No,
+      Rs_Reg_Date: new Date().toISOString(),
+      Rs_Upd_Date: new Date().toISOString(),
+      ...Object.fromEntries(
+        Array.from({ length: 36 }, (_, i) => [`RPD${i + 1}`, RPD?.[i + 1] || null])
+      ),
+      ...Object.fromEntries(
+        Array.from({ length: 36 }, (_, i) => [`RMT${i + 1}`, RMT?.[i + 1] || null])
+      ),
+      ...Object.fromEntries(
+        Array.from({ length: 36 }, (_, i) => [`RPT${i + 1}`, RPT?.[i + 1] || null])
+      ),
+      ...Object.fromEntries(
+        Array.from({ length: 36 }, (_, i) => [`RPN${i + 1}`, RPN?.[i + 1] || null])
+      ),
+    };
+    const existingResult= await prisma.tD_Result.findFirst({
+      where: {
+        OdPt_No: OdPt_No,  
+      },
+    });
+    if (existingResult) {
+      const updatedResult = await prisma.tD_Result.updateMany({
+        where: {
+          
+          OdPt_No: OdPt_No,
+        },
+        data: resultData, 
+      });
+      return res.status(200).json({
+        message: "Result updated successfully",
+        result: updatedResult,
+      });
+    }else{
+      const newResult = await prisma.tD_Result.create({
+        data: resultData,
+      });
+      return res.status(201).json({ message: "Result created successfully", newResult });
+    }
+ 
+  } catch (err) {
+    console.error("Error creating Result:", err);
+    return next(createError(500, "Internal Server Error"));
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+exports.createWip = async (req, res, next) => {
+  try {
+    // รับข้อมูลจาก request body
+    const {
+      Order_No,
+      Parts_No,
+      PPG,
+
+      PPD,
+      PML,
+      PPL,
+      INN,
+      RPD,
+      RMT,
+      RPT,
+      RPN,
+      ASP,
+      Now_No
+    } = req.body;
+    const OdPt_No = Order_No + Parts_No;
+
+    let Max_No = "0";
+    for (let N = 1; N <= 36; N++) {
+      const PPC = req.body[`PPC${N}`];
+
+      if (PPC) {
+        Max_No = N;
+
+        // อัปเดต PMT
+        if (!req.body[`PMT${N}`]) {
+          req.body[`PMT${N}`] =
+            (await prisma.tM_Process.findUnique({
+              where: { Process_CD: PPC },
+              select: { Std_M_Time: true },
+            }).Std_M_Time) || null;
+        }
+
+        // อัปเดต PPT
+        if (!req.body[`PPT${N}`]) {
+          req.body[`PPT${N}`] =
+            (await prisma.tM_Process.findUnique({
+              where: { Process_CD: PPC },
+              select: { Std_P_Time: true },
+            }).Std_P_Time) || null;
+        }
+
+        // ตรวจสอบ End
+        const isEnd = await prisma.tM_Process.findUnique({
+          where: { Process_CD: PPC },
+          select: { End: true },
+        }).End;
+
+        if (isEnd === -1) FG++;
+      } else {
+        // ล้างค่า PMT, PPT, T_Type, P_Type, S_Type
+        req.body[`PMT${N}`] = null;
+        req.body[`PPT${N}`] = null;
+        req.body[`T_Type${N}`] = null;
+        req.body[`P_Type${N}`] = null;
+        req.body[`S_Type${N}`] = null;
+      }
+
+     
+      const OdPtPr_No = Order_No + Parts_No + N; 
+
+     
+      const existingWip = await prisma.tD_WIP.findFirst({
+        where: {
+          OdPtPr_No: OdPtPr_No,  
+        },
+      });
+
+      if (existingWip) {
+        // ถ้ามีข้อมูลแล้วให้ทำการแก้ไข (Update)
+        await prisma.tD_WIP.updateMany({
+          where: {
+            OdPtPr_No: OdPtPr_No,  
+          },
+          data: {
+            Order_No,
+            Parts_No,
+            Process_No: N.toString(),
+            OdPt_No,
+            OdPtPr_No,
+            PPG,
+            PPC,
+            PMT: req.body[`PMT${N}`],
+            PPT: req.body[`PPT${N}`],
+            T_Type: req.body[`T_Type${N}`],
+            P_Type: req.body[`P_Type${N}`],
+            S_Type: req.body[`S_Type${N}`],
+            PPD,
+            PML,
+            PPL,
+            INN,
+            RPD,
+            RMT,
+            RPT,
+            RPN,
+            ASP,
+            Now_No
+          }
+        });
+      } else {
+        // ถ้าไม่มีข้อมูล ให้สร้างข้อมูลใหม่
+        await prisma.tD_WIP.create({
+          data: {
+            Order_No,
+            Parts_No,
+            Process_No: N.toString(),
+            OdPt_No,
+            OdPtPr_No,
+            PPG,
+            PPC,
+            PMT: req.body[`PMT${N}`],
+            PPT: req.body[`PPT${N}`],
+            T_Type: req.body[`T_Type${N}`],
+            P_Type: req.body[`P_Type${N}`],
+            S_Type: req.body[`S_Type${N}`],
+            PPD,
+            PML,
+            PPL,
+            INN,
+            RPD,
+            RMT,
+            RPT,
+            RPN,
+            ASP,
+            Now_No
+          }
+        });
+      }
+    }
+
+    // ส่งผลลัพธ์กลับไปยัง client
+    return res.status(201).json({ message: "Wip created or updated successfully" });
+  } catch (err) {
+    console.error("Error creating or updating Wip:", err);
+    return next(createError(500, "Internal Server Error"));
+  } finally {
+    // ปิดการเชื่อมต่อฐานข้อมูล
+    await prisma.$disconnect();
+  }
+};
+
+exports.deleteWip = async (req, res, next) => {
+  try {
+    const { Order_No, Parts_No } = req.body;
+
+    for (let N = 1; N <= 36; N++) {
+      const OdPtPr_No = Order_No + Parts_No + N;  
+      const existingWip = await prisma.tD_WIP.findFirst({
+        where: {
+          OdPtPr_No: OdPtPr_No,  
+        },
+      });
+      if (existingWip) {
+        await prisma.tD_WIP.delete({
+          where: {
+            OdPtPr_No: OdPtPr_No,  
+          },
+        });
+      }
+    }
+    return res.status(200).json({ message: "WIP deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting WIP:", err);
+    return next(createError(500, "Internal Server Error"));
+  } finally {
+    // Close database connection
+    await prisma.$disconnect();
+  }
+};
+
+exports.deleteResult = async (req, res, next) => {
+  try {
+    const { Order_No, Parts_No } = req.body;
+    const OdPt_No = Order_No + Parts_No;
+
+    const existingResult = await prisma.tD_Result.findFirst({
+      where: {
+        OdPt_No: OdPt_No,  
+      },
+    });
+
+    if (existingResult) {
+    
+      const deletedResult = await prisma.tD_Result.delete({
+        where: {
+          OdPt_No: OdPt_No, 
+        },
+      });
+
+      return res.status(200).json({
+        message: "Result deleted successfully",
+        deletedResult,
+      });
+    } else {
+      return res.status(404).json({
+        message: "Result not found",
+      });
+    }
+  } catch (err) {
+    console.error("Error deleting Result:", err);
+    return next(createError(500, "Internal Server Error"));
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+
+exports.deleteSchedule = async (req, res, next) => {
+  try {
+    const { Order_No, Parts_No } = req.body;
+    const OdPt_No = Order_No + Parts_No;
+
+    
+    const existingSchedule = await prisma.tD_Schedule.findFirst({
+      where: {
+        OdPt_No: OdPt_No,  
+      },
+    });
+
+    if (existingSchedule) {
+    
+      const deletedSchedule = await prisma.tD_Schedule.delete({
+        where: {
+          OdPt_No: OdPt_No,  
+        },
+      });
+
+      return res.status(200).json({
+        message: "Schedule deleted successfully",
+        deletedSchedule,
+      });
+    } else {
+
+      return res.status(404).json({
+        message: "Schedule not found",
+      });
+    }
+  } catch (err) {
+    console.error("Error deleting Schedule:", err);
+    return next(createError(500, "Internal Server Error"));
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+exports.deletePlan = async (req, res, next) => {
+  try {
+    const { Order_No, Parts_No } = req.body;
+    const OdPt_No = Order_No + Parts_No;
+
+    const existingPlan = await prisma.tD_Plan.findFirst({
+      where: {
+        OdPt_No: OdPt_No,  
+      },
+    });
+
+    if (existingPlan) {
+    
+      const deletedPlan = await prisma.tD_Plan.delete({
+        where: {
+          OdPt_No: OdPt_No,  
+        },
+      });
+
+      return res.status(200).json({
+        message: "Plan deleted successfully",
+        deletedPlan,
+      });
+    } else {
+    
+      return res.status(404).json({
+        message: "Plan not found",
+      });
+    }
+  } catch (err) {
+    console.error("Error deleting Plan:", err);
+    return next(createError(500, "Internal Server Error"));
+  } finally {
+    await prisma.$disconnect();
   }
 };
