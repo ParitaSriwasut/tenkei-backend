@@ -86,21 +86,29 @@ exports.login = async (req, res, next) => {
             return next(createError(400, "Invalid credentials.")); // ข้อความที่ถูกต้อง
         }
 
-        // ตรวจสอบรหัสผ่าน
-        const isMatch = await bcrypt.compare(User_Pass, existingUser.User_Pass);
+        let isMatch = false;
+
+        // พยายามตรวจสอบรหัสผ่านแบบ bcrypt
+        if (existingUser.User_Pass.startsWith("$2b$")) { // ตรวจสอบว่ารหัสผ่านถูกเข้ารหัสด้วย bcrypt หรือไม่
+            isMatch = await bcrypt.compare(User_Pass, existingUser.User_Pass);
+        } else {
+            // ตรวจสอบรหัสผ่านแบบไม่เข้ารหัส
+            isMatch = User_Pass === existingUser.User_Pass;
+        }
+
         if (!isMatch) {
             return next(createError(400, "Invalid credentials.")); // ข้อความที่ถูกต้อง
         }
 
-         // สร้าง JSON Web Token
-         const payload = { User_ID: existingUser.User_ID };
-         const accessToken = jwt.sign(
-             payload,
-             process.env.JWT_SECRET_KEY || ("defaultRandom"),
-             {
-                 expiresIn: process.env.JWT_EXPIRE || ("6h"), // กำหนดเวลาหมดอายุของ token
-             }
-         );
+        // สร้าง JSON Web Token
+        const payload = { User_ID: existingUser.User_ID };
+        const accessToken = jwt.sign(
+            payload,
+            process.env.JWT_SECRET_KEY || "defaultRandom",
+            {
+                expiresIn: process.env.JWT_EXPIRE || "6h", // กำหนดเวลาหมดอายุของ token
+            }
+        );
 
         // ลบรหัสผ่านออกจากข้อมูลผู้ใช้ก่อนส่งกลับ
         delete existingUser.User_Pass;
