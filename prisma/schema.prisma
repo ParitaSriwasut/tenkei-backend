@@ -7,128 +7,182 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model TD_ASP {
+  OdPcPt_No     String    @db.VarChar(14)
+  Process_No    String    @db.VarChar(2)
+  PPC           String?   @db.VarChar(6)
+  Parts_Qty     Int?      @db.Int
+  M_Resource_CD String?   @db.VarChar(20)
+  BS_Time       DateTime? @db.DateTime
+  BE_Time       DateTime? @db.DateTime
+  PS_Time       DateTime? @db.DateTime
+  PE_Time       DateTime? @db.DateTime
+  AS_Time       DateTime? @db.DateTime
+  AE_Time       DateTime? @db.DateTime
+  Result_CAT    String    @db.VarChar(1)
+  OdPtPr_No     String    @db.VarChar(12)
+
+  @@id([OdPcPt_No, Process_No])
+}
+
+model TD_Cost {
+  Order_No              String       @db.VarChar(20) // หมายเลขคำสั่ง (Short Text)
+  Parts_No              String       @db.VarChar(2) // หมายเลขชิ้นส่วน (Short Text)
+  Cost_No               String       @db.VarChar(4) // หมายเลขค่าใช้จ่าย (Short Text)
+  Process_No            String?      @db.VarChar(2) // หมายเลขกระบวนการ (Short Text)
+  OdPt_No               String?      @db.VarChar(22) // หมายเลข OdPt (Short Text)
+  OdPtCs_No             String?      @db.VarChar(26) // หมายเลข OdPtCs (Short Text)
+  OdPtPr_No             String?      @db.VarChar(24) // หมายเลข OdPtPr (Short Text)
+  CMC                   String?      @db.VarChar(8) // CMC (Short Text)
+  CMT                   Int?         @db.SmallInt // CMT (Short Text)
+  CPC                   String?      @db.VarChar(10)
+  CPT                   Int?         @db.SmallInt // CPT (Short Text)
+  CPD                   DateTime?    @db.DateTime()
+  CPN                   Int?         @db.SmallInt
+  Cs_Progress_CD        String?      @db.VarChar(2) // รหัสความคืบหน้า (Short Text)
+  Cs_Complete_Date      DateTime?    @db.DateTime() // วันที่ทำเสร็จสมบูรณ์ (Date/Time)
+  Cs_Complete_Qty       Int?         @db.SmallInt // จำนวนที่ทำเสร็จ (Number)
+  Cs_Label_CSV          Boolean?     @db.Bit(1) // CSV (Yes/No)
+  Cs_All_Complete       Boolean?     @db.Bit(1) // เสร็จทั้งหมด (Yes/No)
+  Cs_Order_All_Complete Boolean?     @db.Bit(1) // คำสั่งทั้งหมดเสร็จสิ้น (Yes/No)
+  Cs_Parts_Complete     Boolean?     @db.Bit(1) // ชิ้นส่วนเสร็จสิ้น (Yes/No)
+  Cs_Final_Complete     Boolean?     @db.Bit(1) // เสร็จสมบูรณ์ทั้งหมด (Yes/No)
+  Cs_Remark             String?      @db.VarChar(255) // ข้อสังเกต (Short Text)
+  Cs_Register_Date      DateTime?    @db.DateTime() // วันที่ลงทะเบียน (Date/Time)
+  Cs_Modify_Date        DateTime?    @db.DateTime() // วันที่แก้ไข (Date/Time)
+  Cs_Reg_Person_CD      String?      @db.VarChar(10) // รหัสผู้ลงทะเบียน (Short Text)
+  Cs_Upd_Person_CD      String?      @db.VarChar(10) // รหัสผู้ปรับปรุง (Short Text)
+  Sequence_No           Int?         @db.Int
+  // เชื่อมความสัมพันธ์กับ TD_Plan (Many-to-One)
+  plan                  TD_Plan      @relation(fields: [Order_No, Parts_No], references: [Order_No, Parts_No], name: "PlanToCost")
+  TD_Order              TD_Order?    @relation(fields: [Order_No], references: [Order_No]) // ความสัมพันธ์กับ TD_Order
+  TM_Resource           TM_Resource? @relation(fields: [CMC], references: [Resource_CD])
+
+  @@id([Order_No, Parts_No, Cost_No]) // กำหนดคีย์หลักร่วมกัน
+}
+
 model TD_Order {
-  Order_No          String    @id
-  Product_Grp_CD    String?
-  Customer_CD       String?
-  NAV_Name          String?
-  Product_Name      String?
-  NAV_Size          String?
-  Product_Size      String?
-  Tolerance         String?
-  Customer_Draw     String?
-  Company_Draw      String?
-  Product_Draw      String?
-  Quantity          Int?
-  Pd_Target_Qty     Int?
-  Pd_Complete_Qty   Int?
-  I_Complete_Qty    Int?
-  Shipment_Qty      Int?
-  Pd_Split_Qty      Int?
-  Pd_Calc_Qty       Int?
-  NG_Qty            Int?
-  Unit_CD           String?
-  Sales_Grp_CD      String?
-  Sales_Person_CD   String?
-  Request1_CD       String?
-  Request2_CD       String?
-  Request3_CD       String?
-  Material1         String?
-  H_Treatment1      String?
-  Material2         String?
-  H_Treatment2      String?
-  Material3         String?
-  H_Treatment3      String?
-  Material4         String?
-  H_Treatment4      String?
-  Material5         String?
-  H_Treatment5      String?
-  Coating_CD        String?
-  Coating           String?
-  Quote_No          String?
-  Quote_CD          String?
-  Od_No_of_Pd_Split String?
-  ItemO_CD          String?
-  Item1_CD          String?
-  Item2_CD          String?
-  Item3_CD          String?
-  Item4_CD          String?
-  Custom_Material   String?
-  Od_No_of_Custom   String?
-  Supply_CD         String?
-  Destination_CD    String?
-  Contract_Docu_CD  String?
-  Price_CD          String?
-  Unit_Price        Float?
-  Specific_CD       String?
-  Od_Progress_CD    String?
-  Delivery_CD       String?
-  Schedule_CD       String?
-  Target_CD         String?
-  Product_Docu      String?
-  Procure_Docu      String?
-  Outside_Docu      String?
-  Inspect_Docu      String?
-  Send_Docu         String?
-  Supple_Docu       String?
-  Sl_Instructions   String?
-  Pd_Instructions   String?
-  Pd_Remark         String?
-  I_Remark          String?
-  Od_Ctl_Person_CD  String?
-  Od_Reg_Person_CD  String?
-  Od_Upd_Person_CD  String?
-  Request_Delivery  DateTime?
-  Product_Delivery  DateTime?
-  Confirm_Delivery  DateTime?
-  NAV_Delivery      DateTime?
-  ASP_Delivery      DateTime?
-  Order_Date        DateTime?
-  Pd_Received_Date  DateTime?
-  Pd_Complete_Date  DateTime?
-  I_Completed_Date  DateTime?
-  Shipment_Date     DateTime?
-  Pd_Calc_Date      DateTime?
-  Calc_Process_Date DateTime?
-  Rs_Confirm_Date   DateTime?
-  Od_Reg_Date       DateTime?
-  Od_Upd_Date       DateTime?
-  Od_NAV_Upd_Date   DateTime?
-  Carbide_Cost      Float?
-  Steel_Cost        Float?
-  Outsourcing_Cost  Float?
-  H_Treatment_Cost  Float?
-  Coating_Cost      Float?
-  Electrode_Cost    Float?
-  Electroplate_Cost Float?
-  Tooling_Cost      Float?
-  Jig_Cost          Float?
-  Fixtures_Cost     Float?
-  Od_CAT1           Boolean?
-  Od_CAT2           Boolean?
-  Od_CAT3           Boolean?
-  Od_Pending        Boolean?
-  Temp_Shipment     Boolean?
-  Unreceived        Boolean?
-  Current_Order     Boolean?
-  Month_Plan        Boolean?
-  Week_Plan         Boolean?
-  Today_Plan        Boolean?
-  Must_Delivery     Boolean?
-  Into_I            Boolean?
-  Input_Confirm     Boolean?
-  Pd_Confirm        Boolean?
-  I_Confirm         Boolean?
-  Od_Confirm        Boolean?
-  I_Target          Boolean?
-  Urgent_Goods      Boolean?
+  Order_No          String    @id @db.VarChar(20)
+  Product_Grp_CD    String?   @db.VarChar(6)
+  Customer_CD       String?   @db.VarChar(20)
+  NAV_Name          String?   @db.VarChar(255)
+  Product_Name      String?   @db.VarChar(255)
+  NAV_Size          String?   @db.VarChar(255)
+  Product_Size      String?   @db.VarChar(255)
+  Tolerance         String?   @db.VarChar(30)
+  Customer_Draw     String?   @db.VarChar(50)
+  Company_Draw      String?   @db.VarChar(50)
+  Product_Draw      String?   @db.VarChar(60)
+  Quantity          Float?    @db.Double
+  Pd_Target_Qty     Int?      @db.SmallInt
+  Pd_Complete_Qty   Int?      @db.SmallInt
+  I_Complete_Qty    Int?      @db.SmallInt
+  Shipment_Qty      Int?      @db.SmallInt
+  Pd_Split_Qty      Int?      @db.SmallInt
+  Pd_Calc_Qty       Int?      @db.SmallInt
+  NG_Qty            Int?      @db.SmallInt
+  Unit_CD           String?   @db.VarChar(10)
+  Sales_Grp_CD      String?   @db.VarChar(6)
+  Sales_Person_CD   String?   @db.VarChar(10)
+  Request1_CD       String?   @db.VarChar(2)
+  Request2_CD       String?   @db.VarChar(2)
+  Request3_CD       String?   @db.VarChar(2)
+  Material1         String?   @db.VarChar(30)
+  H_Treatment1      String?   @db.VarChar(40)
+  Material2         String?   @db.VarChar(30)
+  H_Treatment2      String?   @db.VarChar(40)
+  Material3         String?   @db.VarChar(30)
+  H_Treatment3      String?   @db.VarChar(40)
+  Material4         String?   @db.VarChar(30)
+  H_Treatment4      String?   @db.VarChar(40)
+  Material5         String?   @db.VarChar(30)
+  H_Treatment5      String?   @db.VarChar(40)
+  Coating_CD        String?   @db.VarChar(2)
+  Coating           String?   @db.VarChar(30)
+  Quote_No          String?   @db.VarChar(20)
+  Quote_CD          String?   @db.VarChar(1)
+  Od_No_of_Pd_Split String?   @db.VarChar(20)
+  ItemO_CD          String?   @db.VarChar(2)
+  Item1_CD          String?   @db.VarChar(20)
+  Item2_CD          String?   @db.VarChar(2)
+  Item3_CD          String?   @db.VarChar(2)
+  Item4_CD          String?   @db.VarChar(2)
+  Custom_Material   String?   @db.VarChar(10)
+  Od_No_of_Custom   String?   @db.VarChar(50)
+  Supply_CD         String?   @db.VarChar(2)
+  Destination_CD    String?   @db.VarChar(20)
+  Contract_Docu_CD  String?   @db.VarChar(6)
+  Price_CD          String?   @db.VarChar(2)
+  Unit_Price        Float?    @db.Double
+  Specific_CD       String?   @db.VarChar(2)
+  Od_Progress_CD    String?   @db.VarChar(2)
+  Delivery_CD       String?   @db.VarChar(1)
+  Schedule_CD       String?   @db.VarChar(1)
+  Target_CD         String?   @db.VarChar(2)
+  Product_Docu      String?   @db.MediumText
+  Procure_Docu      String?   @db.MediumText
+  Outside_Docu      String?   @db.MediumText
+  Inspect_Docu      String?   @db.MediumText
+  Send_Docu         String?   @db.MediumText
+  Supple_Docu       String?   @db.MediumText
+  Sl_Instructions   String?   @db.VarChar(100)
+  Pd_Instructions   String?   @db.VarChar(50)
+  Pd_Remark         String?   @db.VarChar(150)
+  I_Remark          String?   @db.VarChar(100)
+  Od_Ctl_Person_CD  String?   @db.VarChar(10)
+  Od_Reg_Person_CD  String?   @db.VarChar(10)
+  Od_Upd_Person_CD  String?   @db.VarChar(10)
+  Request_Delivery  DateTime? @db.DateTime()
+  Product_Delivery  DateTime? @db.DateTime()
+  Confirm_Delivery  DateTime? @db.DateTime()
+  NAV_Delivery      DateTime? @db.DateTime()
+  ASP_Delivery      DateTime? @db.DateTime()
+  Order_Date        DateTime? @db.DateTime()
+  Pd_Received_Date  DateTime? @db.DateTime()
+  Pd_Complete_Date  DateTime? @db.DateTime()
+  I_Completed_Date  DateTime? @db.DateTime()
+  Shipment_Date     DateTime? @db.DateTime()
+  Pd_Calc_Date      DateTime? @db.DateTime()
+  Calc_Process_Date DateTime? @db.DateTime()
+  Rs_Confirm_Date   DateTime? @db.DateTime()
+  Od_Reg_Date       DateTime? @db.DateTime()
+  Od_Upd_Date       DateTime? @db.DateTime()
+  Od_NAV_Upd_Date   DateTime? @db.DateTime()
+  Carbide_Cost      Float?    @db.Double
+  Steel_Cost        Float?    @db.Double
+  Outsourcing_Cost  Float?    @db.Double
+  H_Treatment_Cost  Float?    @db.Double
+  Coating_Cost      Float?    @db.Double
+  Electrode_Cost    Float?    @db.Double
+  Electroplate_Cost Float?    @db.Double
+  Tooling_Cost      Float?    @db.Double
+  Jig_Cost          Float?    @db.Double
+  Fixtures_Cost     Float?    @db.Double
+  Od_CAT1           Boolean?  @db.Bit(1)
+  Od_CAT2           Boolean?  @db.Bit(1)
+  Od_CAT3           Boolean?  @db.Bit(1)
+  Od_Pending        Boolean?  @db.Bit(1)
+  Temp_Shipment     Boolean?  @db.Bit(1)
+  Unreceived        Boolean?  @db.Bit(1)
+  Current_Order     Boolean?  @db.Bit(1)
+  Month_Plan        Boolean?  @db.Bit(1)
+  Week_Plan         Boolean?  @db.Bit(1)
+  Today_Plan        Boolean?  @db.Bit(1)
+  Must_Delivery     Boolean?  @db.Bit(1)
+  Into_I            Boolean?  @db.Bit(1)
+  Input_Confirm     Boolean?  @db.Bit(1)
+  Pd_Confirm        Boolean?  @db.Bit(1)
+  I_Confirm         Boolean?  @db.Bit(1)
+  Od_Confirm        Boolean?  @db.Bit(1)
+  I_Target          Boolean?  @db.Bit(1)
+  Urgent_Goods      Boolean?  @db.Bit(1)
 
   // ความสัมพันธ์กับ TD_Procure
   procure TD_Procure[] @relation("OrderToProcure")
   Plan    TD_Plan[]    @relation("OrderToPlan")
 
   // เชื่อมโยงกับ TM_Item1
-  TM_Item1 tm_item1? @relation(fields: [Item1_CD], references: [Item1_CD])
+  TM_Item1 TM_Item1? @relation(fields: [Item1_CD], references: [Item1_CD])
 
   // เชื่อมโยงกับ TM_WorkG
   TM_WorkG TM_WorkG? @relation(fields: [Product_Grp_CD], references: [WorkG_CD])
@@ -141,195 +195,262 @@ model TD_Order {
   TT_NAV_Od_WI TT_NAV_Od_WI[]
 }
 
-model TD_Procure {
-  Order_No           String // หมายเลขคำสั่ง (Short Text)
-  Procure_No         String? // หมายเลขการจัดซื้อ (Short Text)
-  OdPc_No            String? // หมายเลข OdPc (Short Text)
-  OdPcLn_No          String    @id // หมายเลข OdPcLn (Short Text)
-  Vendor_CAT         String? // หมวดหมู่ผู้จำหน่าย (Short Text)
-  Vendor_CD          String? // รหัสผู้จำหน่าย (Short Text)
-  Pc_Name            String? // ชื่อการจัดซื้อ (Short Text)
-  Pc_Material        String? // วัสดุการจัดซื้อ (Short Text)
-  Pc_Mate_Docu       String? // เอกสารวัสดุการจัดซื้อ (Short Text)
-  Temp_Price         String? // ราคาชั่วคราว (Price CD)
-  Unit_Price         Float? // ราคาต่อหน่วย
-  Yes_No_1           Boolean? // ใช่/ไม่ใช่ 1
-  Yes_No_2           Boolean? // ใช่/ไม่ใช่ 2
-  Short_Text_1       String? // ข้อความสั้น 1 (Short Text)
-  Number_1           String? // หมายเลข 1 (Number)
-  Number_2           String? // หมายเลข 2 (Number)
-  Pc_Qty             String? // จำนวนการจัดซื้อ
-  Pc_Unit_CD         String? // รหัสหน่วยการจัดซื้อ (Short Text)
-  Pc_Person_CD       String? // รหัสบุคคลที่ทำการจัดซื้อ (Short Text)
-  Pc_Date            DateTime? // วันที่การจัดซื้อ
-  Pc_Req_Delivery    DateTime? // วันที่ขอการจัดส่ง
-  Pc_Req_Delivery_CD String? // รหัสการขอการจัดส่ง (Short Text)
-  Pc_Ans_Delivery    DateTime? // วันที่ตอบการจัดส่ง
-  Pc_Ans_Delivery_CD String? // รหัสการตอบการจัดส่ง (Short Text)
-  Pc_Delivery_Judge  String? // การตัดสินการจัดส่ง (Short Text)
-  Pc_Progress_CD     String? // รหัสความก้าวหน้า (Short Text)
-  Pc_Send_Date       DateTime? // วันที่ส่งการจัดซื้อ
-  Pc_Arrival_Date    DateTime? // วันที่ถึง (Arrival Date)
-  Pc_Arrival_Qty     String? // จำนวนที่ถึง (Arrival Quantity)
-  Pc_Cancel_Date     DateTime? // วันที่ยกเลิก
-  Procure_Docu       String? // เอกสารการจัดซื้อ (Hyperlink)
-  Pc_Remark          String? // หมายเหตุการจัดซื้อ (Short Text)
-  Print              Boolean? // พิมพ์ (Yes/No)
-  Pc_Reg_Date        DateTime? // วันที่ลงทะเบียนการจัดซื้อ
-  Pc_Upd_Date        DateTime? // วันที่อัปเดตการจัดซื้อ
-  Pc_NAV_Reg_Date    DateTime? // วันที่ลงทะเบียน NAV
-  PC_NAV_Upd_Date    DateTime? // วันที่อัปเดต NAV
-  Pc_Line_No         String? // หมายเลขบรรทัด (Line Number)
-
-  // ความสัมพันธ์กับ TD_Order
-  order TD_Order @relation("OrderToProcure", fields: [Order_No], references: [Order_No])
-}
-
 model TD_Plan {
-  Order_No         String // หมายเลขคำสั่ง (Short Text) 
-  Parts_No         String // หมายเลขชิ้นส่วน (Short Text)
-  OdPt_No          String? // หมายเลข OdPt (Short Text)
-  Parts_CD         String? // รหัสชิ้นส่วน (Short Text)
-  Pt_Material      String? // วัสดุชิ้นส่วน (Short Text)
-  Pt_Qty           Int? // จำนวนชิ้นส่วน (Number)
-  Pt_Unit_CD       String? // รหัสหน่วยชิ้นส่วน (Short Text)
-  Pt_Split         Boolean? // การแยกชิ้นส่วน (Yes/No)
-  Pt_Spare_Qty     Int? // จำนวนชิ้นส่วนสำรอง (Number)
-  Pt_NG_Qty        Int? // จำนวน NG (Number)
-  Pt_l_Comp_Qty    Int? // จำนวนที่เสร็จสมบูรณ์ (Number)
-  Connect_Od_No    String? // หมายเลขเชื่อมโยง Od (Short Text)
-  Connect_Pt_No    String? // หมายเลขเชื่อมโยง Pt (Short Text)
-  Connect_Pr_No    Int? // หมายเลขเชื่อมโยง Pr (Number)
-  Pl_Quote_OdPt_No String? // หมายเลขใบเสนอราคา OdPt (Short Text)
-  PI_Quote_CD      String? // รหัสใบเสนอราคา PI (Short Text)
-  PI_St_Rev_Day    Int? // วันปรับปรุง PI (Number)
-  Pl_Ed_Rev_Day    Int? // วันปรับปรุง (Number)
-  Pl_Progress_CD   Int? // รหัสความก้าวหน้า (Number)
-  PI_Schedule_CD   String? // รหัสตาราง PI (Short Text)
-  Pt_Instructions  String? // คำแนะนำชิ้นส่วน (Short Text)
-  Pt_Remark        String? // หมายเหตุชิ้นส่วน (Short Text)
-  Pt_Information   String? // ข้อมูลชิ้นส่วน (Short Text)
-  Pl_Reg_Person_CD String? // รหัสบุคคลที่ลงทะเบียน (Short Text)
-  PI_Upd_Person_CD String? // รหัสบุคคลที่อัปเดต PI (Short Text)
-  Pt_Delivery      DateTime? // วันที่ส่งมอบ (Date/Time)
-  Target_Delivery  DateTime? // วันที่ส่งมอบที่ตั้งเป้า (Date/Time)
-  PI_Reg_Date      DateTime? // วันที่ลงทะเบียน PI (Date/Time)
-  Pt_Complete_Date DateTime? // วันที่เสร็จสมบูรณ์ชิ้นส่วน (Date/Time)
-  Pt_I_Date        DateTime? // วันที่ I (Date/Time)
-  Pt_Shipment_Date DateTime? // วันที่ส่งชิ้นส่วน (Date/Time)
-  Pt_Calc_Date     DateTime? // วันที่คำนวณชิ้นส่วน (Date/Time)
-  Pt_Confirm_Date  DateTime? // วันที่ยืนยันการส่งมอบ (Date/Time)
-  PI_Upd_Date      DateTime? // วันที่อัปเดต PI (Date/Time)
-  Pl_Month_Plan    Boolean? // แผนเดือน (Yes/No)
-  PI_Wweek_Plan    Boolean? // แผนสัปดาห์ (Yes/No)
-  PI_Today_Plan    Boolean? // แผนวันนี้ (Yes/No)
-  Pt_CAT1          Boolean? // หมวดหมู่ชิ้นส่วน 1 (Yes/No)
-  Pt_CAT2          Boolean? // หมวดหมู่ชิ้นส่วน 2 (Yes/No)
-  Pt_CAT3          Boolean? // หมวดหมู่ชิ้นส่วน 3 (Yes/No)
-  Money_Object     Boolean? // วัตถุเงิน (Yes/No)
-  Outside          Boolean? // ภายนอก (Yes/No)
-  Pt_Pending       Boolean? // อยู่ระหว่างรอ (Yes/No)
-  Info1            String? // ข้อมูลเพิ่มเติม 1 (Short Text)
-  Info2            String? // ข้อมูลเพิ่มเติม 2 (Short Text)
-  Info3            String? // ข้อมูลเพิ่มเติม 3 (Short Text)
-  Info4            String? // ข้อมูลเพิ่มเติม 4 (Short Text)
-  Info5            String? // ข้อมูลเพิ่มเติม 5 (Short Text)
-  Info6            String? // ข้อมูลเพิ่มเติม 6 (Short Text)
-  Info_Chk1        Boolean? // ตรวจสอบข้อมูล 1 (Yes/No)
-  Info_Chk2        Boolean? // ตรวจสอบข้อมูล 2 (Yes/No)
-  Info_Chk3        Boolean? // ตรวจสอบข้อมูล 3 (Yes/No)
-  Info_Chk4        Boolean? // ตรวจสอบข้อมูล 4 (Yes/No)
-  Info_Chk5        Boolean? // ตรวจสอบข้อมูล 5 (Yes/No)
-  Info_Chk6        Boolean? // ตรวจสอบข้อมูล 6 (Yes/No)
-  Max_No           String? // หมายเลขสูงสุด (Short Text)
-  End_No           String? // หมายเลขสิ้นสุด (Short Text)
-  Now_No           String? // หมายเลขปัจจุบัน (Short Text)
-  Total_M_Time     Int? // เวลาทั้งหมด M (Number)
-  Total_P_Time     Int? // เวลาทั้งหมด P (Number)
-  Re_Pr_Qty        Int? // จำนวน Re-Pr (Number)
-  Re_Total_M_Time  Int? // เวลาทั้งหมด M ที่ Re (Number)
-  Re_Total_P_Time  Int? // เวลาทั้งหมด P ที่ Re (Number)
-  Re_Total_N_Time  Int? // เวลาทั้งหมด N ที่ Re (Number)
-  Re_Days          Int? // จำนวนวันที่ Re (Number)
-  Re_Days_CAT      Int? // จำนวนวันที่ Re (Category) (Number)
-  Re_Days_Work_R   Int? // จำนวนวันทำงาน R (Number)
-  Re_Days_Work_P   Int? // จำนวนวันทำงาน P (Number)
-  Re_Pr_Qty_P      Int? // จำนวน Re-Pr P (Number)
-  Priority_P       Int? // ความสำคัญ P (Number)
-  Join_P           Int? // เข้าร่วม P (Number)
-  Priority_Rate    Int? // อัตราความสำคัญ (Number)
-  PPC1             String? // PPC 1 (Short Text)
-  PPC2             String? // PPC 2 (Short Text)
-  PPC3             String? // PPC 3 (Short Text)
-  PPC4             String? // PPC 4 (Short Text)
-  PPC5             String? // PPC 5 (Short Text)
-  PPC6             String? // PPC 6 (Short Text)
-  PPC7             String? // PPC 7 (Short Text)
-  PPC8             String? // PPC 8 (Short Text)
-  PPC9             String? // PPC 9 (Short Text)
-  PPC10            String? // PPC 10 (Short Text)
-  PPC11            String? // PPC 11 (Short Text)
-  PPC12            String? // PPC 12 (Short Text)
-  PPC13            String? // PPC 13 (Short Text)
-  PPC14            String? // PPC 14 (Short Text)
-  PPC15            String? // PPC 15 (Short Text)
-  PPC16            String? // PPC 16 (Short Text)
-  PPC17            String? // PPC 17 (Short Text)
-  PPC18            String? // PPC 18 (Short Text)
-  PPC19            String? // PPC 19 (Short Text)
-  PPC20            String? // PPC 20 (Short Text)
-  PPC21            String? // PPC 21 (Short Text)
-  PPC22            String? // PPC 22 (Short Text)
-  PPC23            String? // PPC 23 (Short Text)
-  PPC24            String? // PPC 24 (Short Text)
-  PPC25            String? // PPC 25 (Short Text)
-  PPC26            String? // PPC 26 (Short Text)
-  PPC27            String? // PPC 27 (Short Text)
-  PPC28            String? // PPC 28 (Short Text)
-  PPC29            String? // PPC 29 (Short Text)
-  PPC30            String? // PPC 30 (Short Text)
-  PPC31            String? // PPC 31 (Short Text)
-  PPC32            String? // PPC 32 (Short Text)
-  PPC33            String? // PPC 33 (Short Text)
-  PPC34            String? // PPC 34 (Short Text)
-  PPC35            String? // PPC 35 (Short Text)
-  PPC36            String? // PPC 36 (Short Text)
-  PMT1             Int? // PMT 1 (Number)
-  PMT2             Int? // PMT 2 (Number)
-  PMT3             Int? // PMT 3 (Number)
-  PMT4             Int? // PMT 4 (Number)
-  PMT5             Int? // PMT 5 (Number)
-  PMT6             Int? // PMT 6 (Number)
-  PMT7             Int? // PMT 7 (Number)
-  PMT8             Int? // PMT 8 (Number)
-  PMT9             Int? // PMT 9 (Number)
-  PMT10            Int? // PMT 10 (Number)
-  PMT11            Int? // PMT 11 (Number)
-  PMT12            Int? // PMT 12 (Number)
-  PMT13            Int? // PMT 13 (Number)
-  PMT14            Int? // PMT 14 (Number)
-  PMT15            Int? // PMT 15 (Number)
-  PMT16            Int? // PMT 16 (Number)
-  PMT17            Int? // PMT 17 (Number)
-  PMT18            Int? // PMT 18 (Number)
-  PMT19            Int? // PMT 19 (Number)
-  PMT20            Int? // PMT 20 (Number)
-  PMT21            Int? // PMT 21 (Number)
-  PMT22            Int? // PMT 22 (Number)
-  PMT23            Int? // PMT 23 (Number)
-  PMT24            Int? // PMT 24 (Number)
-  PMT25            Int? // PMT 25 (Number)
-  PMT26            Int? // PMT 26 (Number)
-  PMT27            Int? // PMT 27 (Number)
-  PMT28            Int? // PMT 28 (Number)
-  PMT29            Int? // PMT 29 (Number)
-  PMT30            Int? // PMT 30 (Number)
-  PMT31            Int? // PMT 31 (Number)
-  PMT32            Int? // PMT 32 (Number)
-  PMT33            Int? // PMT 33 (Number)
-  PMT34            Int? // PMT 34 (Number)
-  PMT35            Int? // PMT 35 (Number)
-  PMT36            Int? // PMT 36 (Number)
+  Order_No         String       @db.VarChar(20) // หมายเลขคำสั่ง (Short Text) 
+  Parts_No         String       @db.VarChar(2) // หมายเลขชิ้นส่วน (Short Text)
+  OdPt_No          String?      @db.VarChar(22) // หมายเลข OdPt (Short Text)
+  Parts_CD         String?      @db.VarChar(3) // รหัสชิ้นส่วน (Short Text)
+  Pt_Material      String?      @db.VarChar(30) // วัสดุชิ้นส่วน (Short Text)
+  Pt_Qty           Int?         @db.SmallInt // จำนวนชิ้นส่วน (Number)
+  Pt_Unit_CD       String?      @db.VarChar(2) // รหัสหน่วยชิ้นส่วน (Short Text)
+  Pt_Split         Boolean?     @db.Bit(1) // การแยกชิ้นส่วน (Yes/No)
+  Pt_Spare_Qty     Int?         @db.SmallInt // จำนวนชิ้นส่วนสำรอง (Number)
+  Pt_NG_Qty        Int?         @db.SmallInt // จำนวน NG (Number)
+  Pt_l_Comp_Qty    Int?         @db.SmallInt // จำนวนที่เสร็จสมบูรณ์ (Number)
+  Connect_Od_No    String?      @db.VarChar(20) // หมายเลขเชื่อมโยง Od (Short Text)
+  Connect_Pt_No    String?      @db.VarChar(2) // หมายเลขเชื่อมโยง Pt (Short Text)
+  Connect_Pr_No    Int?         @db.TinyInt // หมายเลขเชื่อมโยง Pr (Number)
+  Pl_Quote_OdPt_No String?      @db.VarChar(22) // หมายเลขใบเสนอราคา OdPt (Short Text)
+  PI_Quote_CD      String?      @db.VarChar(2) // รหัสใบเสนอราคา PI (Short Text)
+  PI_St_Rev_Day    Float?       @db.Float // วันปรับปรุง PI (Number)
+  Pl_Ed_Rev_Day    Float?       @db.Float // วันปรับปรุง (Number)
+  Pl_Progress_CD   String?      @db.VarChar(1) // รหัสความก้าวหน้า (Number)
+  Pl_Schedule_CD   String?      @db.VarChar(1) // รหัสตาราง PI (Short Text)
+  Pt_Instructions  String?      @db.VarChar(255) // คำแนะนำชิ้นส่วน (Short Text)
+  Pt_Remark        String?      @db.VarChar(200) // หมายเหตุชิ้นส่วน (Short Text)
+  Pt_Information   String?      @db.VarChar(200) // ข้อมูลชิ้นส่วน (Short Text)
+  Pl_Reg_Person_CD String?      @db.VarChar(10) // รหัสบุคคลที่ลงทะเบียน (Short Text)
+  PI_Upd_Person_CD String?      @db.VarChar(10) // รหัสบุคคลที่อัปเดต PI (Short Text)
+  Pt_Delivery      DateTime?    @db.DateTime() // วันที่ส่งมอบ (Date/Time)
+  Target_Delivery  DateTime?    @db.DateTime() // วันที่ส่งมอบที่ตั้งเป้า (Date/Time)
+  Pl_Reg_Date      DateTime?    @db.DateTime() // วันที่ลงทะเบียน PI (Date/Time)
+  Pt_Complete_Date DateTime?    @db.DateTime() // วันที่เสร็จสมบูรณ์ชิ้นส่วน (Date/Time)
+  Pt_I_Date        DateTime?    @db.DateTime() // วันที่ I (Date/Time)
+  Pt_Shipment_Date DateTime?    @db.DateTime() // วันที่ส่งชิ้นส่วน (Date/Time)
+  Pt_Calc_Date     DateTime?    @db.DateTime() // วันที่คำนวณชิ้นส่วน (Date/Time)
+  Pt_Confirm_Date  DateTime?    @db.DateTime() // วันที่ยืนยันการส่งมอบ (Date/Time)
+  Pl_Upd_Date      DateTime?    @db.DateTime() // วันที่อัปเดต PI (Date/Time)
+  Pl_Month_Plan    Boolean?     @db.Bit(1) // แผนเดือน (Yes/No)
+  Pl_Wweek_Plan    Boolean?     @db.Bit(1) // แผนสัปดาห์ (Yes/No)
+  Pl_Today_Plan    Boolean?     @db.Bit(1) // แผนวันนี้ (Yes/No)
+  Pt_CAT1          Boolean?     @db.Bit(1) // หมวดหมู่ชิ้นส่วน 1 (Yes/No)
+  Pt_CAT2          Boolean?     @db.Bit(1) // หมวดหมู่ชิ้นส่วน 2 (Yes/No)
+  Pt_CAT3          Boolean?     @db.Bit(1) // หมวดหมู่ชิ้นส่วน 3 (Yes/No)
+  Money_Object     Boolean?     @db.Bit(1) // วัตถุเงิน (Yes/No)
+  Outside          Boolean?     @db.Bit(1) // ภายนอก (Yes/No)
+  Pt_Pending       Boolean?     @db.Bit(1) // อยู่ระหว่างรอ (Yes/No)
+  Info1            String?      @db.VarChar(8) // ข้อมูลเพิ่มเติม 1 (Short Text)
+  Info2            String?      @db.VarChar(8) // ข้อมูลเพิ่มเติม 2 (Short Text)
+  Info3            String?      @db.VarChar(8) // ข้อมูลเพิ่มเติม 3 (Short Text)
+  Info4            String?      @db.VarChar(8) // ข้อมูลเพิ่มเติม 4 (Short Text)
+  Info5            String?      @db.VarChar(8) // ข้อมูลเพิ่มเติม 5 (Short Text)
+  Info6            String?      @db.VarChar(8) // ข้อมูลเพิ่มเติม 6 (Short Text)
+  Info_Chk1        Boolean?     @db.Bit(1) // ตรวจสอบข้อมูล 1 (Yes/No)
+  Info_Chk2        Boolean?     @db.Bit(1) // ตรวจสอบข้อมูล 2 (Yes/No)
+  Info_Chk3        Boolean?     @db.Bit(1) // ตรวจสอบข้อมูล 3 (Yes/No)
+  Info_Chk4        Boolean?     @db.Bit(1) // ตรวจสอบข้อมูล 4 (Yes/No)
+  Info_Chk5        Boolean?     @db.Bit(1) // ตรวจสอบข้อมูล 5 (Yes/No)
+  Info_Chk6        Boolean?     @db.Bit(1) // ตรวจสอบข้อมูล 6 (Yes/No)
+  Max_No           String?      @db.VarChar(2) // หมายเลขสูงสุด (Short Text)
+  End_No           String?      @db.VarChar(2) // หมายเลขสิ้นสุด (Short Text)
+  Now_No           String?      @db.VarChar(2) // หมายเลขปัจจุบัน (Short Text)
+  Total_M_Time     Int?         @db.Int // เวลาทั้งหมด M (Number)
+  Total_P_Time     Int?         @db.Int // เวลาทั้งหมด P (Number)
+  Re_Pr_Qty        Int?         @db.TinyInt // จำนวน Re-Pr (Number)
+  Re_Total_M_Time  Int?         @db.Int // เวลาทั้งหมด M ที่ Re (Number)
+  Re_Total_P_Time  Int?         @db.Int // เวลาทั้งหมด P ที่ Re (Number)
+  Re_Total_N_Time  Int?         @db.Int // เวลาทั้งหมด N ที่ Re (Number)
+  Re_Days          Int?         @db.Int // จำนวนวันที่ Re (Number)
+  Re_Days_CAT      Int?         @db.TinyInt // จำนวนวันที่ Re (Category) (Number)
+  Re_Days_Work_R   Float?       @db.Float // จำนวนวันทำงาน R (Number)
+  Re_Days_Work_P   Float?       @db.Float // จำนวนวันทำงาน P (Number)
+  Re_Pr_Qty_P      Float?       @db.Float // จำนวน Re-Pr P (Number)
+  Priority_P       Float?       @db.Float // ความสำคัญ P (Number)
+  Join_P           Float?       @db.Float // เข้าร่วม P (Number)
+  Priority_Rate    Float?       @db.Float // อัตราความสำคัญ (Number)
+  PPC1             String?      @db.VarChar(8) // PPC 1 (Short Text)
+  PPC2             String?      @db.VarChar(8) // PPC 2 (Short Text)
+  PPC3             String?      @db.VarChar(8) // PPC 3 (Short Text)
+  PPC4             String?      @db.VarChar(8) // PPC 4 (Short Text)
+  PPC5             String?      @db.VarChar(8) // PPC 5 (Short Text)
+  PPC6             String?      @db.VarChar(8) // PPC 6 (Short Text)
+  PPC7             String?      @db.VarChar(8) // PPC 7 (Short Text)
+  PPC8             String?      @db.VarChar(8) // PPC 8 (Short Text)
+  PPC9             String?      @db.VarChar(8) // PPC 9 (Short Text)
+  PPC10            String?      @db.VarChar(8) // PPC 10 (Short Text)
+  PPC11            String?      @db.VarChar(8) // PPC 11 (Short Text)
+  PPC12            String?      @db.VarChar(8) // PPC 12 (Short Text)
+  PPC13            String?      @db.VarChar(8) // PPC 13 (Short Text)
+  PPC14            String?      @db.VarChar(8) // PPC 14 (Short Text)
+  PPC15            String?      @db.VarChar(8) // PPC 15 (Short Text)
+  PPC16            String?      @db.VarChar(8) // PPC 16 (Short Text)
+  PPC17            String?      @db.VarChar(8) // PPC 17 (Short Text)
+  PPC18            String?      @db.VarChar(8) // PPC 18 (Short Text)
+  PPC19            String?      @db.VarChar(8) // PPC 19 (Short Text)
+  PPC20            String?      @db.VarChar(8) // PPC 20 (Short Text)
+  PPC21            String?      @db.VarChar(8) // PPC 21 (Short Text)
+  PPC22            String?      @db.VarChar(8) // PPC 22 (Short Text)
+  PPC23            String?      @db.VarChar(8) // PPC 23 (Short Text)
+  PPC24            String?      @db.VarChar(8) // PPC 24 (Short Text)
+  PPC25            String?      @db.VarChar(8) // PPC 25 (Short Text)
+  PPC26            String?      @db.VarChar(8) // PPC 26 (Short Text)
+  PPC27            String?      @db.VarChar(8) // PPC 27 (Short Text)
+  PPC28            String?      @db.VarChar(8) // PPC 28 (Short Text)
+  PPC29            String?      @db.VarChar(8) // PPC 29 (Short Text)
+  PPC30            String?      @db.VarChar(8) // PPC 30 (Short Text)
+  PPC31            String?      @db.VarChar(8) // PPC 31 (Short Text)
+  PPC32            String?      @db.VarChar(8) // PPC 32 (Short Text)
+  PPC33            String?      @db.VarChar(8) // PPC 33 (Short Text)
+  PPC34            String?      @db.VarChar(8) // PPC 34 (Short Text)
+  PPC35            String?      @db.VarChar(8) // PPC 35 (Short Text)
+  PPC36            String?      @db.VarChar(8) // PPC 36 (Short Text)
+  PMT1             Int?         @db.SmallInt // PMT 1 (Number)
+  PMT2             Int?         @db.SmallInt // PMT 2 (Number)
+  PMT3             Int?         @db.SmallInt // PMT 3 (Number)
+  PMT4             Int?         @db.SmallInt // PMT 4 (Number)
+  PMT5             Int?         @db.SmallInt // PMT 5 (Number)
+  PMT6             Int?         @db.SmallInt // PMT 6 (Number)
+  PMT7             Int?         @db.SmallInt // PMT 7 (Number)
+  PMT8             Int?         @db.SmallInt // PMT 8 (Number)
+  PMT9             Int?         @db.SmallInt // PMT 9 (Number)
+  PMT10            Int?         @db.SmallInt // PMT 10 (Number)
+  PMT11            Int?         @db.SmallInt // PMT 11 (Number)
+  PMT12            Int?         @db.SmallInt // PMT 12 (Number)
+  PMT13            Int?         @db.SmallInt // PMT 13 (Number)
+  PMT14            Int?         @db.SmallInt // PMT 14 (Number)
+  PMT15            Int?         @db.SmallInt // PMT 15 (Number)
+  PMT16            Int?         @db.SmallInt // PMT 16 (Number)
+  PMT17            Int?         @db.SmallInt // PMT 17 (Number)
+  PMT18            Int?         @db.SmallInt // PMT 18 (Number)
+  PMT19            Int?         @db.SmallInt // PMT 19 (Number)
+  PMT20            Int?         @db.SmallInt // PMT 20 (Number)
+  PMT21            Int?         @db.SmallInt // PMT 21 (Number)
+  PMT22            Int?         @db.SmallInt // PMT 22 (Number)
+  PMT23            Int?         @db.SmallInt // PMT 23 (Number)
+  PMT24            Int?         @db.SmallInt // PMT 24 (Number)
+  PMT25            Int?         @db.SmallInt // PMT 25 (Number)
+  PMT26            Int?         @db.SmallInt // PMT 26 (Number)
+  PMT27            Int?         @db.SmallInt // PMT 27 (Number)
+  PMT28            Int?         @db.SmallInt // PMT 28 (Number)
+  PMT29            Int?         @db.SmallInt // PMT 29 (Number)
+  PMT30            Int?         @db.SmallInt // PMT 30 (Number)
+  PMT31            Int?         @db.SmallInt // PMT 31 (Number)
+  PMT32            Int?         @db.SmallInt // PMT 32 (Number)
+  PMT33            Int?         @db.SmallInt // PMT 33 (Number)
+  PMT34            Int?         @db.SmallInt // PMT 34 (Number)
+  PMT35            Int?         @db.SmallInt // PMT 35 (Number)
+  PMT36            Int?         @db.SmallInt // PMT 36 (Number)
+  PPT1             Int?         @db.SmallInt
+  PPT2             Int?         @db.SmallInt
+  PPT3             Int?         @db.SmallInt
+  PPT4             Int?         @db.SmallInt
+  PPT5             Int?         @db.SmallInt
+  PPT6             Int?         @db.SmallInt
+  PPT7             Int?         @db.SmallInt
+  PPT8             Int?         @db.SmallInt
+  PPT9             Int?         @db.SmallInt
+  PPT10            Int?         @db.SmallInt
+  PPT11            Int?         @db.SmallInt
+  PPT12            Int?         @db.SmallInt
+  PPT13            Int?         @db.SmallInt
+  PPT14            Int?         @db.SmallInt
+  PPT15            Int?         @db.SmallInt
+  PPT16            Int?         @db.SmallInt
+  PPT17            Int?         @db.SmallInt
+  PPT18            Int?         @db.SmallInt
+  PPT19            Int?         @db.SmallInt
+  PPT20            Int?         @db.SmallInt
+  PPT21            Int?         @db.SmallInt
+  PPT22            Int?         @db.SmallInt
+  PPT23            Int?         @db.SmallInt
+  PPT24            Int?         @db.SmallInt
+  PPT25            Int?         @db.SmallInt
+  PPT26            Int?         @db.SmallInt
+  PPT27            Int?         @db.SmallInt
+  PPT28            Int?         @db.SmallInt
+  PPT29            Int?         @db.SmallInt
+  PPT30            Int?         @db.SmallInt
+  PPT31            Int?         @db.SmallInt
+  PPT32            Int?         @db.SmallInt
+  PPT33            Int?         @db.SmallInt
+  PPT34            Int?         @db.SmallInt
+  PPT35            Int?         @db.SmallInt
+  PPT36            Int?         @db.SmallInt
+  PPV1             String?      @db.VarChar(100)
+  PPV2             String?      @db.VarChar(100)
+  PPV3             String?      @db.VarChar(100)
+  PPV4             String?      @db.VarChar(100)
+  PPV5             String?      @db.VarChar(100)
+  PPV6             String?      @db.VarChar(100)
+  PPV7             String?      @db.VarChar(100)
+  PPV8             String?      @db.VarChar(100)
+  PPV9             String?      @db.VarChar(100)
+  PPV10            String?      @db.VarChar(100)
+  PPV11            String?      @db.VarChar(100)
+  PPV12            String?      @db.VarChar(100)
+  PPV13            String?      @db.VarChar(100)
+  PPV14            String?      @db.VarChar(100)
+  PPV15            String?      @db.VarChar(100)
+  PPV16            String?      @db.VarChar(100)
+  PPV17            String?      @db.VarChar(100)
+  PPV18            String?      @db.VarChar(100)
+  PPV19            String?      @db.VarChar(100)
+  PPV20            String?      @db.VarChar(100)
+  PPV21            String?      @db.VarChar(100)
+  PPV22            String?      @db.VarChar(100)
+  PPV23            String?      @db.VarChar(100)
+  PPV24            String?      @db.VarChar(100)
+  PPV25            String?      @db.VarChar(100)
+  PPV26            String?      @db.VarChar(100)
+  PPV27            String?      @db.VarChar(100)
+  PPV28            String?      @db.VarChar(100)
+  PPV29            String?      @db.VarChar(100)
+  PPV30            String?      @db.VarChar(100)
+  PPV31            String?      @db.VarChar(100)
+  PPV32            String?      @db.VarChar(100)
+  PPV33            String?      @db.VarChar(100)
+  PPV34            String?      @db.VarChar(100)
+  PPV35            String?      @db.VarChar(100)
+  PPV36            String?      @db.VarChar(100)
+  PTP1             String?      @db.VarChar(8)
+  PTP2             String?      @db.VarChar(8)
+  PTP3             String?      @db.VarChar(8)
+  PTP4             String?      @db.VarChar(8)
+  PTP5             String?      @db.VarChar(8)
+  PTP6             String?      @db.VarChar(8)
+  PTP7             String?      @db.VarChar(8)
+  PTP8             String?      @db.VarChar(8)
+  PTP9             String?      @db.VarChar(8)
+  PTP10            String?      @db.VarChar(8)
+  PTP11            String?      @db.VarChar(8)
+  PTP12            String?      @db.VarChar(8)
+  PTP13            String?      @db.VarChar(8)
+  PTP14            String?      @db.VarChar(8)
+  PTP15            String?      @db.VarChar(8)
+  PTP16            String?      @db.VarChar(8)
+  PTP17            String?      @db.VarChar(8)
+  PTP18            String?      @db.VarChar(8)
+  PTP19            String?      @db.VarChar(8)
+  PTP20            String?      @db.VarChar(8)
+  PTP21            String?      @db.VarChar(8)
+  PTP22            String?      @db.VarChar(8)
+  PTP23            String?      @db.VarChar(8)
+  PTP24            String?      @db.VarChar(8)
+  PTP25            String?      @db.VarChar(8)
+  PTP26            String?      @db.VarChar(8)
+  PTP27            String?      @db.VarChar(8)
+  PTP28            String?      @db.VarChar(8)
+  PTP29            String?      @db.VarChar(8)
+  PTP30            String?      @db.VarChar(8)
+  PTP31            String?      @db.VarChar(8)
+  PTP32            String?      @db.VarChar(8)
+  PTP33            String?      @db.VarChar(8)
+  PTP34            String?      @db.VarChar(8)
+  PTP35            String?      @db.VarChar(8)
+  PTP36            String?      @db.VarChar(8)
+  Rs_Input         Boolean?     @db.Bit(1)
+  Into_I           Boolean?     @db.Bit(1)
+  Calc_Chk         Boolean?     @db.Bit(1)
   // ความสัมพันธ์กับ TD_Cost (One-to-Many)
   costs            TD_Cost[]    @relation("PlanToCost")
   // ความสัมพันธ์ one-to-one กับ TD_Schedule
@@ -342,942 +463,728 @@ model TD_Plan {
   @@id([Order_No, Parts_No]) // กำหนดให้ Order_No และ Parts_No เป็นคีย์หลักร่วมกัน
 }
 
+model TD_Procure {
+  Order_No           String    @db.VarChar(20)
+  Procure_No         String?   @db.VarChar(20)
+  OdPc_No            String?   @db.VarChar(40)
+  OdPcLn_No          String    @id @db.VarChar(46)
+  Vendor_CAT         String?   @db.VarChar(2)
+  Vendor_CD          String?   @db.VarChar(20)
+  Pc_Name            String?   @db.VarChar(50)
+  Pc_Material        String?   @db.VarChar(50)
+  Pc_Mate_Docu       Boolean?  @db.Bit(1)
+  Temp_Price         Boolean?  @db.Bit(1)
+  Price_CD           String?   @db.VarChar(2)
+  Unit_Price         Float?    @db.Double
+  Pc_Qty             Float?    @db.Double
+  Pc_Unit_CD         String?   @db.VarChar(10)
+  Pc_Person_CD       String?   @db.VarChar(10)
+  Pc_Date            DateTime? @db.DateTime
+  Pc_Req_Delivery    DateTime? @db.DateTime
+  Pc_Req_Delivery_CD String?   @db.VarChar(2)
+  Pc_Ans_Delivery    DateTime? @db.DateTime
+  Pc_Ans_Delivery_CD String?   @db.VarChar(2)
+  Pc_Delivery_Judge  String?   @db.VarChar(2)
+  Pc_Progress_CD     String?   @db.VarChar(2)
+  Pc_Send_Date       DateTime? @db.DateTime
+  Pc_Arrival_Date    DateTime? @db.DateTime
+  Pc_Arrival_Qty     Float?    @db.Float
+  Pc_Cancel_Date     DateTime? @db.DateTime
+  Procure_Docu       String?   @db.MediumText
+  Pc_Remark          String?   @db.VarChar(50)
+  Print              Boolean?  @db.Bit(1)
+  Pc_Reg_Date        DateTime? @db.DateTime
+  Pc_Upd_Date        DateTime? @db.DateTime
+  Pc_NAV_Reg_Date    DateTime? @db.DateTime
+  Pc_NAV_Upd_Date    DateTime? @db.DateTime
+  Pc_Line_No         Int?      @db.Int
+
+  // ความสัมพันธ์กับ TD_Order
+  order TD_Order @relation("OrderToProcure", fields: [Order_No], references: [Order_No])
+}
+
 model TD_Result {
-  Order_No         String // หมายเลขคำสั่ง (Short Text)
-  Parts_No         String // หมายเลขชิ้นส่วน (Short Text)
-  OdPt_No          String? // หมายเลข OdPt (Short Text)
-  Rs_Reg_Date      DateTime? // วันที่ลงทะเบียน (Date/Time)
-  Rs_Reg_Person_CD String? // รหัสบุคคลที่ลงทะเบียน (Short Text)
-  Rs_Upd_Date      DateTime? // วันที่อัปเดต (Date/Time)
-  Rs_Upd_Person_CD String? // รหัสบุคคลที่อัปเดต (Short Text)
+  Order_No         String    @db.VarChar(20)
+  Parts_No         String    @db.VarChar(2)
+  OdPt_No          String    @db.VarChar(22)
+  Rs_Reg_Date      DateTime? @db.DateTime()
+  Rs_Reg_Person_CD String?   @db.VarChar(10)
+  Rs_Upd_Date      DateTime? @db.DateTime()
+  Rs_Upd_Person_CD String?   @db.VarChar(10)
+  RPC1             String?   @db.VarChar(8)
+  RPC2             String?   @db.VarChar(8)
+  RPC3             String?   @db.VarChar(8)
+  RPC4             String?   @db.VarChar(8)
+  RPC5             String?   @db.VarChar(8)
+  RPC6             String?   @db.VarChar(8)
+  RPC7             String?   @db.VarChar(8)
+  RPC8             String?   @db.VarChar(8)
+  RPC9             String?   @db.VarChar(8)
+  RPC10            String?   @db.VarChar(8)
+  RPC11            String?   @db.VarChar(8)
+  RPC12            String?   @db.VarChar(8)
+  RPC13            String?   @db.VarChar(8)
+  RPC14            String?   @db.VarChar(8)
+  RPC15            String?   @db.VarChar(8)
+  RPC16            String?   @db.VarChar(8)
+  RPC17            String?   @db.VarChar(8)
+  RPC18            String?   @db.VarChar(8)
+  RPC19            String?   @db.VarChar(8)
+  RPC20            String?   @db.VarChar(8)
+  RPC21            String?   @db.VarChar(8)
+  RPC22            String?   @db.VarChar(8)
+  RPC23            String?   @db.VarChar(8)
+  RPC24            String?   @db.VarChar(8)
+  RPC25            String?   @db.VarChar(8)
+  RPC26            String?   @db.VarChar(8)
+  RPC27            String    @db.VarChar(8)
+  RPC28            String?   @db.VarChar(8)
+  RPC29            String?   @db.VarChar(8)
+  RPC30            String?   @db.VarChar(8)
+  RPC31            String?   @db.VarChar(8)
+  RPC32            String?   @db.VarChar(8)
+  RPC33            String?   @db.VarChar(8)
+  RPC34            String?   @db.VarChar(8)
+  RPC35            String?   @db.VarChar(8)
+  RPC36            String?   @db.VarChar(8)
+  RPD1             DateTime? @db.DateTime()
+  RPD2             DateTime? @db.DateTime()
+  RPD3             DateTime? @db.DateTime()
+  RPD4             DateTime? @db.DateTime()
+  RPD5             DateTime? @db.DateTime()
+  RPD6             DateTime? @db.DateTime()
+  RPD7             DateTime? @db.DateTime()
+  RPD8             DateTime? @db.DateTime()
+  RPD9             DateTime? @db.DateTime()
+  RPD10            DateTime? @db.DateTime()
+  RPD11            DateTime? @db.DateTime()
+  RPD12            DateTime? @db.DateTime()
+  RPD13            DateTime? @db.DateTime()
+  RPD14            DateTime? @db.DateTime()
+  RPD15            DateTime? @db.DateTime()
+  RPD16            DateTime? @db.DateTime()
+  RPD17            DateTime? @db.DateTime()
+  RPD18            DateTime? @db.DateTime()
+  RPD19            DateTime? @db.DateTime()
+  RPD20            DateTime? @db.DateTime()
+  RPD21            DateTime? @db.DateTime()
+  RPD22            DateTime? @db.DateTime()
+  RPD23            DateTime? @db.DateTime()
+  RPD24            DateTime? @db.DateTime()
+  RPD25            DateTime? @db.DateTime()
+  RPD26            DateTime? @db.DateTime()
+  RPD27            DateTime? @db.DateTime()
+  RPD28            DateTime? @db.DateTime()
+  RPD29            DateTime? @db.DateTime()
+  RPD30            DateTime? @db.DateTime()
+  RPD31            DateTime? @db.DateTime()
+  RPD32            DateTime? @db.DateTime()
+  RPD33            DateTime? @db.DateTime()
+  RPD34            DateTime? @db.DateTime()
+  RPD35            DateTime? @db.DateTime()
+  RPD36            DateTime? @db.DateTime()
 
-  RPC1  String? // RPC 1 (Short Text)
-  RPC2  String? // RPC 2 (Short Text)
-  RPC3  String? // RPC 3 (Short Text)
-  RPC4  String? // RPC 4 (Short Text)
-  RPC5  String? // RPC 5 (Short Text)
-  RPC6  String? // RPC 6 (Short Text)
-  RPC7  String? // RPC 7 (Short Text)
-  RPC8  String? // RPC 8 (Short Text)
-  RPC9  String? // RPC 9 (Short Text)
-  RPC10 String? // RPC 10 (Short Text)
-  RPC11 String? // RPC 11 (Short Text)
-  RPC12 String? // RPC 12 (Short Text)
-  RPC13 String? // RPC 13 (Short Text)
-  RPC14 String? // RPC 14 (Short Text)
-  RPC15 String? // RPC 15 (Short Text)
-  RPC16 String? // RPC 16 (Short Text)
-  RPC17 String? // RPC 17 (Short Text)
-  RPC18 String? // RPC 18 (Short Text)
-  RPC19 String? // RPC 19 (Short Text)
-  RPC20 String? // RPC 20 (Short Text)
-  RPC21 String? // RPC 21 (Short Text)
-  RPC22 String? // RPC 22 (Short Text)
-  RPC23 String? // RPC 23 (Short Text)
-  RPC24 String? // RPC 24 (Short Text)
-  RPC25 String? // RPC 25 (Short Text)
-  RPC26 String? // RPC 26 (Short Text)
-  RPC27 String? // RPC 27 (Short Text)
-  RPC28 String? // RPC 28 (Short Text)
-  RPC29 String? // RPC 29 (Short Text)
-  RPC30 String? // RPC 30 (Short Text)
-  RPC31 String? // RPC 31 (Short Text)
-  RPC32 String? // RPC 32 (Short Text)
-  RPC33 String? // RPC 33 (Short Text)
-  RPC34 String? // RPC 34 (Short Text)
-  RPC35 String? // RPC 35 (Short Text)
-  RPC36 String? // RPC 36 (Short Text)
+  RMT1  Int? @db.SmallInt
+  RMT2  Int? @db.SmallInt
+  RMT3  Int? @db.SmallInt
+  RMT4  Int? @db.SmallInt
+  RMT5  Int? @db.SmallInt
+  RMT6  Int? @db.SmallInt
+  RMT7  Int? @db.SmallInt
+  RMT8  Int? @db.SmallInt
+  RMT9  Int? @db.SmallInt
+  RMT10 Int? @db.SmallInt
+  RMT11 Int? @db.SmallInt
+  RMT12 Int? @db.SmallInt
+  RMT13 Int? @db.SmallInt
+  RMT14 Int? @db.SmallInt
+  RMT15 Int? @db.SmallInt
+  RMT16 Int? @db.SmallInt
+  RMT17 Int? @db.SmallInt
+  RMT18 Int? @db.SmallInt
+  RMT19 Int? @db.SmallInt
+  RMT20 Int? @db.SmallInt
+  RMT21 Int? @db.SmallInt
+  RMT22 Int? @db.SmallInt
+  RMT23 Int? @db.SmallInt
+  RMT24 Int? @db.SmallInt
+  RMT25 Int? @db.SmallInt
+  RMT26 Int? @db.SmallInt
+  RMT27 Int? @db.SmallInt
+  RMT28 Int? @db.SmallInt
+  RMT29 Int? @db.SmallInt
+  RMT30 Int? @db.SmallInt
+  RMT31 Int? @db.SmallInt
+  RMT32 Int? @db.SmallInt
+  RMT33 Int? @db.SmallInt
+  RMT34 Int? @db.SmallInt
+  RMT35 Int? @db.SmallInt
+  RMT36 Int? @db.SmallInt
 
-  RPD1  DateTime? // วันที่ RPD 1 (Date/Time)
-  RPD2  DateTime? // วันที่ RPD 2 (Date/Time)
-  RPD3  DateTime? // วันที่ RPD 3 (Date/Time)
-  RPD4  DateTime? // วันที่ RPD 4 (Date/Time)
-  RPD5  DateTime? // วันที่ RPD 5 (Date/Time)
-  RPD6  DateTime? // วันที่ RPD 6 (Date/Time)
-  RPD7  DateTime? // วันที่ RPD 7 (Date/Time)
-  RPD8  DateTime? // วันที่ RPD 8 (Date/Time)
-  RPD9  DateTime? // วันที่ RPD 9 (Date/Time)
-  RPD10 DateTime? // วันที่ RPD 10 (Date/Time)
-  RPD11 DateTime? // วันที่ RPD 11 (Date/Time)
-  RPD12 DateTime? // วันที่ RPD 12 (Date/Time)
-  RPD13 DateTime? // วันที่ RPD 13 (Date/Time)
-  RPD14 DateTime? // วันที่ RPD 14 (Date/Time)
-  RPD15 DateTime? // วันที่ RPD 15 (Date/Time)
-  RPD16 DateTime? // วันที่ RPD 16 (Date/Time)
-  RPD17 DateTime? // วันที่ RPD 17 (Date/Time)
-  RPD18 DateTime? // วันที่ RPD 18 (Date/Time)
-  RPD19 DateTime? // วันที่ RPD 19 (Date/Time)
-  RPD20 DateTime? // วันที่ RPD 20 (Date/Time)
-  RPD21 DateTime? // วันที่ RPD 21 (Date/Time)
-  RPD22 DateTime? // วันที่ RPD 22 (Date/Time)
-  RPD23 DateTime? // วันที่ RPD 23 (Date/Time)
-  RPD24 DateTime? // วันที่ RPD 24 (Date/Time)
-  RPD25 DateTime? // วันที่ RPD 25 (Date/Time)
-  RPD26 DateTime? // วันที่ RPD 26 (Date/Time)
-  RPD27 DateTime? // วันที่ RPD 27 (Date/Time)
-  RPD28 DateTime? // วันที่ RPD 28 (Date/Time)
-  RPD29 DateTime? // วันที่ RPD 29 (Date/Time)
-  RPD30 DateTime? // วันที่ RPD 30 (Date/Time)
-  RPD31 DateTime? // วันที่ RPD 31 (Date/Time)
-  RPD32 DateTime? // วันที่ RPD 32 (Date/Time)
-  RPD33 DateTime? // วันที่ RPD 33 (Date/Time)
-  RPD34 DateTime? // วันที่ RPD 34 (Date/Time)
-  RPD35 DateTime? // วันที่ RPD 35 (Date/Time)
-  RPD36 DateTime? // วันที่ RPD 36 (Date/Time)
+  RPT1  Int? @db.SmallInt
+  RPT2  Int? @db.SmallInt
+  RPT3  Int? @db.SmallInt
+  RPT4  Int? @db.SmallInt
+  RPT5  Int? @db.SmallInt
+  RPT6  Int? @db.SmallInt
+  RPT7  Int? @db.SmallInt
+  RPT8  Int? @db.SmallInt
+  RPT9  Int? @db.SmallInt
+  RPT10 Int? @db.SmallInt
+  RPT11 Int? @db.SmallInt
+  RPT12 Int? @db.SmallInt
+  RPT13 Int? @db.SmallInt
+  RPT14 Int? @db.SmallInt
+  RPT15 Int? @db.SmallInt
+  RPT16 Int? @db.SmallInt
+  RPT17 Int? @db.SmallInt
+  RPT18 Int? @db.SmallInt
+  RPT19 Int? @db.SmallInt
+  RPT20 Int? @db.SmallInt
+  RPT21 Int? @db.SmallInt
+  RPT22 Int? @db.SmallInt
+  RPT23 Int? @db.SmallInt
+  RPT24 Int? @db.SmallInt
+  RPT25 Int? @db.SmallInt
+  RPT26 Int? @db.SmallInt
+  RPT27 Int? @db.SmallInt
+  RPT28 Int? @db.SmallInt
+  RPT29 Int? @db.SmallInt
+  RPT30 Int? @db.SmallInt
+  RPT31 Int? @db.SmallInt
+  RPT32 Int? @db.SmallInt
+  RPT33 Int? @db.SmallInt
+  RPT34 Int? @db.SmallInt
+  RPT35 Int? @db.SmallInt
+  RPT36 Int? @db.SmallInt
 
-  RMT1  Float? // RMT 1 (Number)
-  RMT2  Float? // RMT 2 (Number)
-  RMT3  Float? // RMT 3 (Number)
-  RMT4  Float? // RMT 4 (Number)
-  RMT5  Float? // RMT 5 (Number)
-  RMT6  Float? // RMT 6 (Number)
-  RMT7  Float? // RMT 7 (Number)
-  RMT8  Float? // RMT 8 (Number)
-  RMT9  Float? // RMT 9 (Number)
-  RMT10 Float? // RMT 10 (Number)
-  RMT11 Float? // RMT 11 (Number)
-  RMT12 Float? // RMT 12 (Number)
-  RMT13 Float? // RMT 13 (Number)
-  RMT14 Float? // RMT 14 (Number)
-  RMT15 Float? // RMT 15 (Number)
-  RMT16 Float? // RMT 16 (Number)
-  RMT17 Float? // RMT 17 (Number)
-  RMT18 Float? // RMT 18 (Number)
-  RMT19 Float? // RMT 19 (Number)
-  RMT20 Float? // RMT 20 (Number)
-  RMT21 Float? // RMT 21 (Number)
-  RMT22 Float? // RMT 22 (Number)
-  RMT23 Float? // RMT 23 (Number)
-  RMT24 Float? // RMT 24 (Number)
-  RMT25 Float? // RMT 25 (Number)
-  RMT26 Float? // RMT 26 (Number)
-  RMT27 Float? // RMT 27 (Number)
-  RMT28 Float? // RMT 28 (Number)
-  RMT29 Float? // RMT 29 (Number)
-  RMT30 Float? // RMT 30 (Number)
-  RMT31 Float? // RMT 31 (Number)
-  RMT32 Float? // RMT 32 (Number)
-  RMT33 Float? // RMT 33 (Number)
-  RMT34 Float? // RMT 34 (Number)
-  RMT35 Float? // RMT 35 (Number)
-  RMT36 Float? // RMT 36 (Number)
-
-  RPT1  Float? // RPT 1 (Number)
-  RPT2  Float? // RPT 2 (Number)
-  RPT3  Float? // RPT 3 (Number)
-  RPT4  Float? // RPT 4 (Number)
-  RPT5  Float? // RPT 5 (Number)
-  RPT6  Float? // RPT 6 (Number)
-  RPT7  Float? // RPT 7 (Number)
-  RPT8  Float? // RPT 8 (Number)
-  RPT9  Float? // RPT 9 (Number)
-  RPT10 Float? // RPT 10 (Number)
-  RPT11 Float? // RPT 11 (Number)
-  RPT12 Float? // RPT 12 (Number)
-  RPT13 Float? // RPT 13 (Number)
-  RPT14 Float? // RPT 14 (Number)
-  RPT15 Float? // RPT 15 (Number)
-  RPT16 Float? // RPT 16 (Number)
-  RPT17 Float? // RPT 17 (Number)
-  RPT18 Float? // RPT 18 (Number)
-  RPT19 Float? // RPT 19 (Number)
-  RPT20 Float? // RPT 20 (Number)
-  RPT21 Float? // RPT 21 (Number)
-  RPT22 Float? // RPT 22 (Number)
-  RPT23 Float? // RPT 23 (Number)
-  RPT24 Float? // RPT 24 (Number)
-  RPT25 Float? // RPT 25 (Number)
-  RPT26 Float? // RPT 26 (Number)
-  RPT27 Float? // RPT 27 (Number)
-  RPT28 Float? // RPT 28 (Number)
-  RPT29 Float? // RPT 29 (Number)
-  RPT30 Float? // RPT 30 (Number)
-  RPT31 Float? // RPT 31 (Number)
-  RPT32 Float? // RPT 32 (Number)
-  RPT33 Float? // RPT 33 (Number)
-  RPT34 Float? // RPT 34 (Number)
-  RPT35 Float? // RPT 35 (Number)
-  RPT36 Float? // RPT 36 (Number)
-
-  RPN1  String? // RPN 1 (Short Text)
-  RPN2  String? // RPN 2 (Short Text)
-  RPN3  String? // RPN 3 (Short Text)
-  RPN4  String? // RPN 4 (Short Text)
-  RPN5  String? // RPN 5 (Short Text)
-  RPN6  String? // RPN 6 (Short Text)
-  RPN7  String? // RPN 7 (Short Text)
-  RPN8  String? // RPN 8 (Short Text)
-  RPN9  String? // RPN 9 (Short Text)
-  RPN10 String? // RPN 10 (Short Text)
-  RPN11 String? // RPN 11 (Short Text)
-  RPN12 String? // RPN 12 (Short Text)
-  RPN13 String? // RPN 13 (Short Text)
-  RPN14 String? // RPN 14 (Short Text)
-  RPN15 String? // RPN 15 (Short Text)
-  RPN16 String? // RPN 16 (Short Text)
-  RPN17 String? // RPN 17 (Short Text)
-  RPN18 String? // RPN 18 (Short Text)
-  RPN19 String? // RPN 19 (Short Text)
-  RPN20 String? // RPN 20 (Short Text)
-  RPN21 String? // RPN 21 (Short Text)
-  RPN22 String? // RPN 22 (Short Text)
-  RPN23 String? // RPN 23 (Short Text)
-  RPN24 String? // RPN 24 (Short Text)
-  RPN25 String? // RPN 25 (Short Text)
-  RPN26 String? // RPN 26 (Short Text)
-  RPN27 String? // RPN 27 (Short Text)
-  RPN28 String? // RPN 28 (Short Text)
-  RPN29 String? // RPN 29 (Short Text)
-  RPN30 String? // RPN 30 (Short Text)
-  RPN31 String? // RPN 31 (Short Text)
-  RPN32 String? // RPN 32 (Short Text)
-  RPN33 String? // RPN 33 (Short Text)
-  RPN34 String? // RPN 34 (Short Text)
-  RPN35 String? // RPN 35 (Short Text)
-  RPN36 String? // RPN 36 (Short Text)
-
-  Rs_Remark String? // หมายเหตุ (Long Text)
+  RPN1      Int?     @db.SmallInt
+  RPN2      Int?     @db.SmallInt
+  RPN3      Int?     @db.SmallInt
+  RPN4      Int?     @db.SmallInt
+  RPN5      Int?     @db.SmallInt
+  RPN6      Int?     @db.SmallInt
+  RPN7      Int?     @db.SmallInt
+  RPN8      Int?     @db.SmallInt
+  RPN9      Int?     @db.SmallInt
+  RPN10     Int?     @db.SmallInt
+  RPN11     Int?     @db.SmallInt
+  RPN12     Int?     @db.SmallInt
+  RPN13     Int?     @db.SmallInt
+  RPN14     Int?     @db.SmallInt
+  RPN15     Int?     @db.SmallInt
+  RPN16     Int?     @db.SmallInt
+  RPN17     Int?     @db.SmallInt
+  RPN18     Int?     @db.SmallInt
+  RPN19     Int?     @db.SmallInt
+  RPN20     Int?     @db.SmallInt
+  RPN21     Int?     @db.SmallInt
+  RPN22     Int?     @db.SmallInt
+  RPN23     Int?     @db.SmallInt
+  RPN24     Int?     @db.SmallInt
+  RPN25     Int?     @db.SmallInt
+  RPN26     Int?     @db.SmallInt
+  RPN27     Int?     @db.SmallInt
+  RPN28     Int?     @db.SmallInt
+  RPN29     Int?     @db.SmallInt
+  RPN30     Int?     @db.SmallInt
+  RPN31     Int?     @db.SmallInt
+  RPN32     Int?     @db.SmallInt
+  RPN33     Int?     @db.SmallInt
+  RPN34     Int?     @db.SmallInt
+  RPN35     Int?     @db.SmallInt
+  RPN36     Int?     @db.SmallInt
+  Rs_Remark String?  @db.VarChar(50)
   TD_Plan   TD_Plan? @relation
 
   @@id([Order_No, Parts_No]) // กำหนดให้ Order_No และ Parts_No เป็นคีย์หลักร่วมกัน
 }
 
-model TD_Cost {
-  Order_No              String // หมายเลขคำสั่ง (Short Text)
-  Parts_No              String // หมายเลขชิ้นส่วน (Short Text)
-  Cost_No               String // หมายเลขค่าใช้จ่าย (Short Text)
-  Process_No            String? // หมายเลขกระบวนการ (Short Text)
-  OdPt_No               String? // หมายเลข OdPt (Short Text)
-  OdPtCs_No             String? // หมายเลข OdPtCs (Short Text)
-  OdPtPr_No             String? // หมายเลข OdPtPr (Short Text)
-  CMC                   String? // CMC (Short Text)
-  CMT                   String? // CMT (Short Text)
-  CPC                   String? // CPC (Short Text)
-  CPT                   String? // CPT (Short Text)
-  CPD                   String? // CPD (Short Text)
-  CPN                   String? // CPN (Short Text)
-  Cs_Progress_CD        String? // รหัสความคืบหน้า (Short Text)
-  Cs_Complete_Date      DateTime? // วันที่ทำเสร็จสมบูรณ์ (Date/Time)
-  Cs_Complete_Qty       Float? // จำนวนที่ทำเสร็จ (Number)
-  Cs_Label_CSV          Boolean? // CSV (Yes/No)
-  Cs_All_Complete       Boolean? // เสร็จทั้งหมด (Yes/No)
-  Cs_Order_All_Complete Boolean? // คำสั่งทั้งหมดเสร็จสิ้น (Yes/No)
-  Cs_Parts_Complete     Boolean? // ชิ้นส่วนเสร็จสิ้น (Yes/No)
-  Cs_Final_Complete     Boolean? // เสร็จสมบูรณ์ทั้งหมด (Yes/No)
-  Cs_Modify_Date        DateTime? // วันที่แก้ไข (Date/Time)
-  Cs_Remark             String? // ข้อสังเกต (Short Text)
-  Cs_Register_Date      DateTime? // วันที่ลงทะเบียน (Date/Time)
-  Cs_Reg_Person_CD      String? // รหัสผู้ลงทะเบียน (Short Text)
-  Cs_Upd_Person_CD      String? // รหัสผู้ปรับปรุง (Short Text)
-  Sequence_No           Float? // ลำดับ (Number)
-  // เชื่อมความสัมพันธ์กับ TD_Plan (Many-to-One)
-  plan                  TD_Plan      @relation(fields: [Order_No, Parts_No], references: [Order_No, Parts_No], name: "PlanToCost")
-  TD_Order              TD_Order?    @relation(fields: [Order_No], references: [Order_No]) // ความสัมพันธ์กับ TD_Order
-  TM_Resource           TM_Resource? @relation(fields: [CMC], references: [Resource_CD])
-
-  @@id([Order_No, Parts_No, Cost_No]) // กำหนดคีย์หลักร่วมกัน
-}
-
 model TD_Schedule {
-  Order_No         String // หมายเลขคำสั่ง
-  Parts_No         String // หมายเลขชิ้นส่วน (Short Text)
-  Schedule_No      String? // หมายเลขกำหนดการ
-  Sc_Choice        String? // ตัวเลือกกำหนดการ
-  Schedule_CD      String? // รหัสกำหนดการ
-  Sc_Reg_Date      DateTime? // วันที่ลงทะเบียน
-  Sc_Reg_Person_CD String? // รหัสบุคคลที่ลงทะเบียน
-  Sc_Upd_Date      DateTime? // วันที่อัปเดต
-  Sc_Upd_Person_CD String? // รหัสบุคคลที่อัปเดต
+  Order_No         String    @db.VarChar(20)
+  Parts_No         String    @db.VarChar(2)
+  OdPt_No          String    @db.VarChar(22)
+  Schedule_No      String?   @db.VarChar(2)
+  Sc_Choice        String?   @db.VarChar(3)
+  Schedule_CD      String?   @db.VarChar(1)
+  Sc_Reg_Date      DateTime? @db.DateTime
+  Sc_Reg_Person_CD String?   @db.VarChar(10)
+  Sc_Upd_Date      DateTime? @db.DateTime
+  Sc_Upd_Person_CD String?   @db.VarChar(10)
 
-  // ฟิลด์ PPD
-  PPD1  DateTime?
-  PPD2  DateTime?
-  PPD3  DateTime?
-  PPD4  DateTime?
-  PPD5  DateTime?
-  PPD6  DateTime?
-  PPD7  DateTime?
-  PPD8  DateTime?
-  PPD9  DateTime?
-  PPD10 DateTime?
-  PPD11 DateTime?
-  PPD12 DateTime?
-  PPD13 DateTime?
-  PPD14 DateTime?
-  PPD15 DateTime?
-  PPD16 DateTime?
-  PPD17 DateTime?
-  PPD18 DateTime?
-  PPD19 DateTime?
-  PPD20 DateTime?
-  PPD21 DateTime?
-  PPD22 DateTime?
-  PPD23 DateTime?
-  PPD24 DateTime?
-  PPD25 DateTime?
-  PPD26 DateTime?
-  PPD27 DateTime?
-  PPD28 DateTime?
-  PPD29 DateTime?
-  PPD30 DateTime?
-  PPD31 DateTime?
-  PPD32 DateTime?
-  PPD33 DateTime?
-  PPD34 DateTime?
-  PPD35 DateTime?
-  PPD36 DateTime?
+  PPD1  DateTime? @db.DateTime
+  PPD2  DateTime? @db.DateTime
+  PPD3  DateTime? @db.DateTime
+  PPD4  DateTime? @db.DateTime
+  PPD5  DateTime? @db.DateTime
+  PPD6  DateTime? @db.DateTime
+  PPD7  DateTime? @db.DateTime
+  PPD8  DateTime? @db.DateTime
+  PPD9  DateTime? @db.DateTime
+  PPD10 DateTime? @db.DateTime
+  PPD11 DateTime? @db.DateTime
+  PPD12 DateTime? @db.DateTime
+  PPD13 DateTime? @db.DateTime
+  PPD14 DateTime? @db.DateTime
+  PPD15 DateTime? @db.DateTime
+  PPD16 DateTime? @db.DateTime
+  PPD17 DateTime? @db.DateTime
+  PPD18 DateTime? @db.DateTime
+  PPD19 DateTime? @db.DateTime
+  PPD20 DateTime? @db.DateTime
+  PPD21 DateTime? @db.DateTime
+  PPD22 DateTime? @db.DateTime
+  PPD23 DateTime? @db.DateTime
+  PPD24 DateTime? @db.DateTime
+  PPD25 DateTime? @db.DateTime
+  PPD26 DateTime? @db.DateTime
+  PPD27 DateTime? @db.DateTime
+  PPD28 DateTime? @db.DateTime
+  PPD29 DateTime? @db.DateTime
+  PPD30 DateTime? @db.DateTime
+  PPD31 DateTime? @db.DateTime
+  PPD32 DateTime? @db.DateTime
+  PPD33 DateTime? @db.DateTime
+  PPD34 DateTime? @db.DateTime
+  PPD35 DateTime? @db.DateTime
+  PPD36 DateTime? @db.DateTime
 
-  // ฟิลด์ PML
-  PML1  Float?
-  PML2  Float?
-  PML3  Float?
-  PML4  Float?
-  PML5  Float?
-  PML6  Float?
-  PML7  Float?
-  PML8  Float?
-  PML9  Float?
-  PML10 Float?
-  PML11 Float?
-  PML12 Float?
-  PML13 Float?
-  PML14 Float?
-  PML15 Float?
-  PML16 Float?
-  PML17 Float?
-  PML18 Float?
-  PML19 Float?
-  PML20 Float?
-  PML21 Float?
-  PML22 Float?
-  PML23 Float?
-  PML24 Float?
-  PML25 Float?
-  PML26 Float?
-  PML27 Float?
-  PML28 Float?
-  PML29 Float?
-  PML30 Float?
-  PML31 Float?
-  PML32 Float?
-  PML33 Float?
-  PML34 Float?
-  PML35 Float?
-  PML36 Float?
+  PML1  Int? @db.Int
+  PML2  Int? @db.Int
+  PML3  Int? @db.Int
+  PML4  Int? @db.Int
+  PML5  Int? @db.Int
+  PML6  Int? @db.Int
+  PML7  Int? @db.Int
+  PML8  Int? @db.Int
+  PML9  Int? @db.Int
+  PML10 Int? @db.Int
+  PML11 Int? @db.Int
+  PML12 Int? @db.Int
+  PML13 Int? @db.Int
+  PML14 Int? @db.Int
+  PML15 Int? @db.Int
+  PML16 Int? @db.Int
+  PML17 Int? @db.Int
+  PML18 Int? @db.Int
+  PML19 Int? @db.Int
+  PML20 Int? @db.Int
+  PML21 Int? @db.Int
+  PML22 Int? @db.Int
+  PML23 Int? @db.Int
+  PML24 Int? @db.Int
+  PML25 Int? @db.Int
+  PML26 Int? @db.Int
+  PML27 Int? @db.Int
+  PML28 Int? @db.Int
+  PML29 Int? @db.Int
+  PML30 Int? @db.Int
+  PML31 Int? @db.Int
+  PML32 Int? @db.Int
+  PML33 Int? @db.Int
+  PML34 Int? @db.Int
+  PML35 Int? @db.Int
+  PML36 Int? @db.Int
+  PPL1  Int? @db.Int
+  PPL2  Int? @db.Int
+  PPL3  Int? @db.Int
+  PPL4  Int? @db.Int
+  PPL5  Int? @db.Int
+  PPL6  Int? @db.Int
+  PPL7  Int? @db.Int
+  PPL8  Int? @db.Int
+  PPL9  Int? @db.Int
+  PPL10 Int? @db.Int
+  PPL11 Int? @db.Int
+  PPL12 Int? @db.Int
+  PPL13 Int? @db.Int
+  PPL14 Int? @db.Int
+  PPL15 Int? @db.Int
+  PPL16 Int? @db.Int
+  PPL17 Int? @db.Int
+  PPL18 Int? @db.Int
+  PPL19 Int? @db.Int
+  PPL20 Int? @db.Int
+  PPL21 Int? @db.Int
+  PPL22 Int? @db.Int
+  PPL23 Int? @db.Int
+  PPL24 Int? @db.Int
+  PPL25 Int? @db.Int
+  PPL26 Int? @db.Int
+  PPL27 Int? @db.Int
+  PPL28 Int? @db.Int
+  PPL29 Int? @db.Int
+  PPL30 Int? @db.Int
+  PPL31 Int? @db.Int
+  PPL32 Int? @db.Int
+  PPL33 Int? @db.Int
+  PPL34 Int? @db.Int
+  PPL35 Int? @db.Int
+  PPL36 Int? @db.Int
 
-  // ฟิลด์ PPL
-  PPL1  Float?
-  PPL2  Float?
-  PPL3  Float?
-  PPL4  Float?
-  PPL5  Float?
-  PPL6  Float?
-  PPL7  Float?
-  PPL8  Float?
-  PPL9  Float?
-  PPL10 Float?
-  PPL11 Float?
-  PPL12 Float?
-  PPL13 Float?
-  PPL14 Float?
-  PPL15 Float?
-  PPL16 Float?
-  PPL17 Float?
-  PPL18 Float?
-  PPL19 Float?
-  PPL20 Float?
-  PPL21 Float?
-  PPL22 Float?
-  PPL23 Float?
-  PPL24 Float?
-  PPL25 Float?
-  PPL26 Float?
-  PPL27 Float?
-  PPL28 Float?
-  PPL29 Float?
-  PPL30 Float?
-  PPL31 Float?
-  PPL32 Float?
-  PPL33 Float?
-  PPL34 Float?
-  PPL35 Float?
-  PPL36 Float?
+  ASP1  DateTime? @db.DateTime
+  ASP2  DateTime? @db.DateTime
+  ASP3  DateTime? @db.DateTime
+  ASP4  DateTime? @db.DateTime
+  ASP5  DateTime? @db.DateTime
+  ASP6  DateTime? @db.DateTime
+  ASP7  DateTime? @db.DateTime
+  ASP8  DateTime? @db.DateTime
+  ASP9  DateTime? @db.DateTime
+  ASP10 DateTime? @db.DateTime
+  ASP11 DateTime? @db.DateTime
+  ASP12 DateTime? @db.DateTime
+  ASP13 DateTime? @db.DateTime
+  ASP14 DateTime? @db.DateTime
+  ASP15 DateTime? @db.DateTime
+  ASP16 DateTime? @db.DateTime
+  ASP17 DateTime? @db.DateTime
+  ASP18 DateTime? @db.DateTime
+  ASP19 DateTime? @db.DateTime
+  ASP20 DateTime? @db.DateTime
+  ASP21 DateTime? @db.DateTime
+  ASP22 DateTime? @db.DateTime
+  ASP23 DateTime? @db.DateTime
+  ASP24 DateTime? @db.DateTime
+  ASP25 DateTime? @db.DateTime
+  ASP26 DateTime? @db.DateTime
+  ASP27 DateTime? @db.DateTime
+  ASP28 DateTime? @db.DateTime
+  ASP29 DateTime? @db.DateTime
+  ASP30 DateTime? @db.DateTime
+  ASP31 DateTime? @db.DateTime
+  ASP32 DateTime? @db.DateTime
+  ASP33 DateTime? @db.DateTime
+  ASP34 DateTime? @db.DateTime
+  ASP35 DateTime? @db.DateTime
+  ASP36 DateTime? @db.DateTime
 
-  // ฟิลด์ ASP
-  ASP1  DateTime?
-  ASP2  DateTime?
-  ASP3  DateTime?
-  ASP4  DateTime?
-  ASP5  DateTime?
-  ASP6  DateTime?
-  ASP7  DateTime?
-  ASP8  DateTime?
-  ASP9  DateTime?
-  ASP10 DateTime?
-  ASP11 DateTime?
-  ASP12 DateTime?
-  ASP13 DateTime?
-  ASP14 DateTime?
-  ASP15 DateTime?
-  ASP16 DateTime?
-  ASP17 DateTime?
-  ASP18 DateTime?
-  ASP19 DateTime?
-  ASP20 DateTime?
-  ASP21 DateTime?
-  ASP22 DateTime?
-  ASP23 DateTime?
-  ASP24 DateTime?
-  ASP25 DateTime?
-  ASP26 DateTime?
-  ASP27 DateTime?
-  ASP28 DateTime?
-  ASP29 DateTime?
-  ASP30 DateTime?
-  ASP31 DateTime?
-  ASP32 DateTime?
-  ASP33 DateTime?
-  ASP34 DateTime?
-  ASP35 DateTime?
-  ASP36 DateTime?
+  BKD1  DateTime? @db.DateTime
+  BKD2  DateTime? @db.DateTime
+  BKD3  DateTime? @db.DateTime
+  BKD4  DateTime? @db.DateTime
+  BKD5  DateTime? @db.DateTime
+  BKD6  DateTime? @db.DateTime
+  BKD7  DateTime? @db.DateTime
+  BKD8  DateTime? @db.DateTime
+  BKD9  DateTime? @db.DateTime
+  BKD10 DateTime? @db.DateTime
+  BKD11 DateTime? @db.DateTime
+  BKD12 DateTime? @db.DateTime
+  BKD13 DateTime? @db.DateTime
+  BKD14 DateTime? @db.DateTime
+  BKD15 DateTime? @db.DateTime
+  BKD16 DateTime? @db.DateTime
+  BKD17 DateTime? @db.DateTime
+  BKD18 DateTime? @db.DateTime
+  BKD19 DateTime? @db.DateTime
+  BKD20 DateTime? @db.DateTime
+  BKD21 DateTime? @db.DateTime
+  BKD22 DateTime? @db.DateTime
+  BKD23 DateTime? @db.DateTime
+  BKD24 DateTime? @db.DateTime
+  BKD25 DateTime? @db.DateTime
+  BKD26 DateTime? @db.DateTime
+  BKD27 DateTime? @db.DateTime
+  BKD28 DateTime? @db.DateTime
+  BKD29 DateTime? @db.DateTime
+  BKD30 DateTime? @db.DateTime
+  BKD31 DateTime? @db.DateTime
+  BKD32 DateTime? @db.DateTime
+  BKD33 DateTime? @db.DateTime
+  BKD34 DateTime? @db.DateTime
+  BKD35 DateTime? @db.DateTime
+  BKD36 DateTime? @db.DateTime
 
-  // ฟิลด์ BKD
-  BKD1  DateTime?
-  BKD2  DateTime?
-  BKD3  DateTime?
-  BKD4  DateTime?
-  BKD5  DateTime?
-  BKD6  DateTime?
-  BKD7  DateTime?
-  BKD8  DateTime?
-  BKD9  DateTime?
-  BKD10 DateTime?
-  BKD11 DateTime?
-  BKD12 DateTime?
-  BKD13 DateTime?
-  BKD14 DateTime?
-  BKD15 DateTime?
-  BKD16 DateTime?
-  BKD17 DateTime?
-  BKD18 DateTime?
-  BKD19 DateTime?
-  BKD20 DateTime?
-  BKD21 DateTime?
-  BKD22 DateTime?
-  BKD23 DateTime?
-  BKD24 DateTime?
-  BKD25 DateTime?
-  BKD26 DateTime?
-  BKD27 DateTime?
-  BKD28 DateTime?
-  BKD29 DateTime?
-  BKD30 DateTime?
-  BKD31 DateTime?
-  BKD32 DateTime?
-  BKD33 DateTime?
-  BKD34 DateTime?
-  BKD35 DateTime?
-  BKD36 DateTime?
-
-  // ฟิลด์ INN
-  INN1  String? // Short Text
-  INN2  String? // Short Text
-  INN3  String? // Short Text
-  INN4  String? // Short Text
-  INN5  String? // Short Text
-  INN6  String? // Short Text
-  INN7  String? // Short Text
-  INN8  String? // Short Text
-  INN9  String? // Short Text
-  INN10 String? // Short Text
-  INN11 String? // Short Text
-  INN12 String? // Short Text
-  INN13 String? // Short Text
-  INN14 String? // Short Text
-  INN15 String? // Short Text
-  INN16 String? // Short Text
-  INN17 String? // Short Text
-  INN18 String? // Short Text
-  INN19 String? // Short Text
-  INN20 String? // Short Text
-  INN21 String? // Short Text
-  INN22 String? // Short Text
-  INN23 String? // Short Text
-  INN24 String? // Short Text
-  INN25 String? // Short Text
-  INN26 String? // Short Text
-  INN27 String? // Short Text
-  INN28 String? // Short Text
-  INN29 String? // Short Text
-  INN30 String? // Short Text
-  INN31 String? // Short Text
-  INN32 String? // Short Text
-  INN33 String? // Short Text
-  INN34 String? // Short Text
-  INN35 String? // Short Text
-  INN36 String? // Short Text
-
-  As_FG       Float? // Number
-  As_Date     DateTime?
-  As_Delivery DateTime?
+  INN1        String?   @db.VarChar(12)
+  INN2        String?   @db.VarChar(12)
+  INN3        String?   @db.VarChar(12)
+  INN4        String?   @db.VarChar(12)
+  INN5        String?   @db.VarChar(12)
+  INN6        String?   @db.VarChar(12)
+  INN7        String?   @db.VarChar(12)
+  INN8        String?   @db.VarChar(12)
+  INN9        String?   @db.VarChar(12)
+  INN10       String?   @db.VarChar(12)
+  INN11       String?   @db.VarChar(12)
+  INN12       String?   @db.VarChar(12)
+  INN13       String?   @db.VarChar(12)
+  INN14       String?   @db.VarChar(12)
+  INN15       String?   @db.VarChar(12)
+  INN16       String?   @db.VarChar(12)
+  INN17       String?   @db.VarChar(12)
+  INN18       String?   @db.VarChar(12)
+  INN19       String?   @db.VarChar(12)
+  INN20       String?   @db.VarChar(12)
+  INN21       String?   @db.VarChar(12)
+  INN22       String?   @db.VarChar(12)
+  INN23       String?   @db.VarChar(12)
+  INN24       String?   @db.VarChar(12)
+  INN25       String?   @db.VarChar(12)
+  INN26       String?   @db.VarChar(12)
+  INN27       String?   @db.VarChar(12)
+  INN28       String?   @db.VarChar(12)
+  INN29       String?   @db.VarChar(12)
+  INN30       String?   @db.VarChar(12)
+  INN31       String?   @db.VarChar(12)
+  INN32       String?   @db.VarChar(12)
+  INN33       String?   @db.VarChar(12)
+  INN34       String?   @db.VarChar(12)
+  INN35       String?   @db.VarChar(12)
+  INN36       String?   @db.VarChar(12)
+  As_FG       Int?      @db.TinyInt
+  As_Date     DateTime? @db.DateTime
+  As_Delivery DateTime? @db.DateTime
 
   plan TD_Plan? @relation("SchedulePlan", fields: [Order_No, Parts_No], references: [Order_No, Parts_No])
 
   @@id([Order_No, Parts_No]) // กำหนดให้ Order_No และ Parts_No เป็นคีย์หลักร่วมกัน
 }
 
+model TD_SOrder {
+  SOrder_No        String    @id @db.VarChar(20)
+  Pro_Req_Dep_CD   String?   @db.VarChar(6)
+  Customer_CD      String?   @db.VarChar(20)
+  Goods_Name       String?   @db.VarChar(100)
+  Goods_Size       String?   @db.VarChar(100)
+  Tolerance        String?   @db.VarChar(30)
+  Customer_Draw    String?   @db.VarChar(50)
+  Company_Draw     String?   @db.VarChar(50)
+  Quantity         Float?    @db.Double
+  Pd_Complete_Qty  Int?      @db.SmallInt
+  I_Complete_Qty   Int?      @db.SmallInt
+  Shipment_Qty     Int?      @db.SmallInt
+  Ac_Split_Qty     Int?      @db.SmallInt
+  Sales_Qty        Int?      @db.SmallInt
+  Unit_CD          String?   @db.VarChar(10)
+  Sales_Grp_CD     String?   @db.VarChar(6)
+  Sales_Person_CD  String?   @db.VarChar(10)
+  Request1_CD      String?   @db.VarChar(2)
+  Request2_CD      String?   @db.VarChar(2)
+  Request3_CD      String?   @db.VarChar(2)
+  Material1        String?   @db.VarChar(30)
+  H_Treatment1     String?   @db.VarChar(40)
+  Material2        String?   @db.VarChar(30)
+  H_Treatment2     String?   @db.VarChar(40)
+  Material3        String?   @db.VarChar(30)
+  H_Treatment3     String?   @db.VarChar(40)
+  Material4        String?   @db.VarChar(30)
+  H_Treatment4     String?   @db.VarChar(40)
+  Material5        String?   @db.VarChar(30)
+  H_Treatment5     String?   @db.VarChar(40)
+  Coating_CD       String?   @db.VarChar(2)
+  Coating          String?   @db.VarChar(30)
+  Quote_No         String?   @db.VarChar(20)
+  Quote_CD         String?   @db.VarChar(1)
+  Item0_CD         String?   @db.VarChar(2)
+  Item1_CD         String?   @db.VarChar(20)
+  Item2_CD         String?   @db.VarChar(2)
+  Item3_CD         String?   @db.VarChar(2)
+  Item4_CD         String?   @db.VarChar(2)
+  Custom_Material  String?   @db.VarChar(10)
+  Od_No_of_Custom  String?   @db.VarChar(30)
+  Supply_CD        String?   @db.VarChar(2)
+  Destination_CD   String?   @db.VarChar(20)
+  Billing_CD       String?   @db.VarChar(20)
+  Contract_Docu_CD String?   @db.VarChar(6)
+  Price_CD         String?   @db.VarChar(2)
+  Currency_CD      String?   @db.VarChar(2)
+  Unit_Price       Float?    @db.Double
+  Specific_CD      String?   @db.VarChar(2)
+  SO_Progress_CD   String?   @db.VarChar(2)
+  Delivery_CD      String?   @db.VarChar(1)
+  Sales_Draw       String?   @db.Text
+  Sales_Docu       String?   @db.Text
+  SO_Instructions  String?   @db.VarChar(100)
+  SO_Remark        String?   @db.VarChar(200)
+  SO_Reg_Person_CD String?   @db.VarChar(10)
+  SO_Upd_Person_CD String?   @db.VarChar(10)
+  Request_Delivery DateTime? @db.DateTime
+  Confirm_Delivery DateTime? @db.DateTime
+  SOrder_Date      DateTime? @db.DateTime
+  Pd_Order_Date    DateTime? @db.DateTime
+  Pd_Complete_Date DateTime? @db.DateTime
+  I_Completed_Date DateTime? @db.DateTime
+  Shipment_Date    DateTime? @db.DateTime
+  Pd_Calc_Date     DateTime? @db.DateTime
+  SO_Sales_Date    DateTime? @db.DateTime
+  SO_Confirm_Date  DateTime? @db.DateTime
+  SO_Reg_Date      DateTime? @db.DateTime
+  SO_Upd_Date      DateTime? @db.DateTime
+  SO_CAT1          Boolean?  @db.Bit(1)
+  SO_CAT2          Boolean?  @db.Bit(1)
+  SO_CAT3          Boolean?  @db.Bit(1)
+  SO_Pending       Boolean?  @db.Bit(1)
+  Temp_Shipment    Boolean?  @db.Bit(1)
+  Stock            Boolean?  @db.Bit(1)
+}
+
 model TD_WIP {
-  Order_No       String // หมายเลขคำสั่ง
-  Parts_No       String // หมายเลขชิ้นส่วน
-  Process_No     String // หมายเลขกระบวนการ
-  OdPt_No        String? // หมายเลขการสั่งซื้อ/ชิ้นส่วน
-  OdPtPr_No      String? // หมายเลขการสั่งซื้อ/ชิ้นส่วนกระบวนการ
-  PPG            String? // PPG
-  PPC            String? // PPC
-  PMT            Float? // PMT
-  PPT            Float? // PPT
-  T_Type         String? // ประเภท T
-  P_Type         String? // ประเภท P
-  S_Type         String? // ประเภท S
-  PPD            DateTime? // PPD
-  PML            Float? // PML
-  PPL            Float? // PPL
-  INN            Float? // INN
-  RPD            Float? // RPD
-  RMT            Float? // RMT
-  RPT            Float? // RPT
-  RPN            Float? // RPN
-  ASP            Float? // ASP
-  Now_No         String? // หมายเลขปัจจุบัน
-  WIP_CAT1       Boolean? // หมวดหมู่ WIP 1
-  WIP_CAT2       Boolean? // หมวดหมู่ WIP 2
-  WIP_CAT3       Boolean? // หมวดหมู่ WIP 3
-  WIP_CAT4       Boolean? // หมวดหมู่ WIP 4
-  WIP_CAT5       Boolean? // หมวดหมู่ WIP 5
-  WIP_CAT6       Boolean? // หมวดหมู่ WIP 6
-  WIP_CAT7       Boolean? // หมวดหมู่ WIP 7
-  WIP_CAT8       Boolean? // หมวดหมู่ WIP 8
-  WIP_CAT9       Boolean? // หมวดหมู่ WIP 9
-  WIP_Month_Plan Boolean? // แผนเดือน WIP
-  WIP_Week_Plan  Boolean? // แผนสัปดาห์ WIP
-  WIP_Today_Plan Boolean? // แผนวันนี้ WIP
-  Plan_Person_CD String? // รหัสบุคคลวางแผน
-  WIP_Remark     String? // หมายเหตุ WIP
-  Into_I         Boolean? // เข้า I
+  Order_No       String    @db.VarChar(20)
+  Parts_No       String    @db.VarChar(2)
+  Process_No     String    @db.VarChar(2)
+  OdPt_No        String?   @db.VarChar(22)
+  OdPtPr_No      String?   @db.VarChar(24)
+  PPG            String?   @db.VarChar(8)
+  PPC            String?   @db.VarChar(8)
+  PMT            Int?      @db.SmallInt
+  PPT            Int?      @db.SmallInt
+  T_Type         String?   @db.VarChar(8)
+  P_Type         String?   @db.VarChar(8)
+  S_Type         String?   @db.VarChar(8)
+  PPD            DateTime? @db.DateTime
+  PML            Int?      @db.Int
+  PPL            Int?      @db.Int
+  INN            String?   @db.VarChar(12)
+  RPD            DateTime? @db.DateTime
+  RMT            Int?      @db.SmallInt
+  RPT            Int?      @db.SmallInt
+  RPN            Int?      @db.SmallInt
+  ASP            DateTime? @db.DateTime
+  Now_No         String?   @db.VarChar(2)
+  WIP_CAT1       Boolean?  @db.Bit(1)
+  WIP_CAT2       Boolean?  @db.Bit(1)
+  WIP_CAT3       Boolean?  @db.Bit(1)
+  WIP_CAT4       Boolean?  @db.Bit(1)
+  WIP_CAT5       Boolean?  @db.Bit(1)
+  WIP_CAT6       Boolean?  @db.Bit(1)
+  WIP_CAT7       Boolean?  @db.Bit(1)
+  WIP_CAT8       Boolean?  @db.Bit(1)
+  WIP_CAT9       Boolean?  @db.Bit(1)
+  WIP_Month_Plan Boolean?  @db.Bit(1)
+  WIP_Wweek_Plan Boolean?  @db.Bit(1)
+  WIP_Today_Plan Boolean?  @db.Bit(1)
+  Plan_Person_CD String?   @db.VarChar(10)
+  WIP_Remark     String?   @db.VarChar(50)
+  Into_I         Boolean?  @db.Bit(1)
 
   plan TD_Plan? @relation("PlanToWIP", fields: [Order_No, Parts_No], references: [Order_No, Parts_No])
 
   @@id([Order_No, Parts_No, Process_No]) // กำหนดให้ Order_No และ Parts_No เป็นคีย์หลักร่วมกัน
 }
 
-// Lookup tables like TM_Process can remain without relations
-model TM_Process {
-  Process_CD     String   @id
-  Change_CD      String? // Change Code
-  ProcessG_CD    String // Process Group Code
-  ResourceG_CD   String // Resource Group Code
-  ManageG_CD     String? // Management Group Code
-  Manhour_Calc   String? // Manhour Calculation
-  Days_Calc      String? // Days Calculation
-  Process_Name   String? // Process Name
-  Process_Abb    String? // Process Abbreviation
-  Process_Symbol String? // Process Symbol
-  Process_Mark   String? // Process Mark
-  Use            Boolean? @db.Bit(1) // Use
-  For_Plan       Boolean? @db.Bit(1) // For Plan
-  For_Info       Boolean? @db.Bit(1) // For Information
-  Graph          Boolean? @db.Bit(1) // Graph
-  List           Boolean? @db.Bit(1) // List
-  Outside_On     Boolean? @db.Bit(1) // Outside On
-  Outside_Off    Boolean? @db.Bit(1) // Outside Off
-  End            Boolean? @db.Bit(1) // End
-  Coefficient    Float? // Coefficient
-  M_Coefficient  Float? // M Coefficient
-  P_Coefficient  Float? // P Coefficient
-  Before         Float? // Before
-
-  // ฟิลด์ใหม่ที่เพิ่มเข้ามา
-  After          Float? // After
-  Operation_Time Int?    @db.SmallInt // Operation Time
-  Std_M_CAT      Int?    @db.TinyInt // Standard M Category
-  Std_M_Time     Int?    @db.SmallInt // Standard M Time
-  Std_P_CAT      Int?    @db.TinyInt // Standard P Category
-  Std_P_Time     Int?    @db.SmallInt // Standard P Time
-  T_Type         String? // Type T
-  P_Type         String? // Type P
-  S_Type         String? // Type S
-  Process_Remark String? // Remark for Process
-
-  Resource      TM_Resource   @relation(fields: [Process_CD], references: [Resource_CD])
-  processGroup  TM_ProcessG   @relation(fields: [ProcessG_CD], references: [ProcessG_CD])
-  // ความสัมพันธ์กับ TM_ResourceG
-  resourceGroup TM_ResourceG  @relation("ResourceGroupProcesses", fields: [ResourceG_CD], references: [ResourceG_CD])
-  TM_ProcessG   TM_ProcessG[] @relation("ProcessGroupProcesses")
+model TM_Calc {
+  Calc_CD     String  @id @db.VarChar(2)
+  Calc_Name   String? @db.VarChar(20)
+  Calc_Abb    String? @db.VarChar(10)
+  Calc_Symbol String? @db.VarChar(5)
+  Calc_Remark String? @db.VarChar(50)
 }
 
-model TM_ProcessG {
-  ProcessG_CD     String  @id
-  Change_CD       String? // Change Code
-  ManageG_CD      String? // Management Group Code
-  ProcessG_Name   String? // Process Group Name
-  ProcessG_Abb    String? // Process Group Abbreviation
-  ProcessG_Symbol String? // Process Group Symbol
-  ProcessG_Mark   String? // Process Group Mark
-  Use             String? // Use
-  Use_Object      String? // Use Object
-  Graph           String? // Graph
-  List            String? // List
-  Coefficient     String? // Coefficient
-  M_Coefficient   String? // M Coefficient
-  P_Coefficient   String? // P Coefficient
-  Std_M_CAT       String? // Standard M Category
-
-  // ฟิลด์ใหม่ที่เพิ่มเข้ามา
-  Std_M_Time      Float? // Standard M Time
-  Std_P_CAT       Float? // Standard P Category
-  Std_P_Time      Float? // Standard P Time
-  M_Resource_N    Float? // M Resource Number
-  S_Resource_N    Float? // S Resource Number
-  ProcessG_Remark String? // Remark for Process Group
-
-  processes TM_Process[] @relation("ProcessGroupProcesses")
-
-  TM_Process TM_Process[]
+model TM_Coating {
+  Coating_CD     String  @id @db.VarChar(2)
+  Coating_Name   String? @db.VarChar(10)
+  Coating_Abb    String? @db.VarChar(5)
+  Coating_Symbol String? @db.VarChar(3)
+  Coating_Remark String? @db.VarChar(20)
 }
 
-model TM_ResourceG {
-  ResourceG_CD     String  @id
-  Change_CD        String? // Change Code
-  ResourceG_Name   String? // Resource Group Name
-  ResourceG_Abb    String? // Resource Group Abbreviation
-  ResourceG_Symbol String? // Resource Group Symbol
-  ResourceG_Mark   String? // Resource Group Mark
-  Us_Group_Mark    String? // Us Group Mark
-  Use              String? // Use
-
-  // ฟิลด์ใหม่ที่เพิ่มเข้ามา
-  Coefficient       Float? // Coefficient
-  M_Coefficient     Float? // M Coefficient
-  P_Coefficient     Float? // P Coefficient
-  M_Resource_Object String? // M Resource Object
-  S_Resource_Object String? // S Resource Object
-  ResourceG_Remark  String? // Remark for Resource Group
-  // ความสัมพันธ์ one-to-many กับ TM_Process
-  processes         TM_Process[] @relation("ResourceGroupProcesses")
-}
-
-model TM_Resource {
-  Resource_CD     String  @id
-  Change_CD       String? // Change Code
-  ResourceG_CD    String? // Resource Group Code
-  CostG_CD        String? // Cost Group Code
-  ManageG_CD      String? // Manage Group Code
-  Resource_Name   String? // Resource Name
-  Resource_Abb    String? // Resource Abbreviation
-  Resource_Symbol String? // Resource Symbol
-  Resource_Mark   String? // Resource Mark
-  Use             String? // Use
-  End             String? // End
-  M_Coefficient   String? // M Coefficient
-
-  // ฟิลด์ใหม่ที่เพิ่มเข้ามา
-  P_Coefficient   Float? // P Coefficient
-  Before          Float? // Before
-  After           Float? // After
-  T_Type          String? // T Type
-  P_Type          String? // P Type
-  Resource_Remark String? // Resource Remark
-
-  TM_Process TM_Process[] // ความสัมพันธ์กับ TM_Process
-
-  TD_Cost TD_Cost[]
+model TM_Contract_Docu {
+  Contract_Docu_CD     String  @id @db.VarChar(6)
+  Contract_Docu_Name   String? @db.VarChar(10)
+  Contract_Docu_Abb    String? @db.VarChar(10)
+  Contract_Docu_Remark String? @db.VarChar(20)
 }
 
 model TM_CostG {
-  CostG_CD      String  @id
-  Change_CD     String?
-  CostG_Name    String?
-  CostG_Abb     String?
-  CostG_Symbol  String?
-  CostG_Mark    String?
-  Use           String?
-  Coefficient   String?
-  M_Coefficient String?
-  P_Coefficient Float?
-  CostG_Remark  String?
+  CostG_CD      String   @id @db.VarChar(6)
+  Change_CD     String?  @db.VarChar(6)
+  CostG_Name    String?  @db.VarChar(30)
+  CostG_Abb     String?  @db.VarChar(6)
+  CostG_Symbol  String?  @db.VarChar(10)
+  CostG_Mark    String?  @db.VarChar(10)
+  Use           Boolean? @db.Bit(1)
+  Coefficient   Float?   @db.Float
+  M_Coefficient Float?   @db.Float
+  P_Coefficient Float?   @db.Float
+  CostG_Remark  String?  @db.VarChar(50)
 }
 
-model TM_WorkG {
-  WorkG_CD      String   @id
-  WorkG_Name    String?
-  WorkG_Abb     String?
-  WorkG_Symbol  String?
-  Pl_Object_Grp String?
-  Pl_Object     Boolean?
-  Target_Amount Float?
-  WorkG_Mark    String?
-
-  // One-to-Many relationship with TM_Worker
-  workers TM_Worker[] @relation("WorkGroupWorkers")
-
-  TM_Worker TM_Worker[]
-
-  TD_Order TD_Order[]
+model TM_Cs_Progress {
+  Cs_Progress_CD     String  @id @db.VarChar(2)
+  Cs_Progress_Name   String? @db.VarChar(20)
+  Cs_Progress_Abb    String? @db.VarChar(10)
+  Cs_Progress_Symbol String? @db.VarChar(5)
+  Cs_Progress_Mark   String? @db.VarChar(5)
+  Cs_Progress_Remark String? @db.VarChar(50)
 }
 
-model TM_Worker {
-  Worker_CD     String  @id // รหัสคนงาน
-  Worker_Pass   String? // รหัสผ่านคนงาน
-  WorkerG_CD    String? // รหัสกลุ่มคนงาน
-  WorkG_CD      String // รหัสการทำงาน
-  Worker_Name   String? // ชื่อคนงาน
-  Worker_Abb    String? // ชื่อย่อคนงาน
-  Worker_JPN    String? // ชื่อภาษาญี่ปุ่นของคนงาน
-  Access_Lv     Int? // ระดับการเข้าถึง (เปลี่ยนจาก Number เป็น Int)
-  Worker_Level  String? // ระดับคนงาน
-  Worker_Menu   String? // เมนูคนงาน
-  Worker_Remark String? // หมายเหตุคนงาน
-
-  // Many-to-One relationship with TM_WorkG
-  workGroup TM_WorkG @relation(fields: [WorkG_CD], references: [WorkG_CD])
-
-  // One-to-Many relationship with TM_WorkerG
-  workerGroups TM_WorkerG[] @relation("WorkerWorkerGroups")
-
-  TM_WorkG TM_WorkG[] @relation("WorkGroupWorkers")
-}
-
-model TM_WorkerG {
-  WorkerG_CD     String  @id
-  WorkerG_Name   String?
-  WorkerG_Abb    String?
-  WorkerG_Remark String?
-
-  // Many-to-One relationship with TM_Worker
-  workers TM_Worker[] @relation("WorkerWorkerGroups")
+model TM_Currency {
+  Currency_CD     String  @id @db.VarChar(10)
+  Currency_Name   String? @db.VarChar(50)
+  Currency_Abb    String? @db.VarChar(50)
+  Currency_Remark String? @db.VarChar(50)
 }
 
 model TM_Customer {
-  Customer_CD      String  @id // รหัสลูกค้า
-  Customer_Name    String? // ชื่อลูกค้า
-  Customer_Name2   String? // ชื่อลูกค้า (สำรอง)
-  Customer_Abb     String? // ตัวย่อของลูกค้า
-  Customer_Add     String? // ที่อยู่ลูกค้า
-  Customer_Add2    String? // ที่อยู่ลูกค้า (สำรอง)
-  Customer_Add3    String? // ที่อยู่ลูกค้า (สำรอง)
-  Customer_Contact String? // ติดต่อ
-  Customer_TEL     String? // โทรศัพท์ลูกค้า
-  Posting_Group    String? // กลุ่มโพสต์
-  Payment_CD       String? // รหัสการชำระเงิน
-  Sl_Person_CD     String? // รหัสบุคคลที่เกี่ยวข้อง
-  Blocked          Boolean // สถานะบล็อก
-  Customer_FAX     String? // โทรสารลูกค้า
-  Branch_No        String? // หมายเลขสาขา
-  Nationality      String? // สัญชาติ
-  Customer_Group   String? // กลุ่มลูกค้า
-  VAT_Reg_No       String? // หมายเลขการลงทะเบียน VAT
-  Customer_Remark  String? // หมายเหตุของลูกค้า
+  Customer_CD      String  @id @db.VarChar(20) // รหัสลูกค้า
+  Customer_Name    String? @db.VarChar(100) // ชื่อลูกค้า
+  Customer_Name2   String? @db.VarChar(50) // ชื่อลูกค้า (สำรอง)
+  Customer_Abb     String? @db.VarChar(100) // ตัวย่อของลูกค้า
+  Customer_Add     String? @db.VarChar(200) // ที่อยู่ลูกค้า
+  Customer_Add2    String? @db.VarChar(50) // ที่อยู่ลูกค้า (สำรอง)
+  Customer_Add3    String? @db.VarChar(50) // ที่อยู่ลูกค้า (สำรอง)
+  Customer_Contact String? @db.VarChar(100) // ติดต่อ
+  Customer_TEL     String? @db.VarChar(100) // โทรศัพท์ลูกค้า
+  Posting_Group    String? @db.VarChar(10) // กลุ่มโพสต์
+  Payment_CD       String? @db.VarChar(10) // รหัสการชำระเงิน
+  Sl_Person_CD     String? @db.VarChar(10) // รหัสบุคคลที่เกี่ยวข้อง
+  Blocked          Boolean @db.Bit(1) // สถานะบล็อก
+  Customer_FAX     String? @db.VarChar(100) // โทรสารลูกค้า
+  Branch_No        String? @db.VarChar(1) // หมายเลขสาขา
+  Nationality      String? @db.VarChar(30) // สัญชาติ
+  Customer_Group   String? @db.VarChar(10) // กลุ่มลูกค้า
+  VAT_Reg_No       String? @db.VarChar(20) // หมายเลขการลงทะเบียน VAT
+  Customer_Remark  String? @db.VarChar(50) // หมายเหตุของลูกค้า
 
   TD_Order TD_Order[]
 }
 
-model TS_Set {
-  ID                Int       @id @default(autoincrement())
-  Use               Boolean?
-  Version           String?   @db.Text
-  Field_Name        String?   @db.Text
-  Data_Type         String?   @db.Text
-  AutoNumber        Boolean?
-  Password          String?   @db.Text
-  Language          String?   @db.Text
-  Od_No_Digits      Int?
-  SV_Name           String?   @db.Text
-  TENKEI            String?   @db.Text
-  Sales_Docu        String?   @db.Text
-  Sales_Docu_Type   String?   @db.Text
-  Product_Docu      String?   @db.Text
-  Product_Docu_Type String?   @db.Text
-  Procure_Docu      String?   @db.Text
-  Procure_Docu_Type String?   @db.Text
-  Outside_Docu      String?   @db.Text
-  Outside_Docu_Type String?   @db.Text
-  Inspect_Docu      String?   @db.Text
-  Inspect_Docu_Type String?   @db.Text
-  Send_Docu         String?   @db.Text
-  Send_Docu_Type    String?   @db.Text
-  Supple_Docu       String?   @db.Text
-  Supple_Docu_Type  String?   @db.Text
-  SOrder_CSV        String?   @db.Text
-  SOrder_CSV_BK     String?   @db.Text
-  SOrder_CSV_CP     String?   @db.Text
-  Order_CSV         String?   @db.Text
-  Order_CSV_BK      String?   @db.Text
-  Order_CSV_CP      String?   @db.Text
-  Procure_CSV       String?   @db.Text
-  Procure_CSV_BK    String?   @db.Text
-  Procure_CSV_CP    String?   @db.Text
-  Cost_CSV          String?   @db.Text
-  WIP_CSV           String?   @db.Text
-  WIP_CSV_Writing   String?   @db.Text
-  Cost_Save         String?   @db.Text
-  Cost_Save_Time    DateTime?
-  Cost_Write        String?   @db.Text
-  Cost_Write_Time   DateTime?
-  Delivery_CSV      String?   @db.Text
-  Label_CSV         String?   @db.Text
-  Label_CSV_FG      Boolean?
-  ASPROVA           String?   @db.Text
-  As_Operation_Csv  String?   @db.Text
-  As_Resource_Csv   String?   @db.Text
-  As_Plan_Csv       String?   @db.Text
-  As_Use_Csv        String?   @db.Text
-
-  // เพิ่มฟิลด์ใหม่
-  As_Input_Csv      String?   @db.Text
-  As_Schedule_Csv   String?   @db.Text
-  Us_Group_CD       String?   @db.Text
-  Us_Group_Name     String?   @db.Text
-  Us_Group_Abb      String?   @db.Text
-  Us_Group_Symbol   String?   @db.Text
-  Us_Group_Mark     String?   @db.Text
-  Us_Group_TEL      String?   @db.Text
-  Us_Group_FAX      String?   @db.Text
-  Us_Office_CD      String?   @db.Text
-  Us_Office_Name    String?   @db.Text
-  Us_Office_Abb     String?   @db.Text
-  Us_Office_Symbol  String?   @db.Text
-  Us_Office_Mark    String?   @db.Text
-  St_Target_Week1   DateTime?
-  Ed_Target_Week1   DateTime?
-  St_Target_Week2   DateTime?
-  Ed_Target_Week2   DateTime?
-  Ed_Target_Week3   DateTime?
-  St_Target_Week4   DateTime?
-  Ed_Target_Week4   DateTime?
-  St_Target_Week5   DateTime?
-  Ed_Target_Week5   DateTime?
-  Od_DrawNo_Reflect Boolean?
-  PI_Quote_Delivery String?   @db.Text
-  Pl_Abst_St_Days   Int?
-  Pl_Abst_Ed_Days   Int?
-  Sc_Make_Type      String?   @db.Text
-  Sc_Stagnat_Time   Int?
-  Sc_Stagnat_Scale  Int?
-  Sc_Person_Scale   Int?
-  Sc_Machine_Scale  Int?
-  Sc_Outside_Scale  Int?
-  Sc_ManHour_Scale  Int?
-  Ps_Delivery1      String?   @db.Text
-  Ps_Delivery2      String?   @db.Text
-  Ps_Delivery3      String?   @db.Text
-  Ps_Delivery4      String?   @db.Text
-  Ps_Draw_No_View   Boolean?
-  Ps_Entry_Text1    String?   @db.Text
-  Ps_Entry_Text2    String?   @db.Text
-  Ps_Entry_Text3    String?   @db.Text
-  Ps_Under_Text     String?   @db.Text
-  Rs_BarCode_Input  Boolean?
-
-  // ฟิลด์เพิ่มเติมใหม่
-  Rs_Move_Range     String?   @db.Text
-  Rs_Time_Input     Boolean?
-  Rs_Auto_Finish    Boolean?
-  Od_List_ViewW     Int?
-  Pc_List_ViewW     Int?
-  Pc_List_ViewH     Int?
-  Pl_List_ViewW     Int?
-  Pl_List_ViewH     Int?
-  Rs_List_ViewH     Int?
-  Od_Search_ViewW   Int?
-  Od_Search_ViewH   Int?
-  Pl_Search_ViewW   Int?
-  Pl_Search_ViewH   Int?
-  PI_Change_Page    String?   @db.Text
-  PI_Schedule       String?   @db.Text
-  Pl_Color_Separate Boolean?
-  PI_Delivery1      String?   @db.Text
-  Pl_Delivery2      String?   @db.Text
-  Pl_Delivery3      String?   @db.Text
-  Job_Find_St_Days  Int?
-  Job_Find_Ed_Days  Int?
-  Settles           Boolean?
-  Settles_Day       DateTime?
-  Pd_Revision_Days  Int?
-  Od_Sach_S_Years   Int?
-  PI_Sach_S_Years   Int?
-  LINK_Name1        String?   @db.Text
-  LINK1             String?   @db.Text
-  LINK_Name2        String?   @db.Text
-  LINK2             String?   @db.Text
-  LINK_Name3        String?   @db.Text
-  LINK3             String?   @db.Text
-  LINK_Name4        String?   @db.Text
-  LINK4             String?   @db.Text
-  LINK_Name5        String?   @db.Text
-  LINK5             String?   @db.Text
-  LINK_Name6        String?   @db.Text
-  LINK6             String?   @db.Text
-  LINK_Name7        String?   @db.Text
-  LINK7             String?   @db.Text
-  LINK_Name8        String?   @db.Text
-  LINK8             String?   @db.Text
-  LINK_Name9        String?   @db.Text
-  LINK9             String?   @db.Text
-  LINK_Name10       String?   @db.Text
-  LINK10            String?   @db.Text
+model TM_Delivery {
+  Delivery_CD     String   @id @db.VarChar(2)
+  Delivery_Name   String?  @db.VarChar(30)
+  Delivery_Abb    String?  @db.VarChar(25)
+  Delivery_Symbol String?  @db.VarChar(20)
+  Delivery_Mark   String?  @db.VarChar(15)
+  Coefficient     Float?
+  For_Order       Boolean? @db.Bit(1)
+  For_Procure     Boolean? @db.Bit(1)
+  Delivery_Remark String?  @db.VarChar(50)
 }
 
-model tm_request1 {
-  Request1_CD     String  @id @db.VarChar(2)
-  Request1_Name   String? @db.VarChar(20)
-  Request1_Abb    String? @db.VarChar(10)
-  Request1_Symbol String? @db.VarChar(10)
-  Request1_Remark String? @db.VarChar(20)
+model TM_Holiday {
+  Holiday        DateTime @id @db.DateTime
+  Holiday_Name   String?  @db.VarChar(255)
+  Coefficient    Int?     @db.TinyInt
+  Holiday_Remark String?  @db.VarChar(20)
 }
 
-model tm_request2 {
-  Request2_CD     String  @id @db.VarChar(2)
-  Request2_Name   String? @db.VarChar(20)
-  Request2_Abb    String? @db.VarChar(10)
-  Request2_Symbol String? @db.VarChar(10)
-  Request2_Remark String? @db.VarChar(20)
+model TM_InOutside {
+  InOutside_CD     String  @id @db.VarChar(2)
+  InOutside_Name   String? @db.VarChar(5)
+  InOutside_Abb    String? @db.VarChar(5)
+  InOutside_Symbol String? @db.VarChar(5)
+  InOutside_Mark   String? @db.VarChar(5)
+  InOutside_Remark String? @db.VarChar(20)
 }
 
-model tm_request3 {
-  Request3_CD     String  @id @db.VarChar(2)
-  Request3_Name   String? @db.VarChar(20)
-  Request3_Abb    String? @db.VarChar(10)
-  Request3_Symbol String? @db.VarChar(10)
-  Request3_Remark String? @db.VarChar(20)
+model TM_Item0 {
+  Item0_CD      String   @id @db.VarChar(20)
+  Item0_Name    String?  @db.VarChar(255)
+  Item0_Name2   String?  @db.VarChar(50)
+  Item0_Abb     String?  @db.VarChar(255)
+  Item0_Unit    String?  @db.VarChar(10)
+  Posting_Group String?  @db.VarChar(10)
+  Unit_Price    Decimal? @db.Decimal(28, 20)
+  Unit_Cost     Decimal? @db.Decimal(28, 20)
+  Gross_Weight  Decimal? @db.Decimal(28, 20)
+  Net_Weight    Decimal? @db.Decimal(28, 20)
+  Blocked       Boolean? @db.Bit(1)
+  Item0_Type    String?  @db.VarChar(20)
+  Item0_Remark  String?  @db.VarChar(50)
 }
 
-model tm_target {
-  Target_CD     String  @id @db.VarChar(2)
-  Target_Name   String? @db.VarChar(10)
-  Target_Abb    String? @db.VarChar(5)
-  Target_Symbol String? @db.VarChar(5)
-  Target_Mark   String? @db.VarChar(5)
-  Target_Price  Float?
-  Target_Remark String? @db.VarChar(50)
-}
-
-model tm_unit {
-  Unit_CD     String  @id @db.VarChar(2)
-  Unit_Name   String? @db.VarChar(50)
-  Unit_Abb    String? @db.VarChar(50)
-  Unit_Remark String? @db.VarChar(50)
-}
-
-model tm_supply {
-  Supply_CD     String  @id @db.VarChar(2)
-  Supply_Name   String? @db.VarChar(20)
-  Supply_Abb    String? @db.VarChar(15)
-  Supply_Symbol String? @db.VarChar(10)
-  Supply_Mark   String? @db.VarChar(10)
-  Supply_Remark String? @db.VarChar(20)
-}
-
-model tm_item1 {
+model TM_Item1 {
   Item1_CD      String   @id @db.VarChar(20)
   Item1_Name    String?  @db.VarChar(50)
   Item1_Name2   String?  @db.VarChar(50)
@@ -1296,38 +1203,77 @@ model tm_item1 {
   TD_Order TD_Order[]
 }
 
-model tm_coating {
-  Coating_CD     String  @id @db.VarChar(2)
-  Coating_Name   String? @db.VarChar(10)
-  Coating_Abb    String? @db.VarChar(5)
-  Coating_Symbol String? @db.VarChar(3)
-  Coating_Remark String? @db.VarChar(20)
+model TM_Item2 {
+  Item2_CD      String   @id @db.VarChar(20)
+  Item2_Name    String?  @db.VarChar(255)
+  Item2_Name2   String?  @db.VarChar(50)
+  Item2_Abb     String?  @db.VarChar(255)
+  Item2_Unit    String?  @db.VarChar(10)
+  Posting_Group String?  @db.VarChar(10)
+  Unit_Price    Decimal? @db.Decimal(28, 20)
+  Unit_Cost     Decimal? @db.Decimal(28, 20)
+  Gross_Weight  Decimal? @db.Decimal(28, 20)
+  Net_Weight    Decimal? @db.Decimal(28, 20)
+  Blocked       Boolean? @db.Bit(1)
+  Item2_Type    String?  @db.VarChar(20)
+  Item2_Remark  String?  @db.VarChar(50)
 }
 
-model tm_price {
-  Price_CD     String  @id @db.VarChar(2)
-  Price_Name   String? @db.VarChar(15)
-  Price_Abb    String? @db.VarChar(10)
-  Price_Symbol String? @db.VarChar(5)
-  Price_Remark String? @db.VarChar(20)
+model TM_Item3 {
+  Item3_CD      String   @id @db.VarChar(20)
+  Item3_Name    String?  @db.VarChar(255)
+  Item3_Name2   String?  @db.VarChar(50)
+  Item3_Abb     String?  @db.VarChar(255)
+  Item3_Unit    String?  @db.VarChar(10)
+  Posting_Group String?  @db.VarChar(10)
+  Unit_Price    Decimal? @db.Decimal(28, 20)
+  Unit_Cost     Decimal? @db.Decimal(28, 20)
+  Gross_Weight  Decimal? @db.Decimal(28, 20)
+  Net_Weight    Decimal? @db.Decimal(28, 20)
+  Blocked       Boolean? @db.Bit(1)
+  Item3_Type    String?  @db.VarChar(20)
+  Item3_Remark  String?  @db.VarChar(50)
 }
 
-model tm_contract_docu {
-  Contract_Docu_CD     String  @id @db.VarChar(6)
-  Contract_Docu_Name   String? @db.VarChar(10)
-  Contract_Docu_Abb    String? @db.VarChar(10)
-  Contract_Docu_Remark String? @db.VarChar(20)
+model TM_Item4 {
+  Item4_CD      String   @id @db.VarChar(20)
+  Item4_Name    String?  @db.VarChar(255)
+  Item4_Name2   String?  @db.VarChar(50)
+  Item4_Abb     String?  @db.VarChar(255)
+  Item4_Unit    String?  @db.VarChar(10)
+  Posting_Group String?  @db.VarChar(10)
+  Unit_Price    Decimal? @db.Decimal(28, 20)
+  Unit_Cost     Decimal? @db.Decimal(28, 20)
+  Gross_Weight  Decimal? @db.Decimal(28, 20)
+  Net_Weight    Decimal? @db.Decimal(28, 20)
+  Blocked       Boolean? @db.Bit(1)
+  Item4_Type    String?  @db.VarChar(20)
+  Item4_Remark  String?  @db.VarChar(50)
 }
 
-model tm_od_quote {
-  Od_Quote_CD     String  @id @db.VarChar(2)
-  Od_Quote_Name   String? @db.VarChar(15)
-  Od_Quote_Abb    String? @db.VarChar(10)
-  Od_Quote_Symbol String? @db.VarChar(5)
-  Od_Quote_Remark String? @db.VarChar(50)
+model TM_Judge {
+  Judge_CD     String  @id @db.VarChar(2)
+  Judge_Name   String? @db.VarChar(5)
+  Judge_Remark String? @db.VarChar(20)
 }
 
-model tm_od_progress {
+model TM_ManageG {
+  ManageG_CD     String   @id @db.VarChar(6)
+  Change_CD      String?  @db.VarChar(12)
+  ManageG_Name   String?  @db.VarChar(30)
+  ManageG_Abb    String?  @db.VarChar(30)
+  ManageG_Symbol String?  @db.VarChar(30)
+  ManageG_Mark   String?  @db.VarChar(30)
+  Use            Boolean? @db.Bit(1)
+  Graph          Boolean? @db.Bit(1)
+  List           Boolean? @db.Bit(1)
+  Coefficient    Float?   @db.Float
+  Std_M_Time     Int?     @db.SmallInt
+  Std_P_Time     Int?     @db.SmallInt
+  ManageG_Remark String?  @db.VarChar(50)
+}
+
+model TM_Od_Progress {
   Od_Progress_CD     String  @id @db.VarChar(2)
   Od_Progress_Name   String? @db.VarChar(20)
   Od_Progress_Abb    String? @db.VarChar(10)
@@ -1336,37 +1282,53 @@ model tm_od_progress {
   Od_Progress_Remark String? @db.VarChar(50)
 }
 
-model tm_delivery {
-  Delivery_CD     String   @id @db.VarChar(2)
-  Delivery_Name   String?  @db.VarChar(30)
-  Delivery_Abb    String?  @db.VarChar(25)
-  Delivery_Symbol String?  @db.VarChar(20)
-  Delivery_Mark   String?  @db.VarChar(15)
-  Coefficient     Float?
-  For_Order       Boolean? @db.Bit(1)
-  For_Procure     Boolean? @db.Bit(1)
-  Delivery_Remark String?  @db.VarChar(50)
+model TM_Od_Quote {
+  Od_Quote_CD     String  @id @db.VarChar(2)
+  Od_Quote_Name   String? @db.VarChar(15)
+  Od_Quote_Abb    String? @db.VarChar(10)
+  Od_Quote_Symbol String? @db.VarChar(5)
+  Od_Quote_Remark String? @db.VarChar(50)
 }
 
-model tm_specific {
-  Specific_CD     String  @id @db.VarChar(2)
-  Specific_Name   String? @db.VarChar(20)
-  Specific_Abb    String? @db.VarChar(15)
-  Specific_Symbol String? @db.VarChar(10)
-  Specific_Mark   String? @db.VarChar(5)
-  Specific_Remark String? @db.VarChar(20)
+model TM_Parts {
+  Parts_CD     String   @id @db.VarChar(3) // Primary Key
+  Parts_Name   String?  @db.VarChar(200)
+  Parts_Abb    String?  @db.VarChar(200) // Optional field
+  Parts_Symbol String?  @db.VarChar(200) // Optional field
+  Parts_Mark   String?  @db.VarChar(200) // Optional field
+  Parts_CAT    String?  @db.VarChar(200) // Optional field
+  Money_Object Boolean? @db.Bit(1) // Optional field   
+  Parts_Remark String?  @db.VarChar(50) // Boolean field (BIT(1))
 }
 
-model tm_pc_progress {
+model TM_Pc_Item {
+  Pc_Item_CD     String  @id @db.VarChar(2)
+  Pc_Item_Name   String? @db.VarChar(10)
+  Pc_Item_Abb    String? @db.VarChar(10)
+  Pc_Item_Symbol String? @db.VarChar(10)
+  Pc_Item_Mark   String? @db.VarChar(10)
+  Pc_Item_Remark String? @db.VarChar(20)
+}
+
+model TM_Pc_Progress {
   Pc_Progress_CD     String  @id @db.VarChar(2)
   Pc_Progress_Name   String? @db.VarChar(25)
   Pc_Progress_Abb    String? @db.VarChar(15)
   Pc_Progress_Symbol String? @db.VarChar(5)
   Pc_Progress_Mark   String? @db.VarChar(5)
-  Pc_Progress_Remark String? @db.VarChar(50)
+  Pc_Progress_Remark String? @db.VarChar(255)
 }
 
-model tm_pl_progress {
+model TM_Pc_Supply {
+  Pc_Supply_CD     String  @id @db.VarChar(2)
+  Pc_Supply_Name   String? @db.VarChar(10)
+  Pc_Supply_Abb    String? @db.VarChar(10)
+  Pc_Supply_Symbol String? @db.VarChar(10)
+  Pc_Supply_Mark   String? @db.VarChar(10)
+  Pc_Supply_Remark String? @db.VarChar(20)
+}
+
+model TM_Pl_Progress {
   Pl_Progress_CD     String  @id @db.VarChar(2)
   Pl_Progress_Name   String? @db.VarChar(25)
   Pl_Progress_Abb    String? @db.VarChar(15)
@@ -1375,16 +1337,437 @@ model tm_pl_progress {
   Pl_Progress_Remark String? @db.VarChar(50)
 }
 
-model tm_inoutside {
-  InOutside_CD     String  @id @db.VarChar(2)
-  InOutside_Name   String? @db.VarChar(5)
-  InOutside_Abb    String? @db.VarChar(5)
-  InOutside_Symbol String? @db.VarChar(5)
-  InOutside_Mark   String? @db.VarChar(5)
-  InOutside_Remark String? @db.VarChar(20)
+model TM_Pl_Quote {
+  Pl_Quote_CD     String  @id @db.VarChar(2)
+  Pl_Quote_Name   String? @db.VarChar(10)
+  Pl_Quote_Abb    String? @db.VarChar(5)
+  Pl_Quote_Symbol String? @db.VarChar(5)
+  Pl_Quote_Remark String? @db.VarChar(50)
 }
 
-model tm_vendor {
+model TM_Price {
+  Price_CD     String  @id @db.VarChar(2)
+  Price_Name   String? @db.VarChar(15)
+  Price_Abb    String? @db.VarChar(10)
+  Price_Symbol String? @db.VarChar(5)
+  Price_Remark String? @db.VarChar(50)
+}
+
+model TM_Process {
+  Process_CD     String   @id @db.VarChar(8)
+  Change_CD      String?  @db.VarChar(8)
+  ProcessG_CD    String   @db.VarChar(8)
+  ResourceG_CD   String   @db.VarChar(8)
+  ManageG_CD     String?  @db.VarChar(8)
+  Manhour_Calc   String?  @db.VarChar(2)
+  Days_Calc      String?  @db.VarChar(2)
+  Process_Name   String?  @db.MediumText
+  Process_Abb    String?  @db.VarChar(30)
+  Process_Symbol String?  @db.VarChar(30)
+  Process_Mark   String?  @db.VarChar(30)
+  Use            Boolean? @db.Bit(1)
+  For_Plan       Boolean? @db.Bit(1)
+  For_Info       Boolean? @db.Bit(1)
+  Graph          Boolean? @db.Bit(1)
+  List           Boolean? @db.Bit(1)
+  Outside_On     Boolean? @db.Bit(1)
+  Outside_Off    Boolean? @db.Bit(1)
+  End            Boolean? @db.Bit(1)
+  Coefficient    Float?   @db.Float
+  M_Coefficient  Float?   @db.Float
+  P_Coefficient  Float?   @db.Float
+  Before         Float?   @db.Float
+  After          Float?   @db.Float
+  Operation_Time Int?     @db.SmallInt
+  Std_M_CAT      Int?     @db.TinyInt
+  Std_M_Time     Int?     @db.SmallInt
+  Std_P_CAT      Int?     @db.TinyInt
+  Std_P_Time     Int?     @db.SmallInt
+  T_Type         String?  @db.VarChar(1)
+  P_Type         String?  @db.VarChar(1)
+  S_Type         String?  @db.VarChar(1)
+  Process_Remark String?  @db.VarChar(50)
+
+  Resource      TM_Resource   @relation(fields: [Process_CD], references: [Resource_CD])
+  processGroup  TM_ProcessG   @relation(fields: [ProcessG_CD], references: [ProcessG_CD])
+  // ความสัมพันธ์กับ TM_ResourceG
+  resourceGroup TM_ResourceG  @relation("ResourceGroupProcesses", fields: [ResourceG_CD], references: [ResourceG_CD])
+  TM_ProcessG   TM_ProcessG[] @relation("ProcessGroupProcesses")
+}
+
+model TM_ProcessG {
+  ProcessG_CD     String   @id @db.VarChar(8)
+  Change_CD       String?  @db.VarChar(8)
+  ManageG_CD      String?  @db.VarChar(8)
+  ProcessG_Name   String?  @db.VarChar(30)
+  ProcessG_Abb    String?  @db.VarChar(30)
+  ProcessG_Symbol String?  @db.VarChar(30)
+  ProcessG_Mark   String?  @db.VarChar(30)
+  Use             Boolean? @db.Bit(1)
+  Use_Object      Boolean? @db.Bit(1)
+  Graph           Boolean? @db.Bit(1)
+  List            Boolean? @db.Bit(1)
+  Coefficient     Float?   @db.Float
+  M_Coefficient   Float?   @db.Float
+  P_Coefficient   Float?   @db.Float
+  Std_M_CAT       Int?     @db.TinyInt
+  Std_M_Time      Int?     @db.SmallInt
+  Std_P_CAT       Int?     @db.TinyInt
+  Std_P_Time      Int?     @db.SmallInt
+  M_Resource_N    Int?     @db.TinyInt
+  S_Resource_N    Int?     @db.TinyInt
+  ProcessG_Remark String?  @db.VarChar(50)
+
+  processes TM_Process[] @relation("ProcessGroupProcesses")
+
+  TM_Process TM_Process[]
+}
+
+model TM_Request1 {
+  Request1_CD     String  @id @db.VarChar(2)
+  Request1_Name   String? @db.VarChar(20)
+  Request1_Abb    String? @db.VarChar(10)
+  Request1_Symbol String? @db.VarChar(10)
+  Request1_Remark String? @db.VarChar(20)
+}
+
+model TM_Request2 {
+  Request2_CD     String  @id @db.VarChar(2)
+  Request2_Name   String? @db.VarChar(20)
+  Request2_Abb    String? @db.VarChar(10)
+  Request2_Symbol String? @db.VarChar(10)
+  Request2_Remark String? @db.VarChar(20)
+}
+
+model TM_Request3 {
+  Request3_CD     String  @id @db.VarChar(2)
+  Request3_Name   String? @db.VarChar(20)
+  Request3_Abb    String? @db.VarChar(10)
+  Request3_Symbol String? @db.VarChar(10)
+  Request3_Remark String? @db.VarChar(20)
+}
+
+model TM_Resource {
+  Resource_CD     String   @id @db.VarChar(8)
+  Change_CD       String?  @db.VarChar(8)
+  ResourceG_CD    String?  @db.VarChar(8)
+  CostG_CD        String?  @db.VarChar(8)
+  ManageG_CD      String?  @db.VarChar(8)
+  Resource_Name   String?  @db.VarChar(30)
+  Resource_Abb    String?  @db.VarChar(30)
+  Resource_Symbol String?  @db.VarChar(30)
+  Resource_Mark   String?  @db.VarChar(30)
+  Use             Boolean? @db.Bit(1)
+  End             Boolean? @db.Bit(1)
+  M_Coefficient   Float?   @db.Float
+  P_Coefficient   Float?   @db.Float
+  Before          Float?   @db.Float
+  After           Float?   @db.Float
+  T_Type          String?  @db.VarChar(1)
+  P_Type          String?  @db.VarChar(1)
+  Resource_Remark String?  @db.VarChar(50)
+
+  TM_Process TM_Process[] // ความสัมพันธ์กับ TM_Process
+
+  TD_Cost TD_Cost[]
+}
+
+model TM_ResourceG {
+  ResourceG_CD     String   @id @db.VarChar(8)
+  Change_CD        String?  @db.VarChar(8) // Change Code
+  ResourceG_Name   String?  @db.VarChar(30) // Resource Group Name
+  ResourceG_Abb    String?  @db.VarChar(30) // Resource Group Abbreviation
+  ResourceG_Symbol String?  @db.VarChar(30) // Resource Group Symbol
+  ResourceG_Mark   String?  @db.VarChar(30) // Resource Group Mark
+  Us_Group_Mark    String?  @db.VarChar(30) // Us Group Mark
+  Use              Boolean? @db.Bit(1) // Use
+
+  // ฟิลด์ใหม่ที่เพิ่มเข้ามา
+  Coefficient       Float?       @db.Float // Coefficient
+  M_Coefficient     Float?       @db.Float // M Coefficient
+  P_Coefficient     Float?       @db.Float // P Coefficient
+  M_Resource_Object String?      @db.VarChar(200) // M Resource Object
+  S_Resource_Object String?      @db.VarChar(200) // S Resource Object
+  ResourceG_Remark  String?      @db.VarChar(40) // Remark for Resource Group
+  // ความสัมพันธ์ one-to-many กับ TM_Process
+  processes         TM_Process[] @relation("ResourceGroupProcesses")
+}
+
+model TM_Schedule {
+  Schedule_CD     String  @id @db.VarChar(2) // Primary Key
+  Schedule_Name   String? @db.VarChar(20)
+  Schedule_Abb    String? @db.VarChar(20)
+  Schedule_Symbol String? @db.VarChar(15)
+  Schedule_Mark   String? @db.VarChar(5)
+  Stagnat_Scale   Float?  @db.Float
+  ManHour_Scale   Float?  @db.Float
+  Standard        Float?  @db.Float
+  Schedule_Remark String? @db.VarChar(50) // Optional field
+}
+
+model TM_SO_Progress {
+  Od_Progress_CD     String  @id @db.VarChar(2)
+  Od_Progress_Name   String? @db.VarChar(20)
+  Od_Progress_Abb    String? @db.VarChar(10)
+  Od_Progress_Symbol String? @db.VarChar(5)
+  Od_Progress_Mark   String? @db.VarChar(5)
+  Od_Progress_Remark String? @db.VarChar(50)
+}
+
+model TM_Specific {
+  Specific_CD     String  @id @db.VarChar(2)
+  Specific_Name   String? @db.VarChar(20)
+  Specific_Abb    String? @db.VarChar(15)
+  Specific_Symbol String? @db.VarChar(10)
+  Specific_Mark   String? @db.VarChar(5)
+  Specific_Remark String? @db.VarChar(20)
+}
+
+model TM_Supply {
+  Supply_CD     String  @id @db.VarChar(2)
+  Supply_Name   String? @db.VarChar(20)
+  Supply_Abb    String? @db.VarChar(15)
+  Supply_Symbol String? @db.VarChar(10)
+  Supply_Mark   String? @db.VarChar(10)
+  Supply_Remark String? @db.VarChar(20)
+}
+
+model TM_Target {
+  Target_CD     String  @id @db.VarChar(2)
+  Target_Name   String? @db.VarChar(10)
+  Target_Abb    String? @db.VarChar(5)
+  Target_Symbol String? @db.VarChar(5)
+  Target_Mark   String? @db.VarChar(5)
+  Target_Price  Float?  @db.Float
+  Target_Remark String? @db.VarChar(50)
+}
+
+model TM_Unit {
+  Unit_CD     String  @id @db.VarChar(2)
+  Unit_Name   String? @db.VarChar(50)
+  Unit_Abb    String? @db.VarChar(50)
+  Unit_Remark String? @db.VarChar(50)
+}
+
+model TM_User {
+  User_ID     String   @id @db.VarChar(6)
+  User_Name   String?  @db.VarChar(10) // ชื่อผู้ใช้
+  User_Abb    String?  @db.VarChar(10) // ชื่อย่อผู้ใช้
+  User_Pass   String?  @db.VarChar(6) // รหัสผ่านผู้ใช้
+  User_Remark String?  @db.VarChar(50) // หมายเหตุผู้ใช้
+  F0100       Boolean? @db.Bit(1)
+  F0101       Boolean? @db.Bit(1)
+  F0102       Boolean? @db.Bit(1)
+  F0103       Boolean? @db.Bit(1)
+  F0104       Boolean? @db.Bit(1)
+  F0105       Boolean? @db.Bit(1)
+  F0106       Boolean? @db.Bit(1)
+  F0107       Boolean? @db.Bit(1)
+  F0108       Boolean? @db.Bit(1)
+  F0109       Boolean? @db.Bit(1)
+  F0110       Boolean? @db.Bit(1)
+  F0111       Boolean? @db.Bit(1)
+  F0112       Boolean? @db.Bit(1)
+  F0113       Boolean? @db.Bit(1)
+  F0114       Boolean? @db.Bit(1)
+  F0115       Boolean? @db.Bit(1)
+  F0116       Boolean? @db.Bit(1)
+  F0117       Boolean? @db.Bit(1)
+  F0118       Boolean? @db.Bit(1)
+  F0119       Boolean? @db.Bit(1)
+  F0120       Boolean? @db.Bit(1)
+  F0200       Boolean? @db.Bit(1)
+  F0201       Boolean? @db.Bit(1)
+  F0202       Boolean? @db.Bit(1)
+  F0203       Boolean? @db.Bit(1)
+  F0204       Boolean? @db.Bit(1)
+  F0205       Boolean? @db.Bit(1)
+  F0206       Boolean? @db.Bit(1)
+  F0207       Boolean? @db.Bit(1)
+  F0208       Boolean? @db.Bit(1)
+  F0209       Boolean? @db.Bit(1)
+  F0210       Boolean? @db.Bit(1)
+  F0211       Boolean? @db.Bit(1)
+  F0212       Boolean? @db.Bit(1)
+  F0213       Boolean? @db.Bit(1)
+  F0214       Boolean? @db.Bit(1)
+  F0215       Boolean? @db.Bit(1)
+  F0216       Boolean? @db.Bit(1)
+  F0217       Boolean? @db.Bit(1)
+  F0218       Boolean? @db.Bit(1)
+  F0219       Boolean? @db.Bit(1)
+  F0220       Boolean? @db.Bit(1)
+  F0300       Boolean? @db.Bit(1)
+  F0301       Boolean? @db.Bit(1)
+  F0302       Boolean? @db.Bit(1)
+  F0303       Boolean? @db.Bit(1)
+  F0304       Boolean? @db.Bit(1)
+  F0305       Boolean? @db.Bit(1)
+  F0306       Boolean? @db.Bit(1)
+  F0307       Boolean? @db.Bit(1)
+  F0308       Boolean? @db.Bit(1)
+  F0309       Boolean? @db.Bit(1)
+  F0310       Boolean? @db.Bit(1)
+  F0311       Boolean? @db.Bit(1)
+  F0312       Boolean? @db.Bit(1)
+  F0313       Boolean? @db.Bit(1)
+  F0314       Boolean? @db.Bit(1)
+  F0315       Boolean? @db.Bit(1)
+  F0316       Boolean? @db.Bit(1)
+  F0317       Boolean? @db.Bit(1)
+  F0318       Boolean? @db.Bit(1)
+  F0319       Boolean? @db.Bit(1)
+  F0320       Boolean? @db.Bit(1)
+  F0400       Boolean? @db.Bit(1)
+  F0401       Boolean? @db.Bit(1)
+  F0402       Boolean? @db.Bit(1)
+  F0403       Boolean? @db.Bit(1)
+  F0404       Boolean? @db.Bit(1)
+  F0405       Boolean? @db.Bit(1)
+  F0406       Boolean? @db.Bit(1)
+  F0407       Boolean? @db.Bit(1)
+  F0408       Boolean? @db.Bit(1)
+  F0409       Boolean? @db.Bit(1)
+  F0410       Boolean? @db.Bit(1)
+  F0411       Boolean? @db.Bit(1)
+  F0412       Boolean? @db.Bit(1)
+  F0413       Boolean? @db.Bit(1)
+  F0414       Boolean? @db.Bit(1)
+  F0415       Boolean? @db.Bit(1)
+  F0416       Boolean? @db.Bit(1)
+  F0417       Boolean? @db.Bit(1)
+  F0418       Boolean? @db.Bit(1)
+  F0419       Boolean? @db.Bit(1)
+  F0420       Boolean? @db.Bit(1)
+  F0500       Boolean? @db.Bit(1)
+  F0501       Boolean? @db.Bit(1)
+  F0502       Boolean? @db.Bit(1)
+  F0503       Boolean? @db.Bit(1)
+  F0504       Boolean? @db.Bit(1)
+  F0505       Boolean? @db.Bit(1)
+  F0506       Boolean? @db.Bit(1)
+  F0507       Boolean? @db.Bit(1)
+  F0508       Boolean? @db.Bit(1)
+  F0509       Boolean? @db.Bit(1)
+  F0510       Boolean? @db.Bit(1)
+  F0511       Boolean? @db.Bit(1)
+  F0512       Boolean? @db.Bit(1)
+  F0513       Boolean? @db.Bit(1)
+  F0514       Boolean? @db.Bit(1)
+  F0515       Boolean? @db.Bit(1)
+  F0516       Boolean? @db.Bit(1)
+  F0517       Boolean? @db.Bit(1)
+  F0518       Boolean? @db.Bit(1)
+  F0519       Boolean? @db.Bit(1)
+  F0520       Boolean? @db.Bit(1)
+  F0600       Boolean? @db.Bit(1)
+  F0601       Boolean? @db.Bit(1)
+  F0602       Boolean? @db.Bit(1)
+  F0603       Boolean? @db.Bit(1)
+  F0604       Boolean? @db.Bit(1)
+  F0605       Boolean? @db.Bit(1)
+  F0606       Boolean? @db.Bit(1)
+  F0607       Boolean? @db.Bit(1)
+  F0608       Boolean? @db.Bit(1)
+  F0609       Boolean? @db.Bit(1)
+  F0610       Boolean? @db.Bit(1)
+  F0611       Boolean? @db.Bit(1)
+  F0612       Boolean? @db.Bit(1)
+  F0613       Boolean? @db.Bit(1)
+  F0614       Boolean? @db.Bit(1)
+  F0615       Boolean? @db.Bit(1)
+  F0616       Boolean? @db.Bit(1)
+  F0617       Boolean? @db.Bit(1)
+  F0618       Boolean? @db.Bit(1)
+  F0619       Boolean? @db.Bit(1)
+  F0620       Boolean? @db.Bit(1)
+  F0700       Boolean? @db.Bit(1)
+  F0701       Boolean? @db.Bit(1)
+  F0702       Boolean? @db.Bit(1)
+  F0703       Boolean? @db.Bit(1)
+  F0704       Boolean? @db.Bit(1)
+  F0705       Boolean? @db.Bit(1)
+  F0706       Boolean? @db.Bit(1)
+  F0707       Boolean? @db.Bit(1)
+  F0708       Boolean? @db.Bit(1)
+  F0709       Boolean? @db.Bit(1)
+  F0710       Boolean? @db.Bit(1)
+  F0711       Boolean? @db.Bit(1)
+  F0712       Boolean? @db.Bit(1)
+  F0713       Boolean? @db.Bit(1)
+  F0714       Boolean? @db.Bit(1)
+  F0715       Boolean? @db.Bit(1)
+  F0716       Boolean? @db.Bit(1)
+  F0717       Boolean? @db.Bit(1)
+  F0718       Boolean? @db.Bit(1)
+  F0719       Boolean? @db.Bit(1)
+  F0720       Boolean? @db.Bit(1)
+  F0800       Boolean? @db.Bit(1)
+  F0801       Boolean? @db.Bit(1)
+  F0802       Boolean? @db.Bit(1)
+  F0803       Boolean? @db.Bit(1)
+  F0804       Boolean? @db.Bit(1)
+  F0805       Boolean? @db.Bit(1)
+  F0806       Boolean? @db.Bit(1)
+  F0807       Boolean? @db.Bit(1)
+  F0808       Boolean? @db.Bit(1)
+  F0809       Boolean? @db.Bit(1)
+  F0810       Boolean? @db.Bit(1)
+  F0811       Boolean? @db.Bit(1)
+  F0812       Boolean? @db.Bit(1)
+  F0813       Boolean? @db.Bit(1)
+  F0814       Boolean? @db.Bit(1)
+  F0815       Boolean? @db.Bit(1)
+  F0816       Boolean? @db.Bit(1)
+  F0817       Boolean? @db.Bit(1)
+  F0818       Boolean? @db.Bit(1)
+  F0819       Boolean? @db.Bit(1)
+  F0820       Boolean? @db.Bit(1)
+  F0900       Boolean? @db.Bit(1)
+  F0901       Boolean? @db.Bit(1)
+  F0902       Boolean? @db.Bit(1)
+  F0903       Boolean? @db.Bit(1)
+  F0904       Boolean? @db.Bit(1)
+  F0905       Boolean? @db.Bit(1)
+  F0906       Boolean? @db.Bit(1)
+  F0907       Boolean? @db.Bit(1)
+  F0908       Boolean? @db.Bit(1)
+  F0909       Boolean? @db.Bit(1)
+  F0910       Boolean? @db.Bit(1)
+  F0911       Boolean? @db.Bit(1)
+  F0912       Boolean? @db.Bit(1)
+  F0913       Boolean? @db.Bit(1)
+  F0914       Boolean? @db.Bit(1)
+  F0915       Boolean? @db.Bit(1)
+  F0916       Boolean? @db.Bit(1)
+  F0917       Boolean? @db.Bit(1)
+  F0918       Boolean? @db.Bit(1)
+  F0919       Boolean? @db.Bit(1)
+  F0920       Boolean? @db.Bit(1)
+  F1000       Boolean? @db.Bit(1)
+  F1001       Boolean? @db.Bit(1)
+  F1002       Boolean? @db.Bit(1)
+  F1003       Boolean? @db.Bit(1)
+  F1004       Boolean? @db.Bit(1)
+  F1005       Boolean? @db.Bit(1)
+  F1006       Boolean? @db.Bit(1)
+  F1007       Boolean? @db.Bit(1)
+  F1008       Boolean? @db.Bit(1)
+  F1009       Boolean? @db.Bit(1)
+  F1010       Boolean? @db.Bit(1)
+  F1011       Boolean? @db.Bit(1)
+  F1012       Boolean? @db.Bit(1)
+  F1013       Boolean? @db.Bit(1)
+  F1014       Boolean? @db.Bit(1)
+  F1015       Boolean? @db.Bit(1)
+  F1016       Boolean? @db.Bit(1)
+  F1017       Boolean? @db.Bit(1)
+  F1018       Boolean? @db.Bit(1)
+  F1019       Boolean? @db.Bit(1)
+  F1020       Boolean? @db.Bit(1)
+}
+
+model TM_Vendor {
   Vendor_CD      String   @id @db.VarChar(20) // ฟิลด์นี้เป็นไอดีหลัก
   Vendor_Name    String?  @db.VarChar(50)
   Vendor_Name2   String?  @db.VarChar(50)
@@ -1404,43 +1787,747 @@ model tm_vendor {
   Vendor_Remark  String?  @db.VarChar(50)
 }
 
-model tm_schedule {
-  Schedule_CD     String  @id @db.VarChar(2) // Primary Key
-  Schedule_Name   String? @db.VarChar(20)
-  Schedule_Abb    String? @db.VarChar(20)
-  Schedule_Symbol String? @db.VarChar(15)
-  Schedule_Mark   String? @db.VarChar(5)
-  Stagnat_Scale   Float?
-  ManHour_Scale   Float?
-  Standard        Float?
-  Schedule_Remark String? @db.VarChar(50) // Optional field
+model TM_Worker {
+  Worker_CD     String   @id @db.VarChar(10) // รหัสคนงาน
+  Worker_Pass   String?  @db.VarChar(10) // รหัสผ่านคนงาน
+  WorkerG_CD    String?  @db.VarChar(10) // รหัสกลุ่มคนงาน
+  WorkG_CD      String   @db.VarChar(20) // รหัสการทำงาน
+  Worker_Name   String?  @db.VarChar(30) // ชื่อคนงาน
+  Worker_Abb    String?  @db.VarChar(30) // ชื่อย่อคนงาน
+  Worker_JPN    String?  @db.VarChar(20) // ชื่อภาษาญี่ปุ่นของคนงาน
+  Access_Lv     Decimal? @db.Decimal(1, 0)
+  Worker_Level  String?  @db.VarChar(2) // ระดับคนงาน
+  Worker_Menu   String?  @db.VarChar(2) // เมนูคนงาน
+  Worker_Remark String?  @db.VarChar(40) // หมายเหตุคนงาน
+
+  // Many-to-One relationship with TM_WorkG
+  workGroup TM_WorkG @relation(fields: [WorkG_CD], references: [WorkG_CD])
+
+  // One-to-Many relationship with TM_WorkerG
+  workerGroups TM_WorkerG[] @relation("WorkerWorkerGroups")
+
+  TM_WorkG TM_WorkG[] @relation("WorkGroupWorkers")
 }
 
-model tm_parts {
-  Parts_CD     String   @id @db.VarChar(3) // Primary Key
-  Parts_Name   String?  @db.VarChar(200)
-  Parts_Abb    String?  @db.VarChar(200) // Optional field
-  Parts_Symbol String?  @db.VarChar(200) // Optional field
-  Parts_Mark   String?  @db.VarChar(200) // Optional field
-  Parts_CAT    String?  @db.VarChar(200) // Optional field
-  Money_Object Boolean? @db.Bit(1) // Optional field   
-  Parts_Remark String?  @db.VarChar(50) // Boolean field (BIT(1))
+model TM_Worker_FIC {
+  Worker_CD     String  @id @db.VarChar(10)
+  WorkerG_CD    String? @db.VarChar(10)
+  WorkG_CD      String? @db.VarChar(20)
+  Worker_Name   String? @db.VarChar(30)
+  Worker_Abb    String? @db.VarChar(30)
+  Worker_JPN    String? @db.VarChar(30)
+  Worker_Pass   String? @db.VarChar(10)
+  Worker_Level  String? @db.VarChar(2)
+  Worker_Menu   String? @db.VarChar(2)
+  Worker_Remark String? @db.VarChar(40)
+}
+
+model TM_WorkerG {
+  WorkerG_CD     String  @id @db.VarChar(10)
+  WorkerG_Name   String? @db.VarChar(20)
+  WorkerG_Abb    String? @db.VarChar(20)
+  WorkerG_Remark String? @db.VarChar(20)
+
+  // Many-to-One relationship with TM_Worker
+  workers TM_Worker[] @relation("WorkerWorkerGroups")
+}
+
+model TM_WorkG {
+  WorkG_CD      String   @id @db.VarChar(20)
+  WorkG_Name    String?  @db.VarChar(50)
+  WorkG_Abb     String?  @db.VarChar(50)
+  WorkG_Symbol  String?  @db.VarChar(50)
+  WorkG_Mark    String?  @db.VarChar(50)
+  Pl_Object_Grp String?  @db.VarChar(20)
+  Pl_Object     Boolean? @db.Bit(1)
+  Target_Amount Float?   @db.Double
+  WorkG_Remark  String?  @db.VarChar(50)
+
+  // One-to-Many relationship with TM_Worker
+  workers TM_Worker[] @relation("WorkGroupWorkers")
+
+  TM_Worker TM_Worker[]
+
+  TD_Order TD_Order[]
+}
+
+model TM_WorkG_FIC {
+  WorkG_CD      String   @id @db.VarChar(20)
+  WorkG_Name    String?  @db.VarChar(50)
+  WorkG_Abb     String?  @db.VarChar(50)
+  WorkG_Symbol  String?  @db.VarChar(50)
+  WorkG_Mark    String?  @db.VarChar(50)
+  Pl_Object_Grp String?  @db.VarChar(20)
+  Pl_Object     Boolean? @db.Bit(1)
+  Target_Amount Float?   @db.Double
+  WorkG_Remark  String?  @db.VarChar(50)
+}
+
+model TS_Message {
+  CD String  @id @db.VarChar(20)
+  JP String? @db.VarChar(100)
+  EN String? @db.VarChar(100)
+  TH String? @db.VarChar(255)
+  ID String? @db.VarChar(100)
+  L1 String? @db.VarChar(100)
+  L2 String? @db.VarChar(100)
+}
+
+model TS_Set {
+  ID                Int       @id @default(autoincrement()) @db.Int
+  Use               Boolean?  @db.Bit(1)
+  Version           String?   @db.VarChar(8)
+  Password          String?   @db.VarChar(8)
+  Language          String?   @db.VarChar(50)
+  Od_No_Digits      Int?      @db.TinyInt
+  SV_Name           String?   @db.VarChar(100)
+  TENKEI            String?   @db.VarChar(100)
+  Sales_Docu        String?   @db.VarChar(100)
+  Sales_Docu_Type   String?   @db.VarChar(6)
+  Product_Docu      String?   @db.VarChar(100)
+  Product_Docu_Type String?   @db.VarChar(6)
+  Procure_Docu      String?   @db.VarChar(100)
+  Procure_Docu_Type String?   @db.VarChar(6)
+  Outside_Docu      String?   @db.VarChar(100)
+  Outside_Docu_Type String?   @db.VarChar(6)
+  Inspect_Docu      String?   @db.VarChar(100)
+  Inspect_Docu_Type String?   @db.VarChar(6)
+  Send_Docu         String?   @db.VarChar(100)
+  Send_Docu_Type    String?   @db.VarChar(6)
+  Supple_Docu       String?   @db.VarChar(100)
+  Supple_Docu_Type  String?   @db.VarChar(6)
+  SOrder_CSV        String?   @db.VarChar(100)
+  SOrder_CSV_BK     String?   @db.VarChar(100)
+  SOrder_CSV_CP     String?   @db.VarChar(100)
+  Order_CSV         String?   @db.VarChar(100)
+  Order_CSV_BK      String?   @db.VarChar(100)
+  Order_CSV_CP      String?   @db.VarChar(100)
+  Procure_CSV       String?   @db.VarChar(100)
+  Procure_CSV_BK    String?   @db.VarChar(100)
+  Procure_CSV_CP    String?   @db.VarChar(100)
+  Cost_CSV          String?   @db.VarChar(100)
+  Cost_Save         Boolean?  @db.Bit(1)
+  Cost_Save_Time    DateTime? @db.DateTime
+  Cost_Write        Boolean?  @db.Bit(1)
+  Cost_Write_Time   DateTime? @db.DateTime
+  WIP_CSV           String?   @db.VarChar(100)
+  WIP_CSV_Writing   Boolean?  @db.Bit(1)
+  TENKEI_CSV        String?   @db.VarChar(100)
+  Delivery_CSV      String?   @db.VarChar(100)
+  Label_CSV         String?   @db.VarChar(100)
+  Label_CSV_FG      Boolean?  @db.Bit(1)
+  ASPROVA           String?   @db.VarChar(100)
+  As_Operation_Csv  String?   @db.VarChar(10)
+  As_Resource_Csv   String?   @db.VarChar(10)
+  As_Plan_Csv       String?   @db.VarChar(50)
+  As_Use_Csv        String?   @db.VarChar(50)
+  As_Input_Csv      String?   @db.VarChar(50)
+  As_Schedule_Csv   String?   @db.VarChar(50)
+  Us_Group_CD       String?   @db.VarChar(6)
+  Us_Group_Name     String?   @db.VarChar(10)
+  Us_Group_Abb      String?   @db.VarChar(10)
+  Us_Group_Symbol   String?   @db.VarChar(6)
+  Us_Group_Mark     String?   @db.VarChar(1)
+  Us_Group_TEL      String?   @db.VarChar(13)
+  Us_Group_FAX      String?   @db.VarChar(13)
+  Us_Office_CD      String?   @db.VarChar(2)
+  Us_Office_Name    String?   @db.VarChar(10)
+  Us_Office_Abb     String?   @db.VarChar(5)
+  Us_Office_Symbol  String?   @db.VarChar(6)
+  Us_Office_Mark    String?   @db.VarChar(1)
+  St_Target_Week1   DateTime? @db.DateTime
+  Ed_Target_Week1   DateTime? @db.DateTime
+  St_Target_Week2   DateTime? @db.DateTime
+  Ed_Target_Week2   DateTime? @db.DateTime
+  St_Target_Week3   DateTime? @db.DateTime
+  Ed_Target_Week3   DateTime? @db.DateTime
+  St_Target_Week4   DateTime? @db.DateTime
+  Ed_Target_Week4   DateTime? @db.DateTime
+  St_Target_Week5   DateTime? @db.DateTime
+  Ed_Target_Week5   DateTime? @db.DateTime
+  Od_DrawNo_Reflect Boolean?  @db.Bit(1)
+  Pl_Quote_Delivery String?   @db.VarChar(12)
+  Pl_Abst_St_Days   Int?      @db.SmallInt
+  Pl_Abst_Ed_Days   Int?      @db.SmallInt
+  Sc_Make_Type      String?   @db.VarChar(10)
+  Sc_Stagnat_Time   Int?      @db.SmallInt
+  Sc_Stagnat_Scale  Float?    @db.Float
+  Sc_Person_Scale   Float?    @db.Float
+  Sc_Machine_Scale  Float?    @db.Float
+  Sc_Outside_Scale  Float?    @db.Float
+  Sc_ManHour_Scale  Float?    @db.Float
+  Ps_Delivery1      String?   @db.VarChar(10)
+  Ps_Delivery2      String?   @db.VarChar(10)
+  Ps_Delivery3      String?   @db.VarChar(10)
+  Ps_Delivery4      String?   @db.VarChar(10)
+  Ps_Draw_No_View   Boolean?  @db.Bit(1)
+  Ps_Entry_Text1    String?   @db.VarChar(10)
+  Ps_Entry_Text2    String?   @db.VarChar(10)
+  Ps_Entry_Text3    String?   @db.VarChar(10)
+  Ps_Under_Text     String?   @db.VarChar(50)
+  Rs_BarCode_Input  Boolean?  @db.Bit(1)
+  Rs_Move_Range     String?   @db.VarChar(20)
+  Rs_Time_Input     Boolean?  @db.Bit(1)
+  Rs_Auto_Finish    Boolean?  @db.Bit(1)
+  Od_List_ViewW     Float?    @db.Float
+  Od_List_ViewH     Float?    @db.Float
+  Pc_List_ViewW     Float?    @db.Float
+  Pc_List_ViewH     Float?    @db.Float
+  Pl_List_ViewW     Float?    @db.Float
+  Pl_List_ViewH     Float?    @db.Float
+  Rs_List_ViewW     Float?    @db.Float
+  Rs_List_ViewH     Float?    @db.Float
+  Od_Search_ViewW   Float?    @db.Float
+  Od_Search_ViewH   Float?    @db.Float
+  Pl_Search_ViewW   Float?    @db.Float
+  Pl_Search_ViewH   Float?    @db.Float
+  Pc_Change_Page    String?   @db.VarChar(20)
+  Pl_Change_Page    String?   @db.VarChar(20)
+  Pl_Schedule       String?   @db.VarChar(20)
+  Pl_Color_Separate Boolean?  @db.Bit(1)
+  Pl_Delivery1      String?   @db.VarChar(10)
+  Pl_Delivery2      String?   @db.VarChar(10)
+  Pl_Delivery3      String?   @db.VarChar(10)
+  Job_Find_St_Days  Int?      @db.TinyInt
+  Job_Find_Ed_Days  Int?      @db.TinyInt
+  Settles           Boolean?  @db.Bit(1)
+  Settles_Day       DateTime? @db.DateTime
+  Pd_Revision_Days  Int?      @db.SmallInt
+  Od_Sach_S_Years   Int?      @db.SmallInt
+  Pl_Sach_S_Years   Int?      @db.SmallInt
+  LINK_Name1        String?   @db.VarChar(50)
+  LINK1             String?   @db.MediumText
+  LINK_Name2        String?   @db.VarChar(50)
+  LINK2             String?   @db.MediumText
+  LINK_Name3        String?   @db.VarChar(50)
+  LINK3             String?   @db.MediumText
+  LINK_Name4        String?   @db.VarChar(50)
+  LINK4             String?   @db.MediumText
+  LINK_Name5        String?   @db.VarChar(50)
+  LINK5             String?   @db.MediumText
+  LINK_Name6        String?   @db.VarChar(50)
+  LINK6             String?   @db.MediumText
+  LINK_Name7        String?   @db.VarChar(50)
+  LINK7             String?   @db.MediumText
+  LINK_Name8        String?   @db.VarChar(50)
+  LINK8             String?   @db.MediumText
+  LINK_Name9        String?   @db.VarChar(50)
+  LINK9             String?   @db.MediumText
+  LINK_Name10       String?   @db.VarChar(50)
+  LINK10            String?   @db.MediumText
+}
+
+model TS_Set1 {
+  ID                Int       @id @default(autoincrement()) @db.Int
+  Use               Boolean?  @db.Bit(1)
+  Version           String?   @db.VarChar(8)
+  Password          String?   @db.VarChar(8)
+  Language          String?   @db.VarChar(50)
+  SV_Name           String?   @db.VarChar(100)
+  TENKEI            String?   @db.VarChar(100)
+  Product_Docu      String?   @db.VarChar(100)
+  Product_Docu_Type String?   @db.VarChar(6)
+  Procure_Docu      String?   @db.VarChar(100)
+  Procure_Docu_Type String?   @db.VarChar(6)
+  Outside_Docu      String?   @db.VarChar(100)
+  Outside_Docu_Type String?   @db.VarChar(6)
+  Inspect_Docu      String?   @db.VarChar(100)
+  Inspect_Docu_Type String?   @db.VarChar(6)
+  Send_Docu         String?   @db.VarChar(100)
+  Send_Docu_Type    String?   @db.VarChar(6)
+  Supple_Docu       String?   @db.VarChar(100)
+  Supple_Docu_Type  String?   @db.VarChar(6)
+  Order_CSV         String?   @db.VarChar(100)
+  Order_CSV_BK      String?   @db.VarChar(100)
+  Order_CSV_CP      String?   @db.VarChar(100)
+  Procure_CSV       String?   @db.VarChar(100)
+  Procure_CSV_BK    String?   @db.VarChar(100)
+  Procure_CSV_CP    String?   @db.VarChar(100)
+  Cost_CSV          String?   @db.VarChar(100)
+  Cost_Save         Boolean?  @db.Bit(1)
+  Cost_Save_Time    DateTime? @db.DateTime
+  Cost_Write        Boolean?  @db.Bit(1)
+  Cost_Write_Time   DateTime? @db.DateTime
+  WIP_CSV           String?   @db.VarChar(100)
+  WIP_CSV_Writing   Boolean?  @db.Bit(1)
+  TENKEI_CSV        String?   @db.VarChar(100)
+  Delivery_CSV      String?   @db.VarChar(100)
+  Label_CSV         String?   @db.VarChar(100)
+  Label_CSV_FG      Boolean?  @db.Bit(1)
+  ASPROVA           String?   @db.VarChar(100)
+  As_Operation_Csv  String?   @db.VarChar(10)
+  As_Resource_Csv   String?   @db.VarChar(10)
+  As_Plan_Csv       String?   @db.VarChar(50)
+  As_Use_Csv        String?   @db.VarChar(50)
+  As_Input_Csv      String?   @db.VarChar(50)
+  As_Schedule_Csv   String?   @db.VarChar(50)
+  Us_Group_CD       String?   @db.VarChar(6)
+  Us_Group_Name     String?   @db.VarChar(10)
+  Us_Group_Abb      String?   @db.VarChar(10)
+  Us_Group_Symbol   String?   @db.VarChar(6)
+  Us_Group_Mark     String?   @db.VarChar(1)
+  Us_Group_TEL      String?   @db.VarChar(13)
+  Us_Group_FAX      String?   @db.VarChar(13)
+  Us_Office_CD      String?   @db.VarChar(2)
+  Us_Office_Name    String?   @db.VarChar(10)
+  Us_Office_Abb     String?   @db.VarChar(5)
+  Us_Office_Symbol  String?   @db.VarChar(6)
+  Us_Office_Mark    String?   @db.VarChar(1)
+  St_Target_Week1   DateTime? @db.DateTime
+  Ed_Target_Week1   DateTime? @db.DateTime
+  St_Target_Week2   DateTime? @db.DateTime
+  Ed_Target_Week2   DateTime? @db.DateTime
+  St_Target_Week3   DateTime? @db.DateTime
+  Ed_Target_Week3   DateTime? @db.DateTime
+  St_Target_Week4   DateTime? @db.DateTime
+  Ed_Target_Week4   DateTime? @db.DateTime
+  St_Target_Week5   DateTime? @db.DateTime
+  Ed_Target_Week5   DateTime? @db.DateTime
+  Od_DrawNo_Reflect Boolean?  @db.Bit(1)
+  Pl_Quote_Delivery String?   @db.VarChar(12)
+  Pl_Abst_St_Days   Int?      @db.SmallInt
+  Pl_Abst_Ed_Days   Int?      @db.SmallInt
+  Sc_Make_Type      String?   @db.VarChar(10)
+  Sc_Stagnat_Time   Int?      @db.SmallInt
+  Sc_Stagnat_Scale  Float?    @db.Float
+  Sc_Person_Scale   Float?    @db.Float
+  Sc_Machine_Scale  Float?    @db.Float
+  Sc_Outside_Scale  Float?    @db.Float
+  Sc_ManHour_Scale  Float?    @db.Float
+  Ps_Delivery1      String?   @db.VarChar(10)
+  Ps_Delivery2      String?   @db.VarChar(10)
+  Ps_Delivery3      String?   @db.VarChar(10)
+  Ps_Delivery4      String?   @db.VarChar(10)
+  Ps_Draw_No_View   Boolean?  @db.Bit(1)
+  Ps_Entry_Text1    String?   @db.VarChar(10)
+  Ps_Entry_Text2    String?   @db.VarChar(10)
+  Ps_Entry_Text3    String?   @db.VarChar(10)
+  Ps_Under_Text     String?   @db.VarChar(50)
+  Rs_BarCode_Input  Boolean?  @db.Bit(1)
+  Rs_Move_Range     String?   @db.VarChar(20)
+  Rs_Time_Input     Boolean?  @db.Bit(1)
+  Rs_Auto_Finish    Boolean?  @db.Bit(1)
+  Od_List_ViewW     Float?    @db.Float
+  Od_List_ViewH     Float?    @db.Float
+  Pc_List_ViewW     Float?    @db.Float
+  Pc_List_ViewH     Float?    @db.Float
+  Pl_List_ViewW     Float?    @db.Float
+  Pl_List_ViewH     Float?    @db.Float
+  Rs_List_ViewW     Float?    @db.Float
+  Rs_List_ViewH     Float?    @db.Float
+  Od_Search_ViewW   Float?    @db.Float
+  Od_Search_ViewH   Float?    @db.Float
+  Pl_Search_ViewW   Float?    @db.Float
+  Pl_Search_ViewH   Float?    @db.Float
+  Pc_Change_Page    String?   @db.VarChar(20)
+  Pl_Change_Page    String?   @db.VarChar(20)
+  Pl_Schedule       String?   @db.VarChar(20)
+  Pl_Color_Separate Boolean?  @db.Bit(1)
+  Pl_Delivery1      String?   @db.VarChar(10)
+  Pl_Delivery2      String?   @db.VarChar(10)
+  Pl_Delivery3      String?   @db.VarChar(10)
+  Job_Find_St_Days  Int?      @db.TinyInt
+  Job_Find_Ed_Days  Int?      @db.TinyInt
+  Settles           Boolean?  @db.Bit(1)
+  Settles_Day       DateTime? @db.DateTime
+  Pd_Revision_Days  Int?      @db.SmallInt
+  Od_Sach_S_Years   Int?      @db.SmallInt
+  Pl_Sach_S_Years   Int?      @db.SmallInt
+  LINK_Name1        String?   @db.VarChar(50)
+  LINK1             String?   @db.MediumText
+  LINK_Name2        String?   @db.VarChar(50)
+  LINK2             String?   @db.MediumText
+  LINK_Name3        String?   @db.VarChar(50)
+  LINK3             String?   @db.MediumText
+  LINK_Name4        String?   @db.VarChar(50)
+  LINK4             String?   @db.MediumText
+  LINK_Name5        String?   @db.VarChar(50)
+  LINK5             String?   @db.MediumText
+  LINK_Name6        String?   @db.VarChar(50)
+  LINK6             String?   @db.MediumText
+  LINK_Name7        String?   @db.VarChar(50)
+  LINK7             String?   @db.MediumText
+  LINK_Name8        String?   @db.VarChar(50)
+  LINK8             String?   @db.MediumText
+  LINK_Name9        String?   @db.VarChar(50)
+  LINK9             String?   @db.MediumText
+  LINK_Name10       String?   @db.VarChar(50)
+  LINK10            String?   @db.MediumText
+}
+
+model TS_Set2 {
+  ID                Int       @id @default(autoincrement()) @db.Int
+ Use               Boolean?   @default(false) @db.Bit(1)
+  Version           String?    @db.VarChar(8)
+  Password          String?    @db.VarChar(8)
+  Language          String?    @db.VarChar(50)
+  Od_No_Digits      Int?       @db.TinyInt
+  SV_Name           String?    @db.VarChar(100)
+  TENKEI            String?    @db.VarChar(100)
+  Sales_Docu        String?    @db.VarChar(100)
+  Sales_Docu_Type   String?    @db.VarChar(6)
+  Product_Docu      String?    @db.VarChar(100)
+  Product_Docu_Type String?    @db.VarChar(6)
+  Procure_Docu      String?    @db.VarChar(100)
+  Procure_Docu_Type String?    @db.VarChar(6)
+  Outside_Docu      String?    @db.VarChar(100)
+  Outside_Docu_Type String?    @db.VarChar(6)
+  Inspect_Docu      String?    @db.VarChar(100)
+  Inspect_Docu_Type String?    @db.VarChar(6)
+  Send_Docu         String?    @db.VarChar(100)
+  Send_Docu_Type    String?    @db.VarChar(6)
+  Supple_Docu       String?    @db.VarChar(100)
+  Supple_Docu_Type  String?    @db.VarChar(6)
+  Order_CSV         String?    @db.VarChar(100)
+  Order_CSV_BK      String?    @db.VarChar(100)
+  Order_CSV_CP      String?    @db.VarChar(100)
+  Procure_CSV       String?    @db.VarChar(100)
+  Procure_CSV_BK    String?    @db.VarChar(100)
+  Procure_CSV_CP    String?    @db.VarChar(100)
+  Cost_CSV          String?    @db.VarChar(100)
+  Cost_Save         Boolean?   @default(false)@db.Bit(1)
+  Cost_Save_Time    DateTime?
+  Cost_Write        Boolean?   @default(false)@db.Bit(1)
+  Cost_Write_Time   DateTime?
+  WIP_CSV           String?    @db.VarChar(100)
+  WIP_CSV_Writing   Boolean?   @default(false)@db.Bit(1)
+  TENKEI_CSV        String?    @db.VarChar(100)
+  Delivery_CSV      String?    @db.VarChar(100)
+  Label_CSV         String?    @db.VarChar(100)
+  Label_CSV_FG      Boolean?   @default(false)@db.Bit(1)
+  ASPROVA           String?    @db.VarChar(100)
+  As_Operation_Csv  String?    @db.VarChar(10)
+  As_Resource_Csv   String?    @db.VarChar(10)
+  As_Plan_Csv       String?    @db.VarChar(50)
+  As_Use_Csv        String?    @db.VarChar(50)
+  As_Input_Csv      String?    @db.VarChar(50)
+  As_Schedule_Csv   String?    @db.VarChar(50)
+  Us_Group_CD       String?    @db.VarChar(6)
+  Us_Group_Name     String?    @db.VarChar(10)
+  Us_Group_Abb      String?    @db.VarChar(10)
+  Us_Group_Symbol   String?    @db.VarChar(6)
+  Us_Group_Mark     String?    @db.VarChar(1)
+  Us_Group_TEL      String?    @db.VarChar(13)
+  Us_Group_FAX      String?    @db.VarChar(13)
+  Us_Office_CD      String?    @db.VarChar(2)
+  Us_Office_Name    String?    @db.VarChar(10)
+  Us_Office_Abb     String?    @db.VarChar(5)
+  Us_Office_Symbol  String?    @db.VarChar(6)
+  Us_Office_Mark    String?    @db.VarChar(1)
+  St_Target_Week1   DateTime?
+  Ed_Target_Week1   DateTime?
+  St_Target_Week2   DateTime?
+  Ed_Target_Week2   DateTime?
+  St_Target_Week3   DateTime?
+  Ed_Target_Week3   DateTime?
+  St_Target_Week4   DateTime?
+  Ed_Target_Week4   DateTime?
+  St_Target_Week5   DateTime?
+  Ed_Target_Week5   DateTime?
+  Od_DrawNo_Reflect Boolean?   @default(false)@db.Bit(1)
+  Pl_Quote_Delivery String?    @db.VarChar(12)
+  Pl_Abst_St_Days   Int?       @db.SmallInt
+  Pl_Abst_Ed_Days   Int?       @db.SmallInt
+  Sc_Make_Type      String?    @db.VarChar(10)
+  Sc_Stagnat_Time   Int?       @db.SmallInt
+  Sc_Stagnat_Scale  Float?
+  Sc_Person_Scale   Float?
+  Sc_Machine_Scale  Float?
+  Sc_Outside_Scale  Float?
+  Sc_ManHour_Scale  Float?
+  Ps_Delivery1      String?    @db.VarChar(10)
+  Ps_Delivery2      String?    @db.VarChar(10)
+  Ps_Delivery3      String?    @db.VarChar(10)
+  Ps_Delivery4      String?    @db.VarChar(10)
+  Ps_Draw_No_View   Boolean?   @default(false)
+  Ps_Entry_Text1    String?    @db.VarChar(10)
+  Ps_Entry_Text2    String?    @db.VarChar(10)
+  Ps_Entry_Text3    String?    @db.VarChar(10)
+  Ps_Under_Text     String?    @db.VarChar(50)
+  Rs_BarCode_Input  Boolean?   @default(false)
+  Rs_Move_Range     String?    @db.VarChar(20)
+  Rs_Time_Input     Boolean?   @default(false)
+  Rs_Auto_Finish    Boolean?   @default(false)
+  Od_List_ViewW     Float?
+  Od_List_ViewH     Float?
+  Pc_List_ViewW     Float?
+  Pc_List_ViewH     Float?
+  Pl_List_ViewW     Float?
+  Pl_List_ViewH     Float?
+  Rs_List_ViewW     Float?
+  Rs_List_ViewH     Float?
+  Od_Search_ViewW   Float?
+  Od_Search_ViewH   Float?
+  Pl_Search_ViewW   Float?
+  Pl_Search_ViewH   Float?
+  Pc_Change_Page    String?    @db.VarChar(20)
+  Pl_Change_Page    String?    @db.VarChar(20)
+  Pl_Schedule       String?    @db.VarChar(20)
+  Pl_Color_Separate Boolean?   @default(false)
+  Pl_Delivery1      String?    @db.VarChar(10)
+  Pl_Delivery2      String?    @db.VarChar(10)
+  Pl_Delivery3      String?    @db.VarChar(10)
+  Job_Find_St_Days  Int?       @db.TinyInt
+  Job_Find_Ed_Days  Int?       @db.TinyInt
+  Settles           Boolean?   @default(false)
+  Settles_Day       DateTime?
+  Pd_Revision_Days  Int?       @db.SmallInt
+  Od_Sach_S_Years   Int?       @db.SmallInt
+  Pl_Sach_S_Years   Int?       @db.SmallInt
+  LINK_Name1        String?    @db.VarChar(50)
+  LINK1             String?    @db.MediumText
+  LINK_Name2        String?    @db.VarChar(50)
+  LINK2             String?    @db.MediumText
+  LINK_Name3        String?    @db.VarChar(50)
+  LINK3             String?    @db.MediumText
+  LINK_Name4        String?    @db.VarChar(50)
+  LINK4             String?    @db.MediumText
+  LINK_Name5        String?    @db.VarChar(50)
+  LINK5             String?    @db.MediumText
+  LINK_Name6        String?    @db.VarChar(50)
+  LINK6             String?    @db.MediumText
+  LINK_Name7        String?    @db.VarChar(50)
+  LINK7             String?    @db.MediumText
+  LINK_Name8        String?    @db.VarChar(50)
+  LINK8             String?    @db.MediumText
+  LINK_Name9        String?    @db.VarChar(50)
+  LINK9             String?    @db.MediumText
+  LINK_Name10       String?    @db.VarChar(50)
+  LINK10            String?    @db.MediumText
+}
+
+model TS_Set3 {
+  ID                Int       @id @default(autoincrement()) @db.Int
+  Use               Boolean?  @db.Bit(1)
+  Version           String?   @db.VarChar(8)
+  Password          String?   @db.VarChar(8)
+  Language          String?   @db.VarChar(50)
+  Od_No_Digits      Int?      @db.TinyInt
+  SV_Name           String?   @db.VarChar(100)
+  TENKEI            String?   @db.VarChar(100)
+  Sales_Docu        String?   @db.VarChar(100)
+  Sales_Docu_Type   String?   @db.VarChar(6)
+  Product_Docu      String?   @db.VarChar(100)
+  Product_Docu_Type String?   @db.VarChar(6)
+  Procure_Docu      String?   @db.VarChar(100)
+  Procure_Docu_Type String?   @db.VarChar(6)
+  Outside_Docu      String?   @db.VarChar(100)
+  Outside_Docu_Type String?   @db.VarChar(6)
+  Inspect_Docu      String?   @db.VarChar(100)
+  Inspect_Docu_Type String?   @db.VarChar(6)
+  Send_Docu         String?   @db.VarChar(100)
+  Send_Docu_Type    String?   @db.VarChar(6)
+  Supple_Docu       String?   @db.VarChar(100)
+  Supple_Docu_Type  String?   @db.VarChar(6)
+  SOrder_CSV        String?   @db.VarChar(100)
+  SOrder_CSV_BK     String?   @db.VarChar(100)
+  SOrder_CSV_CP     String?   @db.VarChar(100)
+  Order_CSV         String?   @db.VarChar(100)
+  Order_CSV_BK      String?   @db.VarChar(100)
+  Order_CSV_CP      String?   @db.VarChar(100)
+  Procure_CSV       String?   @db.VarChar(100)
+  Procure_CSV_BK    String?   @db.VarChar(100)
+  Procure_CSV_CP    String?   @db.VarChar(100)
+  Cost_CSV          String?   @db.VarChar(100)
+  Cost_Save         Boolean?  @db.Bit(1)
+  Cost_Save_Time    DateTime? @db.DateTime
+  Cost_Write        Boolean?  @db.Bit(1)
+  Cost_Write_Time   DateTime? @db.DateTime
+  WIP_CSV           String?   @db.VarChar(100)
+  WIP_CSV_Writing   Boolean?  @db.Bit(1)
+  TENKEI_CSV        String?   @db.VarChar(100)
+  Delivery_CSV      String?   @db.VarChar(100)
+  Label_CSV         String?   @db.VarChar(100)
+  Label_CSV_FG      Boolean?  @db.Bit(1)
+  ASPROVA           String?   @db.VarChar(100)
+  As_Operation_Csv  String?   @db.VarChar(10)
+  As_Resource_Csv   String?   @db.VarChar(10)
+  As_Plan_Csv       String?   @db.VarChar(50)
+  As_Use_Csv        String?   @db.VarChar(50)
+  As_Input_Csv      String?   @db.VarChar(50)
+  As_Schedule_Csv   String?   @db.VarChar(50)
+  Us_Group_CD       String?   @db.VarChar(6)
+  Us_Group_Name     String?   @db.VarChar(10)
+  Us_Group_Abb      String?   @db.VarChar(10)
+  Us_Group_Symbol   String?   @db.VarChar(6)
+  Us_Group_Mark     String?   @db.VarChar(1)
+  Us_Group_TEL      String?   @db.VarChar(13)
+  Us_Group_FAX      String?   @db.VarChar(13)
+  Us_Office_CD      String?   @db.VarChar(2)
+  Us_Office_Name    String?   @db.VarChar(10)
+  Us_Office_Abb     String?   @db.VarChar(5)
+  Us_Office_Symbol  String?   @db.VarChar(6)
+  Us_Office_Mark    String?   @db.VarChar(1)
+  St_Target_Week1   DateTime? @db.DateTime
+  Ed_Target_Week1   DateTime? @db.DateTime
+  St_Target_Week2   DateTime? @db.DateTime
+  Ed_Target_Week2   DateTime? @db.DateTime
+  St_Target_Week3   DateTime? @db.DateTime
+  Ed_Target_Week3   DateTime? @db.DateTime
+  St_Target_Week4   DateTime? @db.DateTime
+  Ed_Target_Week4   DateTime? @db.DateTime
+  St_Target_Week5   DateTime? @db.DateTime
+  Ed_Target_Week5   DateTime? @db.DateTime
+  Od_DrawNo_Reflect Boolean?  @db.Bit(1)
+  Pl_Quote_Delivery String?   @db.VarChar(12)
+  Pl_Abst_St_Days   Int?      @db.SmallInt
+  Pl_Abst_Ed_Days   Int?      @db.SmallInt
+  Sc_Make_Type      String?   @db.VarChar(10)
+  Sc_Stagnat_Time   Int?      @db.SmallInt
+  Sc_Stagnat_Scale  Float?    @db.Float
+  Sc_Person_Scale   Float?    @db.Float
+  Sc_Machine_Scale  Float?    @db.Float
+  Sc_Outside_Scale  Float?    @db.Float
+  Sc_ManHour_Scale  Float?    @db.Float
+  Ps_Delivery1      String?   @db.VarChar(10)
+  Ps_Delivery2      String?   @db.VarChar(10)
+  Ps_Delivery3      String?   @db.VarChar(10)
+  Ps_Delivery4      String?   @db.VarChar(10)
+  Ps_Draw_No_View   Boolean?  @db.Bit(1)
+  Ps_Entry_Text1    String?   @db.VarChar(10)
+  Ps_Entry_Text2    String?   @db.VarChar(10)
+  Ps_Entry_Text3    String?   @db.VarChar(10)
+  Ps_Under_Text     String?   @db.VarChar(50)
+  Rs_BarCode_Input  Boolean?  @db.Bit(1)
+  Rs_Move_Range     String?   @db.VarChar(20)
+  Rs_Time_Input     Boolean?  @db.Bit(1)
+  Rs_Auto_Finish    Boolean?  @db.Bit(1)
+  Od_List_ViewW     Float?    @db.Float
+  Od_List_ViewH     Float?    @db.Float
+  Pc_List_ViewW     Float?    @db.Float
+  Pc_List_ViewH     Float?    @db.Float
+  Pl_List_ViewW     Float?    @db.Float
+  Pl_List_ViewH     Float?    @db.Float
+  Rs_List_ViewW     Float?    @db.Float
+  Rs_List_ViewH     Float?    @db.Float
+  Od_Search_ViewW   Float?    @db.Float
+  Od_Search_ViewH   Float?    @db.Float
+  Pl_Search_ViewW   Float?    @db.Float
+  Pl_Search_ViewH   Float?    @db.Float
+  Pc_Change_Page    String?   @db.VarChar(20)
+  Pl_Change_Page    String?   @db.VarChar(20)
+  Pl_Schedule       String?   @db.VarChar(20)
+  Pl_Color_Separate Boolean?  @db.Bit(1)
+  Pl_Delivery1      String?   @db.VarChar(10)
+  Pl_Delivery2      String?   @db.VarChar(10)
+  Pl_Delivery3      String?   @db.VarChar(10)
+  Job_Find_St_Days  Int?      @db.TinyInt
+  Job_Find_Ed_Days  Int?      @db.TinyInt
+  Settles           Boolean?  @db.Bit(1)
+  Settles_Day       DateTime? @db.DateTime
+  Pd_Revision_Days  Int?      @db.SmallInt
+  Od_Sach_S_Years   Int?      @db.SmallInt
+  Pl_Sach_S_Years   Int?      @db.SmallInt
+  LINK_Name1        String?   @db.VarChar(50)
+  LINK1             String?   @db.MediumText
+  LINK_Name2        String?   @db.VarChar(50)
+  LINK2             String?   @db.MediumText
+  LINK_Name3        String?   @db.VarChar(50)
+  LINK3             String?   @db.MediumText
+  LINK_Name4        String?   @db.VarChar(50)
+  LINK4             String?   @db.MediumText
+  LINK_Name5        String?   @db.VarChar(50)
+  LINK5             String?   @db.MediumText
+  LINK_Name6        String?   @db.VarChar(50)
+  LINK6             String?   @db.MediumText
+  LINK_Name7        String?   @db.VarChar(50)
+  LINK7             String?   @db.MediumText
+  LINK_Name8        String?   @db.VarChar(50)
+  LINK8             String?   @db.MediumText
+  LINK_Name9        String?   @db.VarChar(50)
+  LINK9             String?   @db.MediumText
+  LINK_Name10       String?   @db.VarChar(50)
+  LINK10            String?   @db.MediumText
+}
+
+model TS_Status {
+  ID              Int       @id @default(autoincrement()) @db.Int
+  Cost_Write      Boolean?  @db.Bit(1)
+  Cost_Write_Time DateTime? @db.DateTime()
+}
+
+model TT_NAV_Od_CSV {
+  Order_No         String    @id @db.VarChar(20)
+  Request1_CD      Int?      @db.TinyInt
+  Customer_CD      String?   @db.VarChar(20)
+  Sales_Person_CD  String?   @db.VarChar(10)
+  Order_Date       DateTime? @db.DateTime
+  Request_Delivery DateTime? @db.DateTime
+  Od_Upd_Date      DateTime? @db.DateTime
+  Item1_CD         String?   @db.VarChar(20)
+  NAV_Name         String?   @db.VarChar(50)
+  NAV_Size         String?   @db.VarChar(50)
+  Quantity         Float?    @db.Float
+  Unit_CD          String?   @db.VarChar(10)
+  Unit_Price       Float?    @db.Float
+  Amount           Float?    @db.Float
+  Customer_Draw    String?   @db.VarChar(30)
+  Company_Draw     String?   @db.VarChar(30)
+  Tolerance        String?   @db.VarChar(30)
+  Coating          String?   @db.VarChar(30)
+  Material1        String?   @db.VarChar(30)
+  Material2        String?   @db.VarChar(30)
+  H_Treatment1     String?   @db.VarChar(30)
+  H_Treatment2     String?   @db.VarChar(30)
+  Material3        String?   @db.VarChar(30)
+  Material4        String?   @db.VarChar(30)
+  Material5        String?   @db.VarChar(30)
+  H_Treatment3     String?   @db.VarChar(30)
+  H_Treatment4     String?   @db.VarChar(30)
+  H_Treatment5     String?   @db.VarChar(30)
+  Customer_Abb     String?   @db.VarChar(50)
+  Sl_Person_Name   String?   @db.VarChar(50)
+  PO_No            String?   @db.VarChar(50)
+}
+
+model TT_NAV_Od_CSV_Upd {
+  Order_No         String    @id @db.VarChar(20)
+  Request1_CD      Int?      @db.TinyInt
+  Customer_CD      String?   @db.VarChar(20)
+  Sales_Person_CD  String?   @db.VarChar(10)
+  Order_Date       DateTime? @db.DateTime
+  Request_Delivery DateTime? @db.DateTime
+  Od_Upd_Date      DateTime? @db.DateTime
+  Item1_CD         String?   @db.VarChar(20)
+  NAV_Name         String?   @db.VarChar(50)
+  NAV_Size         String?   @db.VarChar(50)
+  Quantity         Float?    @db.Float
+  Unit_CD          String?   @db.VarChar(10)
+  Unit_Price       Float?    @db.Float
+  Amount           Float?    @db.Float
+  Customer_Draw    String?   @db.VarChar(30)
+  Company_Draw     String?   @db.VarChar(30)
+  Tolerance        String?   @db.VarChar(30)
+  Coating          String?   @db.VarChar(30)
+  Material1        String?   @db.VarChar(30)
+  Material2        String?   @db.VarChar(30)
+  H_Treatment1     String?   @db.VarChar(30)
+  H_Treatment2     String?   @db.VarChar(30)
+  Material3        String?   @db.VarChar(30)
+  Material4        String?   @db.VarChar(30)
+  Material5        String?   @db.VarChar(30)
+  H_Treatment3     String?   @db.VarChar(30)
+  H_Treatment4     String?   @db.VarChar(30)
+  H_Treatment5     String?   @db.VarChar(30)
+  Customer_Abb     String?   @db.VarChar(50)
+  Sl_Person_Name   String?   @db.VarChar(50)
+  PO_No            String?   @db.VarChar(50)
 }
 
 model TT_NAV_Od_FG {
   Item_Name        String?   @db.VarChar(50)
   Customer_Name    String?   @db.VarChar(50)
-  Order_Date       DateTime?
+  Order_Date       DateTime? @db.DateTime()
   Order_No         String    @db.VarChar(20)
-  Request_Delivery DateTime?
-  I_Completed_Date DateTime?
+  Request_Delivery DateTime? @db.DateTime()
+  I_Completed_Date DateTime? @db.DateTime()
   Date_of_Delay    Int?      @db.SmallInt
   NAV_Name         String?   @db.VarChar(50)
   NAV_Size         String?   @db.VarChar(50)
   Item1_CD         String?   @db.VarChar(20)
-  Quantity         Float?
-  Unit_Price       Float?
-  Amount           Float?
+  Quantity         Float?    @db.Double
+  Unit_Price       Float?    @db.Double
+  Amount           Float?    @db.Double
 
   TD_Order TD_Order @relation(fields: [Order_No], references: [Order_No])
 
@@ -1451,233 +2538,269 @@ model TT_NAV_Od_WI {
   Item_Name        String?   @db.VarChar(50)
   Customer_Name    String?   @db.VarChar(50)
   Order_No         String    @db.VarChar(20)
-  Order_Date       DateTime?
-  Request_Delivery DateTime?
-  NAV_Name         String?   @db.VarChar(50)
+  Order_Date       DateTime? @db.DateTime
+  Request_Delivery DateTime? @db.DateTime
+  NAV_Name         String?   @db.VarChar(100)
   NAV_Size         String?   @db.VarChar(50)
   Item1_CD         String?   @db.VarChar(20)
-  Quantity         Float?
-  Unit_Price       Float?
-  Amount           Float?
+  Quantity         Float?    @db.Double
+  Unit_Price       Float?    @db.Double
+  Amount           Float?    @db.Double
 
   TD_Order TD_Order @relation(fields: [Order_No], references: [Order_No])
 
   @@id([Order_No])
 }
 
-model TM_User {
-  User_ID     String   @id
-  User_Name   String? // ชื่อผู้ใช้
-  User_Abb    String? // ชื่อย่อผู้ใช้
-  User_Pass   String? // รหัสผ่านผู้ใช้
-  User_Remark String? // หมายเหตุผู้ใช้
-  F0100       Boolean? @default(false)
-  F0101       Boolean? @default(false)
-  F0102       Boolean? @default(false)
-  F0103       Boolean? @default(false)
-  F0104       Boolean? @default(false)
-  F0105       Boolean? @default(false)
-  F0106       Boolean? @default(false)
-  F0107       Boolean? @default(false)
-  F0108       Boolean? @default(false)
-  F0109       Boolean? @default(false)
-  F0110       Boolean? @default(false)
-  F0112       Boolean? @default(false)
-  F0113       Boolean? @default(false)
-  F0114       Boolean? @default(false)
-  F0115       Boolean? @default(false)
-  F0116       Boolean? @default(false)
-  F0117       Boolean? @default(false)
-  F0118       Boolean? @default(false)
-  F0119       Boolean? @default(false)
-  F0120       Boolean? @default(false)
-  F0200       Boolean? @default(false)
-  F0201       Boolean? @default(false)
-  F0202       Boolean? @default(false)
-  F0203       Boolean? @default(false)
-  F0204       Boolean? @default(false)
-  F0205       Boolean? @default(false)
-  F0206       Boolean? @default(false)
-  F0207       Boolean? @default(false)
-  F0208       Boolean? @default(false)
-  F0209       Boolean? @default(false)
-  F0210       Boolean? @default(false)
-  F0211       Boolean? @default(false)
-  F0212       Boolean? @default(false)
-  F0213       Boolean? @default(false)
-  F0214       Boolean? @default(false)
-  F0215       Boolean? @default(false)
-  F0216       Boolean? @default(false)
-  F0217       Boolean? @default(false)
-  F0218       Boolean? @default(false)
-  F0219       Boolean? @default(false)
-  F0220       Boolean? @default(false)
-  F0300       Boolean? @default(false)
-  F0301       Boolean? @default(false)
-  F0302       Boolean? @default(false)
-  F0303       Boolean? @default(false)
-  F0304       Boolean? @default(false)
-  F0305       Boolean? @default(false)
-  F0306       Boolean? @default(false)
-  F0307       Boolean? @default(false)
-  F0308       Boolean? @default(false)
-  F0309       Boolean? @default(false)
-  F0310       Boolean? @default(false)
-  F0311       Boolean? @default(false)
-  F0312       Boolean? @default(false)
-  F0313       Boolean? @default(false)
-  F0314       Boolean? @default(false)
-  F0315       Boolean? @default(false)
-  F0316       Boolean? @default(false)
-  F0317       Boolean? @default(false)
-  F0318       Boolean? @default(false)
-  F0319       Boolean? @default(false)
-  F0320       Boolean? @default(false)
-  F0400       Boolean? @default(false)
-  F0401       Boolean? @default(false)
-  F0402       Boolean? @default(false)
-  F0403       Boolean? @default(false)
-  F0404       Boolean? @default(false)
-  F0405       Boolean? @default(false)
-  F0406       Boolean? @default(false)
-  F0407       Boolean? @default(false)
-  F0408       Boolean? @default(false)
-  F0409       Boolean? @default(false)
-  F0410       Boolean? @default(false)
-  F0411       Boolean? @default(false)
-  F0412       Boolean? @default(false)
-  F0413       Boolean? @default(false)
-  F0414       Boolean? @default(false)
-  F0415       Boolean? @default(false)
-  F0416       Boolean? @default(false)
-  F0417       Boolean? @default(false)
-  F0418       Boolean? @default(false)
-  F0419       Boolean? @default(false)
-  F0420       Boolean? @default(false)
-  F0500       Boolean? @default(false)
-  F0501       Boolean? @default(false)
-  F0502       Boolean? @default(false)
-  F0503       Boolean? @default(false)
-  F0504       Boolean? @default(false)
-  F0505       Boolean? @default(false)
-  F0506       Boolean? @default(false)
-  F0507       Boolean? @default(false)
-  F0508       Boolean? @default(false)
-  F0509       Boolean? @default(false)
-  F0510       Boolean? @default(false)
-  F0511       Boolean? @default(false)
-  F0512       Boolean? @default(false)
-  F0513       Boolean? @default(false)
-  F0514       Boolean? @default(false)
-  F0515       Boolean? @default(false)
-  F0516       Boolean? @default(false)
-  F0517       Boolean? @default(false)
-  F0518       Boolean? @default(false)
-  F0519       Boolean? @default(false)
-  F0520       Boolean? @default(false)
-  F0600       Boolean? @default(false)
-  F0601       Boolean? @default(false)
-  F0602       Boolean? @default(false)
-  F0603       Boolean? @default(false)
-  F0604       Boolean? @default(false)
-  F0605       Boolean? @default(false)
-  F0606       Boolean? @default(false)
-  F0607       Boolean? @default(false)
-  F0608       Boolean? @default(false)
-  F0609       Boolean? @default(false)
-  F0610       Boolean? @default(false)
-  F0611       Boolean? @default(false)
-  F0612       Boolean? @default(false)
-  F0613       Boolean? @default(false)
-  F0614       Boolean? @default(false)
-  F0615       Boolean? @default(false)
-  F0616       Boolean? @default(false)
-  F0617       Boolean? @default(false)
-  F0618       Boolean? @default(false)
-  F0619       Boolean? @default(false)
-  F0620       Boolean? @default(false)
-  F0700       Boolean? @default(false)
-  F0701       Boolean? @default(false)
-  F0702       Boolean? @default(false)
-  F0703       Boolean? @default(false)
-  F0704       Boolean? @default(false)
-  F0705       Boolean? @default(false)
-  F0706       Boolean? @default(false)
-  F0707       Boolean? @default(false)
-  F0708       Boolean? @default(false)
-  F0709       Boolean? @default(false)
-  F0710       Boolean? @default(false)
-  F0711       Boolean? @default(false)
-  F0712       Boolean? @default(false)
-  F0713       Boolean? @default(false)
-  F0714       Boolean? @default(false)
-  F0715       Boolean? @default(false)
-  F0716       Boolean? @default(false)
-  F0717       Boolean? @default(false)
-  F0718       Boolean? @default(false)
-  F0719       Boolean? @default(false)
-  F0720       Boolean? @default(false)
-  F0800       Boolean? @default(false)
-  F0801       Boolean? @default(false)
-  F0802       Boolean? @default(false)
-  F0803       Boolean? @default(false)
-  F0804       Boolean? @default(false)
-  F0805       Boolean? @default(false)
-  F0806       Boolean? @default(false)
-  F0807       Boolean? @default(false)
-  F0808       Boolean? @default(false)
-  F0809       Boolean? @default(false)
-  F0810       Boolean? @default(false)
-  F0811       Boolean? @default(false)
-  F0812       Boolean? @default(false)
-  F0813       Boolean? @default(false)
-  F0814       Boolean? @default(false)
-  F0815       Boolean? @default(false)
-  F0816       Boolean? @default(false)
-  F0817       Boolean? @default(false)
-  F0818       Boolean? @default(false)
-  F0819       Boolean? @default(false)
-  F0820       Boolean? @default(false)
-  F0900       Boolean? @default(false)
-  F0901       Boolean? @default(false)
-  F0902       Boolean? @default(false)
-  F0903       Boolean? @default(false)
-  F0904       Boolean? @default(false)
-  F0905       Boolean? @default(false)
-  F0906       Boolean? @default(false)
-  F0907       Boolean? @default(false)
-  F0908       Boolean? @default(false)
-  F0909       Boolean? @default(false)
-  F0910       Boolean? @default(false)
-  F0911       Boolean? @default(false)
-  F0912       Boolean? @default(false)
-  F0913       Boolean? @default(false)
-  F0914       Boolean? @default(false)
-  F0915       Boolean? @default(false)
-  F0916       Boolean? @default(false)
-  F0917       Boolean? @default(false)
-  F0918       Boolean? @default(false)
-  F0919       Boolean? @default(false)
-  F0920       Boolean? @default(false)
-  F1000       Boolean? @default(false)
-  F1001       Boolean? @default(false)
-  F1002       Boolean? @default(false)
-  F1003       Boolean? @default(false)
-  F1004       Boolean? @default(false)
-  F1005       Boolean? @default(false)
-  F1006       Boolean? @default(false)
-  F1007       Boolean? @default(false)
-  F1008       Boolean? @default(false)
-  F1009       Boolean? @default(false)
-  F1010       Boolean? @default(false)
-  F1011       Boolean? @default(false)
-  F1012       Boolean? @default(false)
-  F1013       Boolean? @default(false)
-  F1014       Boolean? @default(false)
-  F1015       Boolean? @default(false)
-  F1016       Boolean? @default(false)
-  F1017       Boolean? @default(false)
-  F1018       Boolean? @default(false)
-  F1019       Boolean? @default(false)
-  F1020       Boolean? @default(false)
+model TT_NAV_Pc_CSV {
+  id              Int       @id @default(autoincrement()) @db.Int
+  Procure_No      String?   @db.VarChar(20)
+  Vendor_CD       String?   @db.VarChar(20)
+  Pc_Date         DateTime? @db.DateTime
+  Pc_Line_No      Int?      @db.Int
+  Order_No        String?   @db.VarChar(20)
+  Pc_Name         String?   @db.VarChar(50)
+  Pc_Material     String?   @db.VarChar(50)
+  Unit_Price      Float?    @db.Float
+  Pc_Qty          Float?    @db.Float
+  Pc_Unit_CD      String?   @db.VarChar(10)
+  Pc_Person_CD    String?   @db.VarChar(10)
+  Pc_Req_Delivery DateTime? @db.DateTime
+  Pc_Ans_Delivery DateTime? @db.DateTime
+  Pc_Arrival_Date DateTime? @db.DateTime
+  Pc_Arrival_Qty  Float?    @db.Float
+  Pc_NAV_Reg_Date DateTime? @db.DateTime
+  Pc_NAV_Upd_Date DateTime? @db.DateTime
+  Pc_Progress_CD  String?   @db.VarChar(2)
+  OdPc_No         String?   @db.VarChar(40)
+  OdPcLn_No       String?   @db.VarChar(46)
+}
+
+model TT_NAV_Pc_CSV_Upd {
+  id              Int       @id @default(autoincrement()) @db.Int
+  Procure_No      String?   @db.VarChar(20)
+  Vendor_CD       String?   @db.VarChar(20)
+  Pc_Date         DateTime? @db.DateTime
+  Pc_Line_No      Int?      @db.Int
+  Order_No        String?   @db.VarChar(20)
+  Pc_Name         String?   @db.VarChar(50)
+  Pc_Material     String?   @db.VarChar(50)
+  Unit_Price      Float?    @db.Float
+  Pc_Qty          Float?    @db.Float
+  Pc_Unit_CD      String?   @db.VarChar(10)
+  Pc_Person_CD    String?   @db.VarChar(10)
+  Pc_Req_Delivery DateTime? @db.DateTime
+  Pc_Ans_Delivery DateTime? @db.DateTime
+  Pc_Arrival_Date DateTime? @db.DateTime
+  Pc_Arrival_Qty  Float?    @db.Float
+  Pc_NAV_Reg_Date DateTime? @db.DateTime
+  Pc_NAV_Upd_Date DateTime? @db.DateTime
+  Pc_Progress_CD  String?   @db.VarChar(2)
+  OdPc_No         String?   @db.VarChar(40)
+  OdPcLn_No       String?   @db.VarChar(46)
+}
+
+model TT_Pl_Quote {
+  Order_No         String   @db.VarChar(20)
+  Parts_No         String   @db.VarChar(2)
+  Quote            Boolean? @db.Bit(1)
+  Pl_Quote_CD      String?  @db.VarChar(2)
+  Pl_Quote_OdPt_No String?  @db.VarChar(22)
+  Parts_CD         String?  @db.VarChar(3)
+  Pt_Material      String?  @db.VarChar(30)
+  Pt_Qty           Int?     @db.SmallInt
+  Pt_Unit_CD       String?  @db.VarChar(2)
+  Pt_Split         Boolean? @db.Bit(1)
+
+  @@id([Order_No, Parts_No])
+}
+
+model TT_Plan_PPC {
+  id                Int     @id @default(autoincrement()) @db.Int
+  Process_No        String? @db.VarChar(2)
+  Process_No_Remark String? @db.VarChar(30)
+}
+
+model TT_Plan_Result {
+  id           Int       @id @default(autoincrement()) @db.Int
+  Order_No     String?   @db.VarChar(20)
+  Parts_No     String?   @db.VarChar(2)
+  Process_No   String?   @db.VarChar(2)
+  OdPt_No      String?   @db.VarChar(22)
+  OdPtPr_No    String?   @db.VarChar(24)
+  Pt_Qty       Int?      @db.SmallInt
+  Pt_Spare_Qty Int?      @db.SmallInt
+  Pt_NG_Qty    Int?      @db.SmallInt
+  PPG          String?   @db.VarChar(8)
+  PPC          String?   @db.VarChar(8)
+  PMT          Int?      @db.SmallInt
+  PPT          Int?      @db.SmallInt
+  T_Type       String?   @db.VarChar(8)
+  P_Type       String?   @db.VarChar(8)
+  S_Type       String?   @db.VarChar(8)
+  PPD          DateTime? @db.DateTime
+  PML          Int?      @db.Int
+  PPL          Int?      @db.Int
+  INN          String?   @db.VarChar(12)
+  RPD          DateTime? @db.DateTime
+  RMT          Int?      @db.SmallInt
+  RPT          Int?      @db.SmallInt
+  RPN          Int?      @db.SmallInt
+  ASP          DateTime? @db.DateTime
+  Now_No       String?   @db.VarChar(2)
+}
+
+model TT_Process {
+  Process_CD     String   @db.VarChar(8)
+  Change_CD      String?  @db.VarChar(8)
+  ProcessG_CD    String?  @db.VarChar(8)
+  ResourceG_CD   String?  @db.VarChar(8)
+  ManageG_CD     String?  @db.VarChar(8)
+  Manhour_Calc   String?  @db.VarChar(2)
+  Days_Calc      String?  @db.VarChar(2)
+  Process_Name   String?  @db.VarChar(30)
+  Process_Abb    String?  @db.VarChar(30)
+  Process_Symbol String?  @db.VarChar(30)
+  Process_Mark   String?  @db.VarChar(30)
+  Use            Boolean? @db.Bit(1)
+  For_Plan       Boolean? @db.Bit(1)
+  For_Info       Boolean? @db.Bit(1)
+  Graph          Boolean? @db.Bit(1)
+  List           Boolean? @db.Bit(1)
+  Outside_On     Boolean? @db.Bit(1)
+  Outside_Off    Boolean? @db.Bit(1)
+  End            Boolean? @db.Bit(1)
+  Coefficient    Float?   @db.Float
+  M_Coefficient  Float?   @db.Float
+  P_Coefficient  Float?   @db.Float
+  Before         Float?   @db.Float
+  After          Float?   @db.Float
+  Operation_Time Int?     @db.SmallInt
+  Std_M_CAT      Int?     @db.TinyInt
+  Std_M_Time     Int?     @db.SmallInt
+  Std_P_CAT      Int?     @db.TinyInt
+  Std_P_Time     Int?     @db.SmallInt
+  T_Type         String?  @db.VarChar(1)
+  P_Type         String?  @db.VarChar(1)
+  S_Type         String?  @db.VarChar(1)
+  Process_Remark String?  @db.VarChar(50)
+
+  @@id([Process_CD]) // Assuming 'Process_CD' is the primary key
+}
+
+model TT_Process_JPSYS01_LT {
+  Process_CD     String   @db.VarChar(8)
+  Change_CD      String?  @db.VarChar(8)
+  ProcessG_CD    String?  @db.VarChar(8)
+  ResourceG_CD   String?  @db.VarChar(8)
+  ManageG_CD     String?  @db.VarChar(8)
+  Manhour_Calc   String?  @db.VarChar(2)
+  Days_Calc      String?  @db.VarChar(2)
+  Process_Name   String?  @db.MediumText
+  Process_Abb    String?  @db.VarChar(30)
+  Process_Symbol String?  @db.VarChar(30)
+  Process_Mark   String?  @db.VarChar(30)
+  Use            Boolean? @db.Bit(1)
+  For_Plan       Boolean? @db.Bit(1)
+  For_Info       Boolean? @db.Bit(1)
+  Graph          Boolean? @db.Bit(1)
+  List           Boolean? @db.Bit(1)
+  Outside_On     Boolean? @db.Bit(1)
+  Outside_Off    Boolean? @db.Bit(1)
+  End            Boolean? @db.Bit(1)
+  Coefficient    Float?   @db.Float
+  M_Coefficient  Float?   @db.Float
+  P_Coefficient  Float?   @db.Float
+  Before         Float?   @db.Float
+  After          Float?   @db.Float
+  Operation_Time Int?     @db.SmallInt
+  Std_M_CAT      Int?     @db.TinyInt
+  Std_M_Time     Int?     @db.SmallInt
+  Std_P_CAT      Int?     @db.TinyInt
+  Std_P_Time     Int?     @db.SmallInt
+  T_Type         String?  @db.VarChar(1)
+  P_Type         String?  @db.VarChar(1)
+  S_Type         String?  @db.VarChar(1)
+  Process_Remark String?  @db.VarChar(50)
+
+  @@unique([Process_CD]) 
+}
+
+model TT_ProcessG {
+  ProcessG_CD     String   @db.VarChar(8)
+  Change_CD       String?  @db.VarChar(8)
+  ManageG_CD      String?  @db.VarChar(8)
+  ProcessG_Name   String?  @db.VarChar(30)
+  ProcessG_Abb    String?  @db.VarChar(30)
+  ProcessG_Symbol String?  @db.VarChar(30)
+  ProcessG_Mark   String?  @db.VarChar(30)
+  Use             Boolean? @db.Bit(1)
+  Use_Object      Boolean? @db.Bit(1)
+  Graph           Boolean? @db.Bit(1)
+  List            Boolean? @db.Bit(1)
+  Coefficient     Float?   @db.Float
+  M_Coefficient   Float?   @db.Float
+  P_Coefficient   Float?   @db.Float
+  Std_M_CAT       Int?     @db.TinyInt
+  Std_M_Time      Int?     @db.SmallInt
+  Std_P_CAT       Int?     @db.TinyInt
+  Std_P_Time      Int?     @db.SmallInt
+  M_Resource_N    Int?     @db.TinyInt
+  S_Resource_N    Int?     @db.TinyInt
+  ProcessG_Remark String?  @db.VarChar(50)
+
+  @@id([ProcessG_CD]) // Assuming 'ProcessG_CD' is the primary key
+}
+
+model TT_ProcessG_JPSYS01_LT {
+  ProcessG_CD     String   @db.VarChar(8)
+  Change_CD       String?  @db.VarChar(8)
+  ManageG_CD      String?  @db.VarChar(8)
+  ProcessG_Name   String?  @db.VarChar(30)
+  ProcessG_Abb    String?  @db.VarChar(30)
+  ProcessG_Symbol String?  @db.VarChar(30)
+  ProcessG_Mark   String?  @db.VarChar(30)
+  Use             Boolean? @db.Bit(1)
+  Use_Object      Boolean? @db.Bit(1)
+  Graph           Boolean? @db.Bit(1)
+  List            Boolean? @db.Bit(1)
+  Coefficient     Float?   @db.Float
+  M_Coefficient   Float?   @db.Float
+  P_Coefficient   Float?   @db.Float
+  Std_M_CAT       Int?     @db.TinyInt
+  Std_M_Time      Int?     @db.SmallInt
+  Std_P_CAT       Int?     @db.TinyInt
+  Std_P_Time      Int?     @db.SmallInt
+  M_Resource_N    Int?     @db.TinyInt
+  S_Resource_N    Int?     @db.TinyInt
+  ProcessG_Remark String?  @db.VarChar(50)
+
+  @@unique([ProcessG_CD]) 
+}
+
+model TT_Use_Process {
+  Order_No   String  @db.VarChar(8)
+  Parts_No   String  @db.VarChar(2)
+  Process_No Int     @db.TinyInt
+  PPC        String? @db.VarChar(8)
+  PPG        String? @db.VarChar(8)
+
+  @@id([Order_No, Parts_No, Process_No]) // Assuming a composite primary key on these fields
+}
+
+model TT_WIP_ProcessG {
+  ProcessG_CD     String   @db.VarChar(8)
+  Change_CD       String?  @db.VarChar(8)
+  ManageG_CD      String?  @db.VarChar(8)
+  ProcessG_Name   String?  @db.VarChar(30)
+  ProcessG_Abb    String?  @db.VarChar(30)
+  ProcessG_Symbol String?  @db.VarChar(30)
+  ProcessG_Mark   String?  @db.VarChar(30)
+  Use             Boolean? @db.Bit(1)
+  Use_Object      Boolean? @db.Bit(1)
+  Graph           Boolean? @db.Bit(1)
+  List            Boolean? @db.Bit(1)
+  ProcessG_Remark String?  @db.VarChar(50)
+
+  @@id([ProcessG_CD])
 }
