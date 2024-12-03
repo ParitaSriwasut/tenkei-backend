@@ -2689,7 +2689,7 @@ model TT_Process {
 }
 
 model TT_Process_JPSYS01_LT {
-  id           Int       @id @default(autoincrement()) @db.Int
+  ID          Int       @id @default(autoincrement()) @db.Int
   Process_CD     String   @db.VarChar(8)
   Change_CD      String?  @db.VarChar(8)
   ProcessG_CD    String?  @db.VarChar(8)
@@ -2754,7 +2754,7 @@ model TT_ProcessG {
 }
 
 model TT_ProcessG_JPSYS01_LT {
-  id           Int       @id @default(autoincrement()) @db.Int
+  ID           Int       @id @default(autoincrement()) @db.Int
   ProcessG_CD     String   @db.VarChar(8)
   Change_CD       String?  @db.VarChar(8)
   ManageG_CD      String?  @db.VarChar(8)
