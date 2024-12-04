@@ -697,7 +697,7 @@ model TD_Result {
   Rs_Remark String?  @db.VarChar(50)
   TD_Plan   TD_Plan? @relation
 
-  @@id([Order_No, Parts_No]) // กำหนดให้ Order_No และ Parts_No เป็นคีย์หลักร่วมกัน
+  @@id([Order_No, Parts_No]) 
 }
 
 model TD_Schedule {

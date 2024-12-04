@@ -29,6 +29,7 @@ const plprogressRoute = require("./src/routes/plprogress-route");
 const setRoute = require("./src/routes/set-route");
 const processgRoute = require("./src/routes/processg-route");
 const resourceRoute = require("./src/routes/resource-route");
+const resultRoute = require("./src/routes/result-route");
 const logger = require('./src/middlewares/logger');
 
 const cors = require("cors");
@@ -68,6 +69,7 @@ app.use('/plprogress', plprogressRoute);
 app.use('/set', setRoute);
 app.use('/processg', processgRoute);
 app.use('/resource', resourceRoute);
+app.use('/result', resultRoute);
 const PORT = process.env.PORT || "4000";
 app.listen(PORT, () => console.log(`server running on port: ${PORT}`));
 
