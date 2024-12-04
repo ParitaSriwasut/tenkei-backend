@@ -207,7 +207,7 @@ exports.Vendor_CATProcure = async (req, res, next) => {
       }
 
     } else if (Vendor_CAT === "1") {
-      const vendorRecords = await prisma.tm_vendor.findMany();
+      const vendorRecords = await prisma.tM_Vendor.findMany();
       records = vendorRecords; // กำหนดข้อมูล Vendor ให้กับตัวแปร records
 
       if (vendorRecords.length === 0) {

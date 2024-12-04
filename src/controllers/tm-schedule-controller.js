@@ -5,7 +5,7 @@ const prisma = require("../models/prisma");
 exports.fetchSchedule = async (req, res, next) => {
     try {
      
-      const schedule = await prisma.tm_schedule.findMany();
+      const schedule = await prisma.tM_Schedule.findMany();
   
       // ส่งข้อมูลทั้งหมดกลับไปยังผู้ใช้
       return res.status(200).json({

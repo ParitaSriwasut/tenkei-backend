@@ -5,7 +5,7 @@ const prisma = require("../models/prisma");
 exports.fetchOdprogress = async (req, res, next) => {
     try {
      
-      const progress = await prisma.tm_od_progress.findMany();
+      const progress = await prisma.tM_Od_Progress.findMany();
   
     
       return res.status(200).json({

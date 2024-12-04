@@ -126,7 +126,7 @@ exports.updateNAVFG = async (req, res, next) => {
     console.log("NAVFG Data to be updated:", navFGData);
 
     // อัปเดตข้อมูลในฐานข้อมูล
-    const updatedNAVFG = await prisma.TT_NAV_Od_FG.update({
+    const updatedNAVFG = await prisma.tT_NAV_Od_FG.update({
       where: { Order_No: navFGData.Order_No }, // ระบุเงื่อนไขการค้นหา
       data: {
         ...navFGData, // ข้อมูลที่ต้องการอัปเดต

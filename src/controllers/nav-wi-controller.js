@@ -107,7 +107,7 @@ exports.updateNAVWI = async (req, res, next) => {
     console.log("NAVWI Data to be updated:", navWIData);
 
     // อัปเดตข้อมูลในฐานข้อมูล
-    const updatedNAVWI = await prisma.TT_NAV_Od_WI.update({
+    const updatedNAVWI = await prisma.tT_NAV_Od_WI.update({
       where: { Order_No: navWIData.Order_No }, // ระบุเงื่อนไขการค้นหา
       data: {
         ...navWIData, // ข้อมูลที่ต้องการอัปเดต
