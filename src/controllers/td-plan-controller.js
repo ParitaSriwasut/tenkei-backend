@@ -51,25 +51,18 @@ exports.Search_Parts_No_AfterUpdate = async (req, res, next) => {
   console.log("Request Body:", req.body);
 
   try {
-    // ตรวจสอบข้อมูลที่รับเข้ามา
-    const { error } = td_planSchema.validate(req.body);
-    if (error) {
-      console.error("Validation Error:", error.details[0].message);
-      return next(createError(400, error.details[0].message));
-    }
-
-    // ดึงหมายเลขคำสั่งซื้อและหมายเลขชิ้นส่วนจากคำขอ
+   
     let { Order_No: orderNo, Parts_No: partsNO } = req.body;
 
-    // สร้าง OdPt_No จาก Order_No และ Parts_No
+   
     const OdPt_No = orderNo + partsNO;
 
-    // ค้นหาในฐานข้อมูลโดยใช้ Prisma (จอยตาราง TD_Plan)
+    
     const planpartsNO = await prisma.tD_Plan.findFirst({
       where: { OdPt_No: OdPt_No },
     });
 
-    // ตรวจสอบว่ามีข้อมูลหรือไม่
+   
     if (!planpartsNO) {
       return next(
         createError(
@@ -79,15 +72,15 @@ exports.Search_Parts_No_AfterUpdate = async (req, res, next) => {
       );
     }
 
-    // กำหนดตัวแปร N และเริ่มทำงานในลูป
+  
     let N = 0;
     while (N < 36) {
       N += 1;
       
 
-      // ตรวจสอบค่า PPC
+      
       if (planpartsNO[`PPC${N}`] !== null) {
-        // ใช้ Prisma DLookup แทน DLookup ใน VBA
+        
         planpartsNO[`INN${N}`] = await prisma.tD_Schedule
           .findFirst({
             where: { OdPt_No: planpartsNO.OdPt_No },
@@ -109,7 +102,7 @@ exports.Search_Parts_No_AfterUpdate = async (req, res, next) => {
         }
 
         planpartsNO[`PPD${N}`] = await prisma.tD_Schedule
-          .findUnique({
+          .findFirst({
             where: { OdPt_No: planpartsNO.OdPt_No },
             select: { [`PPD${N}`]: true },
           })
@@ -205,7 +198,9 @@ exports.Search_Parts_No_AfterUpdate = async (req, res, next) => {
 
     return res.status(200).json({
       status: "success",
-      data: planpartsNO,
+      data: {
+        plan: planpartsNO,
+      },
       
     });
   } catch (err) {
