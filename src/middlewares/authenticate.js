@@ -12,7 +12,7 @@ module.exports = async (req, res, next) => {
     const token = authorization.split(" ")[1];
     const payload = jwt.verify(
       token,
-      process.env.JWT_SECRET_KEY || "defaultRandomBaka"
+      process.env.JWT_SECRET_KEY || "defaultRandom"
     );
 
     const user = await prisma.tM_User.findUnique({
