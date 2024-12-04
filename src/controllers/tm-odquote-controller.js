@@ -5,7 +5,7 @@ const prisma = require("../models/prisma");
 exports.fetchOdquote = async (req, res, next) => {
     try {
      
-      const odquote = await prisma.tm_od_quote.findMany();
+      const odquote = await prisma.tM_Od_Quote.findMany();
   
     
       return res.status(200).json({

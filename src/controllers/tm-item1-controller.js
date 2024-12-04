@@ -5,7 +5,7 @@ const prisma = require("../models/prisma");
 exports.fetchItem1 = async (req, res, next) => {
     try {
      
-      const item1 = await prisma.tm_item1.findMany();
+      const item1 = await prisma.tM_Item1.findMany();
   
     
       return res.status(200).json({

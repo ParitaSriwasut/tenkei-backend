@@ -236,7 +236,7 @@ exports.editplan = async (req, res, next) => {
     });
 
     // กำหนดค่า Pt_Delivery ตามค่าที่ได้
-    switch (quoteDelivery?.PI_Quote_Delivery || "Product_Delivery") {
+    switch (quoteDelivery?.Pl_Quote_Delivery || "Product_Delivery") {
       case "Request":
         planData.Pt_Delivery = await prisma.tD_Order
           .findUnique({

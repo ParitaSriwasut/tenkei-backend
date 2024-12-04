@@ -14,7 +14,7 @@ const coatingSchema = Joi.object({
 exports.fetchCoating = async (req, res, next) => {
   try {
 
-    const coating = await prisma.tm_coating.findMany();
+    const coating = await prisma.tM_Coating.findMany();
 
     // ส่งข้อมูลทั้งหมดกลับไปยังผู้ใช้
     return res.status(200).json({
@@ -43,7 +43,7 @@ exports.updateCoating = async (req, res, next) => {
     console.log("Coating Data to be updated:", coatingData);
 
     // อัปเดตข้อมูลในฐานข้อมูล
-    const updateCoating = await prisma.tm_coating.update({
+    const updateCoating = await prisma.tM_Coating.update({
       where: { Coating_CD: coatingData.Coating_CD }, // ระบุเงื่อนไขการค้นหา
       data: {
         ...coatingData, // ข้อมูลที่ต้องการอัปเดต

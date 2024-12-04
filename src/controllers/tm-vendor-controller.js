@@ -6,7 +6,7 @@ const { tm_vendorSchema } = require("../validators/vendor-validator");
 exports.fetchVendor = async (req, res, next) => {
   try {
 
-    const vendor = await prisma.tm_vendor.findMany();
+    const vendor = await prisma.tM_Vendor.findMany();
 
     // ส่งข้อมูลทั้งหมดกลับไปยังผู้ใช้
     return res.status(200).json({

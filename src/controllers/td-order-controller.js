@@ -107,7 +107,7 @@ exports.tm_workerg = async (req, res, next) => {
 exports.tm_request1 = async (req, res, next) => {
   try {
     // ดึงข้อมูลทั้งหมดจาก TD_Order โดยไม่ต้องใช้เงื่อนไข
-    const request1 = await prisma.tm_request1.findMany();
+    const request1 = await prisma.tM_Request1.findMany();
 
     // ส่งข้อมูลทั้งหมดกลับไปยังผู้ใช้
     return res.status(200).json({
@@ -125,7 +125,7 @@ exports.tm_request1 = async (req, res, next) => {
 exports.tm_request2 = async (req, res, next) => {
   try {
     // ดึงข้อมูลทั้งหมดจาก TD_Order โดยไม่ต้องใช้เงื่อนไข
-    const request2 = await prisma.tm_request2.findMany();
+    const request2 = await prisma.tM_Request2.findMany();
 
     // ส่งข้อมูลทั้งหมดกลับไปยังผู้ใช้
     return res.status(200).json({
@@ -143,7 +143,7 @@ exports.tm_request2 = async (req, res, next) => {
 exports.tm_request3 = async (req, res, next) => {
   try {
     // ดึงข้อมูลทั้งหมดจาก TD_Order โดยไม่ต้องใช้เงื่อนไข
-    const request3 = await prisma.tm_request3.findMany();
+    const request3 = await prisma.tM_Request3.findMany();
 
     // ส่งข้อมูลทั้งหมดกลับไปยังผู้ใช้
     return res.status(200).json({
