@@ -102,7 +102,7 @@ model TD_Order {
   Quote_No          String?   @db.VarChar(20)
   Quote_CD          String?   @db.VarChar(1)
   Od_No_of_Pd_Split String?   @db.VarChar(20)
-  ItemO_CD          String?   @db.VarChar(2)
+  Item0_CD          String?   @db.VarChar(2)
   Item1_CD          String?   @db.VarChar(20)
   Item2_CD          String?   @db.VarChar(2)
   Item3_CD          String?   @db.VarChar(2)
@@ -216,7 +216,7 @@ model TD_Plan {
   Pl_Ed_Rev_Day    Float?       @db.Float // วันปรับปรุง (Number)
   Pl_Progress_CD   String?      @db.VarChar(1) // รหัสความก้าวหน้า (Number)
   Pl_Schedule_CD   String?      @db.VarChar(1) // รหัสตาราง PI (Short Text)
-  Pt_Instructions  String?      @db.MediumText// คำแนะนำชิ้นส่วน (Short Text)
+  Pt_Instructions  String?      @db.MediumText // คำแนะนำชิ้นส่วน (Short Text)
   Pt_Remark        String?      @db.VarChar(200) // หมายเหตุชิ้นส่วน (Short Text)
   Pt_Information   String?      @db.VarChar(200) // ข้อมูลชิ้นส่วน (Short Text)
   Pl_Reg_Person_CD String?      @db.VarChar(10) // รหัสบุคคลที่ลงทะเบียน (Short Text)
@@ -697,7 +697,7 @@ model TD_Result {
   Rs_Remark String?  @db.VarChar(50)
   TD_Plan   TD_Plan? @relation
 
-  @@id([Order_No, Parts_No]) 
+  @@id([Order_No, Parts_No])
 }
 
 model TD_Schedule {
@@ -2157,63 +2157,63 @@ model TS_Set1 {
 
 model TS_Set2 {
   ID                Int       @id @default(autoincrement()) @db.Int
- Use               Boolean?   @default(false) @db.Bit(1)
-  Version           String?    @db.VarChar(8)
-  Password          String?    @db.VarChar(8)
-  Language          String?    @db.VarChar(50)
-  Od_No_Digits      Int?       @db.TinyInt
-  SV_Name           String?    @db.VarChar(100)
-  TENKEI            String?    @db.VarChar(100)
-  Sales_Docu        String?    @db.VarChar(100)
-  Sales_Docu_Type   String?    @db.VarChar(6)
-  Product_Docu      String?    @db.VarChar(100)
-  Product_Docu_Type String?    @db.VarChar(6)
-  Procure_Docu      String?    @db.VarChar(100)
-  Procure_Docu_Type String?    @db.VarChar(6)
-  Outside_Docu      String?    @db.VarChar(100)
-  Outside_Docu_Type String?    @db.VarChar(6)
-  Inspect_Docu      String?    @db.VarChar(100)
-  Inspect_Docu_Type String?    @db.VarChar(6)
-  Send_Docu         String?    @db.VarChar(100)
-  Send_Docu_Type    String?    @db.VarChar(6)
-  Supple_Docu       String?    @db.VarChar(100)
-  Supple_Docu_Type  String?    @db.VarChar(6)
-  Order_CSV         String?    @db.VarChar(100)
-  Order_CSV_BK      String?    @db.VarChar(100)
-  Order_CSV_CP      String?    @db.VarChar(100)
-  Procure_CSV       String?    @db.VarChar(100)
-  Procure_CSV_BK    String?    @db.VarChar(100)
-  Procure_CSV_CP    String?    @db.VarChar(100)
-  Cost_CSV          String?    @db.VarChar(100)
-  Cost_Save         Boolean?   @default(false)@db.Bit(1)
+  Use               Boolean?  @default(false) @db.Bit(1)
+  Version           String?   @db.VarChar(8)
+  Password          String?   @db.VarChar(8)
+  Language          String?   @db.VarChar(50)
+  Od_No_Digits      Int?      @db.TinyInt
+  SV_Name           String?   @db.VarChar(100)
+  TENKEI            String?   @db.VarChar(100)
+  Sales_Docu        String?   @db.VarChar(100)
+  Sales_Docu_Type   String?   @db.VarChar(6)
+  Product_Docu      String?   @db.VarChar(100)
+  Product_Docu_Type String?   @db.VarChar(6)
+  Procure_Docu      String?   @db.VarChar(100)
+  Procure_Docu_Type String?   @db.VarChar(6)
+  Outside_Docu      String?   @db.VarChar(100)
+  Outside_Docu_Type String?   @db.VarChar(6)
+  Inspect_Docu      String?   @db.VarChar(100)
+  Inspect_Docu_Type String?   @db.VarChar(6)
+  Send_Docu         String?   @db.VarChar(100)
+  Send_Docu_Type    String?   @db.VarChar(6)
+  Supple_Docu       String?   @db.VarChar(100)
+  Supple_Docu_Type  String?   @db.VarChar(6)
+  Order_CSV         String?   @db.VarChar(100)
+  Order_CSV_BK      String?   @db.VarChar(100)
+  Order_CSV_CP      String?   @db.VarChar(100)
+  Procure_CSV       String?   @db.VarChar(100)
+  Procure_CSV_BK    String?   @db.VarChar(100)
+  Procure_CSV_CP    String?   @db.VarChar(100)
+  Cost_CSV          String?   @db.VarChar(100)
+  Cost_Save         Boolean?  @default(false) @db.Bit(1)
   Cost_Save_Time    DateTime?
-  Cost_Write        Boolean?   @default(false)@db.Bit(1)
+  Cost_Write        Boolean?  @default(false) @db.Bit(1)
   Cost_Write_Time   DateTime?
-  WIP_CSV           String?    @db.VarChar(100)
-  WIP_CSV_Writing   Boolean?   @default(false)@db.Bit(1)
-  TENKEI_CSV        String?    @db.VarChar(100)
-  Delivery_CSV      String?    @db.VarChar(100)
-  Label_CSV         String?    @db.VarChar(100)
-  Label_CSV_FG      Boolean?   @default(false)@db.Bit(1)
-  ASPROVA           String?    @db.VarChar(100)
-  As_Operation_Csv  String?    @db.VarChar(10)
-  As_Resource_Csv   String?    @db.VarChar(10)
-  As_Plan_Csv       String?    @db.VarChar(50)
-  As_Use_Csv        String?    @db.VarChar(50)
-  As_Input_Csv      String?    @db.VarChar(50)
-  As_Schedule_Csv   String?    @db.VarChar(50)
-  Us_Group_CD       String?    @db.VarChar(6)
-  Us_Group_Name     String?    @db.VarChar(10)
-  Us_Group_Abb      String?    @db.VarChar(10)
-  Us_Group_Symbol   String?    @db.VarChar(6)
-  Us_Group_Mark     String?    @db.VarChar(1)
-  Us_Group_TEL      String?    @db.VarChar(13)
-  Us_Group_FAX      String?    @db.VarChar(13)
-  Us_Office_CD      String?    @db.VarChar(2)
-  Us_Office_Name    String?    @db.VarChar(10)
-  Us_Office_Abb     String?    @db.VarChar(5)
-  Us_Office_Symbol  String?    @db.VarChar(6)
-  Us_Office_Mark    String?    @db.VarChar(1)
+  WIP_CSV           String?   @db.VarChar(100)
+  WIP_CSV_Writing   Boolean?  @default(false) @db.Bit(1)
+  TENKEI_CSV        String?   @db.VarChar(100)
+  Delivery_CSV      String?   @db.VarChar(100)
+  Label_CSV         String?   @db.VarChar(100)
+  Label_CSV_FG      Boolean?  @default(false) @db.Bit(1)
+  ASPROVA           String?   @db.VarChar(100)
+  As_Operation_Csv  String?   @db.VarChar(10)
+  As_Resource_Csv   String?   @db.VarChar(10)
+  As_Plan_Csv       String?   @db.VarChar(50)
+  As_Use_Csv        String?   @db.VarChar(50)
+  As_Input_Csv      String?   @db.VarChar(50)
+  As_Schedule_Csv   String?   @db.VarChar(50)
+  Us_Group_CD       String?   @db.VarChar(6)
+  Us_Group_Name     String?   @db.VarChar(10)
+  Us_Group_Abb      String?   @db.VarChar(10)
+  Us_Group_Symbol   String?   @db.VarChar(6)
+  Us_Group_Mark     String?   @db.VarChar(1)
+  Us_Group_TEL      String?   @db.VarChar(13)
+  Us_Group_FAX      String?   @db.VarChar(13)
+  Us_Office_CD      String?   @db.VarChar(2)
+  Us_Office_Name    String?   @db.VarChar(10)
+  Us_Office_Abb     String?   @db.VarChar(5)
+  Us_Office_Symbol  String?   @db.VarChar(6)
+  Us_Office_Mark    String?   @db.VarChar(1)
   St_Target_Week1   DateTime?
   Ed_Target_Week1   DateTime?
   St_Target_Week2   DateTime?
@@ -2224,30 +2224,30 @@ model TS_Set2 {
   Ed_Target_Week4   DateTime?
   St_Target_Week5   DateTime?
   Ed_Target_Week5   DateTime?
-  Od_DrawNo_Reflect Boolean?   @default(false)@db.Bit(1)
-  Pl_Quote_Delivery String?    @db.VarChar(12)
-  Pl_Abst_St_Days   Int?       @db.SmallInt
-  Pl_Abst_Ed_Days   Int?       @db.SmallInt
-  Sc_Make_Type      String?    @db.VarChar(10)
-  Sc_Stagnat_Time   Int?       @db.SmallInt
+  Od_DrawNo_Reflect Boolean?  @default(false) @db.Bit(1)
+  Pl_Quote_Delivery String?   @db.VarChar(12)
+  Pl_Abst_St_Days   Int?      @db.SmallInt
+  Pl_Abst_Ed_Days   Int?      @db.SmallInt
+  Sc_Make_Type      String?   @db.VarChar(10)
+  Sc_Stagnat_Time   Int?      @db.SmallInt
   Sc_Stagnat_Scale  Float?
   Sc_Person_Scale   Float?
   Sc_Machine_Scale  Float?
   Sc_Outside_Scale  Float?
   Sc_ManHour_Scale  Float?
-  Ps_Delivery1      String?    @db.VarChar(10)
-  Ps_Delivery2      String?    @db.VarChar(10)
-  Ps_Delivery3      String?    @db.VarChar(10)
-  Ps_Delivery4      String?    @db.VarChar(10)
-  Ps_Draw_No_View   Boolean?   @default(false)
-  Ps_Entry_Text1    String?    @db.VarChar(10)
-  Ps_Entry_Text2    String?    @db.VarChar(10)
-  Ps_Entry_Text3    String?    @db.VarChar(10)
-  Ps_Under_Text     String?    @db.VarChar(50)
-  Rs_BarCode_Input  Boolean?   @default(false)
-  Rs_Move_Range     String?    @db.VarChar(20)
-  Rs_Time_Input     Boolean?   @default(false)
-  Rs_Auto_Finish    Boolean?   @default(false)
+  Ps_Delivery1      String?   @db.VarChar(10)
+  Ps_Delivery2      String?   @db.VarChar(10)
+  Ps_Delivery3      String?   @db.VarChar(10)
+  Ps_Delivery4      String?   @db.VarChar(10)
+  Ps_Draw_No_View   Boolean?  @default(false)
+  Ps_Entry_Text1    String?   @db.VarChar(10)
+  Ps_Entry_Text2    String?   @db.VarChar(10)
+  Ps_Entry_Text3    String?   @db.VarChar(10)
+  Ps_Under_Text     String?   @db.VarChar(50)
+  Rs_BarCode_Input  Boolean?  @default(false)
+  Rs_Move_Range     String?   @db.VarChar(20)
+  Rs_Time_Input     Boolean?  @default(false)
+  Rs_Auto_Finish    Boolean?  @default(false)
   Od_List_ViewW     Float?
   Od_List_ViewH     Float?
   Pc_List_ViewW     Float?
@@ -2260,40 +2260,40 @@ model TS_Set2 {
   Od_Search_ViewH   Float?
   Pl_Search_ViewW   Float?
   Pl_Search_ViewH   Float?
-  Pc_Change_Page    String?    @db.VarChar(20)
-  Pl_Change_Page    String?    @db.VarChar(20)
-  Pl_Schedule       String?    @db.VarChar(20)
-  Pl_Color_Separate Boolean?   @default(false)
-  Pl_Delivery1      String?    @db.VarChar(10)
-  Pl_Delivery2      String?    @db.VarChar(10)
-  Pl_Delivery3      String?    @db.VarChar(10)
-  Job_Find_St_Days  Int?       @db.TinyInt
-  Job_Find_Ed_Days  Int?       @db.TinyInt
-  Settles           Boolean?   @default(false)
+  Pc_Change_Page    String?   @db.VarChar(20)
+  Pl_Change_Page    String?   @db.VarChar(20)
+  Pl_Schedule       String?   @db.VarChar(20)
+  Pl_Color_Separate Boolean?  @default(false)
+  Pl_Delivery1      String?   @db.VarChar(10)
+  Pl_Delivery2      String?   @db.VarChar(10)
+  Pl_Delivery3      String?   @db.VarChar(10)
+  Job_Find_St_Days  Int?      @db.TinyInt
+  Job_Find_Ed_Days  Int?      @db.TinyInt
+  Settles           Boolean?  @default(false)
   Settles_Day       DateTime?
-  Pd_Revision_Days  Int?       @db.SmallInt
-  Od_Sach_S_Years   Int?       @db.SmallInt
-  Pl_Sach_S_Years   Int?       @db.SmallInt
-  LINK_Name1        String?    @db.VarChar(50)
-  LINK1             String?    @db.MediumText
-  LINK_Name2        String?    @db.VarChar(50)
-  LINK2             String?    @db.MediumText
-  LINK_Name3        String?    @db.VarChar(50)
-  LINK3             String?    @db.MediumText
-  LINK_Name4        String?    @db.VarChar(50)
-  LINK4             String?    @db.MediumText
-  LINK_Name5        String?    @db.VarChar(50)
-  LINK5             String?    @db.MediumText
-  LINK_Name6        String?    @db.VarChar(50)
-  LINK6             String?    @db.MediumText
-  LINK_Name7        String?    @db.VarChar(50)
-  LINK7             String?    @db.MediumText
-  LINK_Name8        String?    @db.VarChar(50)
-  LINK8             String?    @db.MediumText
-  LINK_Name9        String?    @db.VarChar(50)
-  LINK9             String?    @db.MediumText
-  LINK_Name10       String?    @db.VarChar(50)
-  LINK10            String?    @db.MediumText
+  Pd_Revision_Days  Int?      @db.SmallInt
+  Od_Sach_S_Years   Int?      @db.SmallInt
+  Pl_Sach_S_Years   Int?      @db.SmallInt
+  LINK_Name1        String?   @db.VarChar(50)
+  LINK1             String?   @db.MediumText
+  LINK_Name2        String?   @db.VarChar(50)
+  LINK2             String?   @db.MediumText
+  LINK_Name3        String?   @db.VarChar(50)
+  LINK3             String?   @db.MediumText
+  LINK_Name4        String?   @db.VarChar(50)
+  LINK4             String?   @db.MediumText
+  LINK_Name5        String?   @db.VarChar(50)
+  LINK5             String?   @db.MediumText
+  LINK_Name6        String?   @db.VarChar(50)
+  LINK6             String?   @db.MediumText
+  LINK_Name7        String?   @db.VarChar(50)
+  LINK7             String?   @db.MediumText
+  LINK_Name8        String?   @db.VarChar(50)
+  LINK8             String?   @db.MediumText
+  LINK_Name9        String?   @db.VarChar(50)
+  LINK9             String?   @db.MediumText
+  LINK_Name10       String?   @db.VarChar(50)
+  LINK10            String?   @db.MediumText
 }
 
 model TS_Set3 {
@@ -2689,7 +2689,7 @@ model TT_Process {
 }
 
 model TT_Process_JPSYS01_LT {
-  ID          Int       @id @default(autoincrement()) @db.Int
+  ID             Int      @id @default(autoincrement()) @db.Int
   Process_CD     String   @db.VarChar(8)
   Change_CD      String?  @db.VarChar(8)
   ProcessG_CD    String?  @db.VarChar(8)
@@ -2723,8 +2723,6 @@ model TT_Process_JPSYS01_LT {
   P_Type         String?  @db.VarChar(1)
   S_Type         String?  @db.VarChar(1)
   Process_Remark String?  @db.VarChar(50)
-
- 
 }
 
 model TT_ProcessG {
@@ -2754,7 +2752,7 @@ model TT_ProcessG {
 }
 
 model TT_ProcessG_JPSYS01_LT {
-  ID           Int       @id @default(autoincrement()) @db.Int
+  ID              Int      @id @default(autoincrement()) @db.Int
   ProcessG_CD     String   @db.VarChar(8)
   Change_CD       String?  @db.VarChar(8)
   ManageG_CD      String?  @db.VarChar(8)
@@ -2776,8 +2774,6 @@ model TT_ProcessG_JPSYS01_LT {
   M_Resource_N    Int?     @db.TinyInt
   S_Resource_N    Int?     @db.TinyInt
   ProcessG_Remark String?  @db.VarChar(50)
-
- 
 }
 
 model TT_Use_Process {
