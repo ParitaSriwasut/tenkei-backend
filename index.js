@@ -4,6 +4,7 @@ const authRoute = require("./src/routes/auth-route");
 const orderRoute = require("./src/routes/order-route");
 const orderlistRoute = require("./src/routes/orderlist-route");
 const planRoute = require("./src/routes/plan-route");
+const costRoute = require("./src/routes/cost-route");
 const procureRoute = require("./src/routes/procure-route");
 const coatingRoute = require("./src/routes/coating-route");
 const item1Route = require("./src/routes/item1-route");
@@ -30,6 +31,8 @@ const setRoute = require("./src/routes/set-route");
 const processgRoute = require("./src/routes/processg-route");
 const resourceRoute = require("./src/routes/resource-route");
 const resultRoute = require("./src/routes/result-route");
+const csprogressRoute = require("./src/routes/csprogress-route");
+const ppcRoute = require("./src/routes/planppc-route");
 const logger = require('./src/middlewares/logger');
 
 const cors = require("cors");
@@ -70,6 +73,9 @@ app.use('/set', setRoute);
 app.use('/processg', processgRoute);
 app.use('/resource', resourceRoute);
 app.use('/result', resultRoute);
+app.use('/cost', costRoute);
+app.use('/csprogress', csprogressRoute);
+app.use('/planppc', ppcRoute);
 const PORT = process.env.PORT || "4000";
 app.listen(PORT, () => console.log(`server running on port: ${PORT}`));
 
