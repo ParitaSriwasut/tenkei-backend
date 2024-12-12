@@ -22,7 +22,7 @@ exports.register = async (req, res, next) => {
             User_Remark,
             
         } = req.body;
-
+        console.log(req.body);
         // ตรวจสอบว่าผู้ใช้มีอยู่แล้วในฐานข้อมูลหรือไม่
         const existingUser = await prisma.tM_User.findUnique({
             where: { User_ID },
@@ -33,7 +33,9 @@ exports.register = async (req, res, next) => {
 
         // แฮชรหัสผ่าน
         const hashedPassword = await bcrypt.hash(User_Pass, 10);
-
+        console.log("hashedPsw", hashedPassword)
+        console.log("jwt",process.env.JWT_SECRET)
+        console.log("DB_URL Loaded:", process.env.DATABASE_URL)
         // สร้างผู้ใช้ใหม่ในฐานข้อมูล
         const newUser = await prisma.tM_User.create({
             data: {

@@ -1,18 +1,66 @@
-version: '3.1'
-
 services:
-  db:
+  backend-tenkei:
+    image: tenkei-test
+    build:
+      context: .
+    ports:
+      - "4000:4000"
+    # run migrations
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        while ! nc -z db-tenkei 3306; do
+          sleep 1
+          echo 'Waiting for MySQL...'
+        done &&
+        echo 'MySQL is up!' &&
+        sleep 10 &&
+        npx prisma migrate reset --force &&
+        npx prisma generate &&
+        node index.js
+      "
+      # worked but has to manually restart backend for it to find DB
+      # sh -c "
+      #   echo 'Waiting for database...' &&
+      #   sleep 5 &&
+      #   npx prisma migrate reset --force &&
+      #   npx prisma generate &&
+      #   node index.js
+      # "
+    environment:
+      - JWT_SECRET="i"
+      # - DATABASE_URL=mysql://root:root@host.docker.internal:3306/tenkei-project
+      - DATABASE_URL=mysql://root:root@db-tenkei:3306/tenkei-project
+    depends_on:
+      db-tenkei:
+          condition: service_healthy
+    networks:
+      - tenkei-network
+  db-tenkei:
+    container_name: db-tenkei
     image: mysql:8.0
-    volumes:
-      - my-db:/var/lib/mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: tenkei-project
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_HOST: '%'
     ports:
       - "33307:3306"
+    healthcheck:
+      test: ["CMD", "mysql", "-h", "localhost", "-uroot", "-proot", "-e", "SELECT 1"]
+      interval: 2s
+      timeout: 20s
+      retries: 15
+      start_period: 10s
+    networks:
+      - tenkei-network
+    volumes:
+      - mysql-data-tenkei:/var/lib/mysql
+    command: --default-authentication-plugin=caching_sha2_password
+
+networks:
+  tenkei-network:
+    driver: bridge
 
 volumes:
-  my-db:
+  mysql-data-tenkei:
