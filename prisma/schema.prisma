@@ -1553,7 +1553,7 @@ model TM_User {
   User_ID     String   @id @db.VarChar(6)
   User_Name   String?  @db.VarChar(10) // ชื่อผู้ใช้
   User_Abb    String?  @db.VarChar(10) // ชื่อย่อผู้ใช้
-  User_Pass   String?  @db.VarChar(6) // รหัสผ่านผู้ใช้
+  User_Pass   String? // รหัสผ่านผู้ใช้
   User_Remark String?  @db.VarChar(50) // หมายเหตุผู้ใช้
   F0100       Boolean? @db.Bit(1)
   F0101       Boolean? @db.Bit(1)
