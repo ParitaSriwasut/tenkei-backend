@@ -1,4 +1,5 @@
 services:
+  # Application services
   frontend-tenkei:
     image: tenkei-frontend:1stcompost
     build:
@@ -21,21 +22,21 @@ services:
     ports:
       - "4000:4000"
     # run migrations
-    command: >
-      sh -c "
-        echo 'Waiting for database...' &&
-        while ! nc -z db-tenkei 3306; do
-          sleep 1
-          echo 'Waiting for MySQL...'
-        done &&
-        echo 'MySQL is up!' &&
-        sleep 10 &&
-        npx prisma db push --force-reset &&
-        npx prisma migrate reset --force &&
-        npx prisma db push &&
-        npx prisma generate &&
-        node index.js
-      "
+    # command: >
+    #   sh -c "
+    #     echo 'Waiting for database...' &&
+    #     while ! nc -z db-tenkei 3306; do
+    #       sleep 1
+    #       echo 'Waiting for MySQL...'
+    #     done &&
+    #     echo 'MySQL is up!' &&
+    #     sleep 10 &&
+    #     npx prisma db push --force-reset &&
+    #     npx prisma migrate reset --force &&
+    #     npx prisma db push &&
+    #     npx prisma generate &&
+    #     node index.js
+    #   "
       # work for 1stcompost version of all services
       # sh -c "
       #   echo 'Waiting for database...' &&
@@ -62,11 +63,30 @@ services:
       # - DATABASE_URL=mysql://root:root@host.docker.internal:3306/tenkei-project
       - DATABASE_URL=mysql://root:root@db-tenkei:3306/tenkei-project
     depends_on:
+      migration:
+          condition: service_completed_successfully
+    networks:
+      - tenkei-network
+  # Migration service
+  migration:
+    image: tenkei-backend:1stcompost
+    build:
+      context: .
+    command: >
+      sh -c "
+        while ! nc -z db-tenkei 3306; do
+          sleep 1
+        done &&
+        npx prisma migrate deploy"
+    environment:
+      - DATABASE_URL=mysql://root:root@db-tenkei:3306/tenkei-project
+    depends_on:
       db-tenkei:
           condition: service_healthy
           restart: true
     networks:
       - tenkei-network
+  # DB service
   db-tenkei:
     container_name: db-tenkei
     image: mysql:8.0
