@@ -33,7 +33,11 @@ const resourceRoute = require("./src/routes/resource-route");
 const resultRoute = require("./src/routes/result-route");
 const csprogressRoute = require("./src/routes/csprogress-route");
 const ppcRoute = require("./src/routes/planppc-route");
+<<<<<<< HEAD
 const costlistRoute = require("./src/routes/costlist-route");
+=======
+const holidayRoute = require("./src/routes/holiday-route");
+>>>>>>> adedac676134fef371cf76451561f35ff1612536
 const logger = require('./src/middlewares/logger');
 
 const cors = require("cors");
@@ -77,7 +81,11 @@ app.use('/result', resultRoute);
 app.use('/cost', costRoute);
 app.use('/csprogress', csprogressRoute);
 app.use('/planppc', ppcRoute);
+<<<<<<< HEAD
 app.use('/costlist', costlistRoute);
+=======
+app.use('/holiday', holidayRoute);
+>>>>>>> adedac676134fef371cf76451561f35ff1612536
 const PORT = process.env.PORT || "4000";
 app.listen(PORT, () => console.log(`server running on port: ${PORT}`));
 
