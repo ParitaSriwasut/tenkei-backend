@@ -1,15 +1,14 @@
 services:
   # Application services
   frontend-tenkei:
-    image: tenkei-frontend:1stcompost
+    image: tenkei-frontend:confbyenv
     build:
       context: ../tenkei-frontend
       dockerfile: Dockerfile
     ports:
-      - "25000:25000"
-    environment:
-      - PORT=25000
-      - BACKEND_URL = "http://localhost:3000"
+      - "24000:24000"
+    env_file:
+      - .env
     depends_on:
       backend-tenkei:
           condition: service_started

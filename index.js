@@ -78,7 +78,8 @@ app.use('/cost', costRoute);
 app.use('/csprogress', csprogressRoute);
 app.use('/planppc', ppcRoute);
 app.use('/holiday', holidayRoute);
-const PORT = process.env.PORT || "4000";
+
+const PORT = process.env.BE_PORT || "4000";
 app.listen(PORT, () => console.log(`server running on port: ${PORT}`));
 
 module.exports = app;
