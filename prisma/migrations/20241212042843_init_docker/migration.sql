@@ -1610,7 +1610,7 @@ CREATE TABLE `TM_User` (
     `User_ID` VARCHAR(6) NOT NULL,
     `User_Name` VARCHAR(10) NULL,
     `User_Abb` VARCHAR(10) NULL,
-    `User_Pass` VARCHAR(6) NULL,
+    `User_Pass` VARCHAR(191) NULL,
     `User_Remark` VARCHAR(50) NULL,
     `F0100` BIT(1) NULL,
     `F0101` BIT(1) NULL,

@@ -26,10 +26,25 @@ services:
         done &&
         echo 'MySQL is up!' &&
         sleep 10 &&
+        npx prisma db push --force-reset &&
         npx prisma migrate reset --force &&
+        npx prisma db push &&
         npx prisma generate &&
         node index.js
       "
+      # work for 1stcompost version of all services
+      # sh -c "
+      #   echo 'Waiting for database...' &&
+      #   while ! nc -z db-tenkei 3306; do
+      #     sleep 1
+      #     echo 'Waiting for MySQL...'
+      #   done &&
+      #   echo 'MySQL is up!' &&
+      #   sleep 10 &&
+      #   npx prisma migrate reset --force &&
+      #   npx prisma generate &&
+      #   node index.js
+      # "
       # worked but has to manually restart backend for it to find DB
       # sh -c "
       #   echo 'Waiting for database...' &&
