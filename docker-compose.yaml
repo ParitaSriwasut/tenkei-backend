@@ -1,6 +1,17 @@
 services:
+  frontend-tenkei:
+    image: tenkei-frontend:1stcompost
+    build:
+      context: ../tenkei-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "24000:24000"
+    depends_on:
+      - backend-tenkei
+    networks:
+      - tenkei-network
   backend-tenkei:
-    image: tenkei-test
+    image: tenkei-backend:1stcompost
     build:
       context: .
     ports:
