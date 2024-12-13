@@ -537,7 +537,7 @@ model TD_Result {
   RPC24            String?   @db.VarChar(8)
   RPC25            String?   @db.VarChar(8)
   RPC26            String?   @db.VarChar(8)
-  RPC27            String    @db.VarChar(8)
+  RPC27            String?   @db.VarChar(8)
   RPC28            String?   @db.VarChar(8)
   RPC29            String?   @db.VarChar(8)
   RPC30            String?   @db.VarChar(8)
