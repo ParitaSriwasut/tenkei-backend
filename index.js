@@ -33,6 +33,7 @@ const resourceRoute = require("./src/routes/resource-route");
 const resultRoute = require("./src/routes/result-route");
 const csprogressRoute = require("./src/routes/csprogress-route");
 const ppcRoute = require("./src/routes/planppc-route");
+const costlistRoute = require("./src/routes/costlist-route");
 const holidayRoute = require("./src/routes/holiday-route");
 const logger = require('./src/middlewares/logger');
 
@@ -77,6 +78,7 @@ app.use('/result', resultRoute);
 app.use('/cost', costRoute);
 app.use('/csprogress', csprogressRoute);
 app.use('/planppc', ppcRoute);
+app.use('/costlist', costlistRoute);
 app.use('/holiday', holidayRoute);
 
 const PORT = process.env.BE_PORT || "4000";
