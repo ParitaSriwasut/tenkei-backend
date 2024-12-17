@@ -5,7 +5,7 @@ const prisma = require("../models/prisma");
 exports.fetchPcprogress = async (req, res, next) => {
     try {
      
-      const pcprogress = await prisma.tm_pc_progress.findMany();
+      const pcprogress = await prisma.tM_Pc_Progress.findMany();
   
       // ส่งข้อมูลทั้งหมดกลับไปยังผู้ใช้
       return res.status(200).json({

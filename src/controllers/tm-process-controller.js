@@ -99,3 +99,22 @@ exports.updateProcess = async (req, res, next) => {
     return next(createError(500, "Internal Server Error"));
   }
 };
+
+exports.fetchProcessCost = async (req, res, next) => {
+  try {
+
+    const process = await prisma.tM_Process.findMany({});
+
+    // ส่งข้อมูลทั้งหมดกลับไปยังผู้ใช้
+    return res.status(200).json({
+      status: "success",
+      data: {
+        process: process,
+      },
+
+    });
+  } catch (err) {
+    console.error("Error searching process:", err);
+    return next(createError(500, "Internal Server Error"));
+  }
+};

@@ -5,7 +5,7 @@ const prisma = require("../models/prisma");
 exports.fetchSupply = async (req, res, next) => {
     try {
      
-      const supply = await prisma.tm_supply.findMany();
+      const supply = await prisma.tM_Supply.findMany();
   
       // ส่งข้อมูลทั้งหมดกลับไปยังผู้ใช้
       return res.status(200).json({

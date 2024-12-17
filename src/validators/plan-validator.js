@@ -19,7 +19,7 @@ const td_planSchema = Joi.object({
   PI_Quote_CD: Joi.string().optional().allow(null, ''),
   PI_St_Rev_Day: Joi.number().integer().optional().allow(null),
   Pl_Ed_Rev_Day: Joi.number().integer().optional().allow(null),
-  Pl_Progress_CD: Joi.number().integer().optional().allow(null),
+  Pl_Progress_CD: Joi.string().optional().allow(null),
   PI_Schedule_CD: Joi.string().optional().allow(null, ''),
   Pt_Instructions: Joi.string().optional().allow(null, ''),
   Pt_Remark: Joi.string().optional().allow(null, ''),

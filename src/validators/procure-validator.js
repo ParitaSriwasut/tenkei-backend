@@ -8,8 +8,8 @@ const procureSchema = Joi.object({
   Vendor_CD: Joi.string().optional().allow(null, ''),  // รหัสผู้จำหน่าย (Short Text)
   Pc_Name: Joi.string().optional().allow(null, ''), // ชื่อการจัดซื้อ (Short Text)
   Pc_Material: Joi.string().optional().allow(null, ''), // วัสดุการจัดซื้อ (Short Text)
-  Pc_Mate_Docu: Joi.string().optional().allow(null, ''), // เอกสารวัสดุการจัดซื้อ (Short Text)
-  Temp_Price: Joi.string().optional().allow(null, ''), // ราคาชั่วคราว (Price CD)
+  Pc_Mate_Docu: Joi.boolean().optional().allow(null), // เอกสารวัสดุการจัดซื้อ (Short Text)
+  Temp_Price: Joi.boolean().optional().allow(null), // ราคาชั่วคราว (Price CD)
   Unit_Price: Joi.number().precision(2).optional().allow(null), // ราคาต่อหน่วย
   Yes_No_1: Joi.boolean().optional().allow(null), // ใช่/ไม่ใช่ 1
   Yes_No_2: Joi.boolean().optional().allow(null), // ใช่/ไม่ใช่ 2
@@ -36,7 +36,7 @@ const procureSchema = Joi.object({
   Pc_Reg_Date: Joi.date().optional().allow(null), // วันที่ลงทะเบียนการจัดซื้อ
   Pc_Upd_Date: Joi.date().optional().allow(null), // วันที่อัปเดตการจัดซื้อ
   Pc_NAV_Reg_Date: Joi.date().optional().allow(null), // วันที่ลงทะเบียน NAV
-  PC_NAV_Upd_Date: Joi.date().optional().allow(null), // วันที่อัปเดต NAV
+  Pc_NAV_Upd_Date: Joi.date().optional().allow(null), // วันที่อัปเดต NAV
   Pc_Line_No: Joi.number().integer().optional().allow(null), // หมายเลขบรรทัด (Line Number)
 });
 

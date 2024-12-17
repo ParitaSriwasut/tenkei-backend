@@ -5,7 +5,7 @@ const prisma = require("../models/prisma");
 exports.fetchContractDocu = async (req, res, next) => {
     try {
      
-      const docu  = await prisma.tm_contract_docu.findMany();
+      const docu  = await prisma.tM_Contract_Docu.findMany();
   
     
       return res.status(200).json({
