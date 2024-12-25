@@ -35,6 +35,7 @@ const csprogressRoute = require("./src/routes/csprogress-route");
 const ppcRoute = require("./src/routes/planppc-route");
 const costlistRoute = require("./src/routes/costlist-route");
 const holidayRoute = require("./src/routes/holiday-route");
+const planlistRoute = require("./src/routes/planlist-route")
 const logger = require('./src/middlewares/logger');
 
 const cors = require("cors");
@@ -80,6 +81,7 @@ app.use('/csprogress', csprogressRoute);
 app.use('/planppc', ppcRoute);
 app.use('/costlist', costlistRoute);
 app.use('/holiday', holidayRoute);
+app.use('/planlist',planlistRoute)
 const PORT = process.env.PORT || "4000";
 app.listen(PORT, () => console.log(`server running on port: ${PORT}`));
 
