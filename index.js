@@ -83,9 +83,6 @@ app.use('/csprogress', csprogressRoute);
 app.use('/planppc', ppcRoute);
 app.use('/costlist', costlistRoute);
 app.use('/holiday', holidayRoute);
-app.use('/planlist',planlistRoute)
-app.use('/sorder', sorderRoute);
-app.use('/currency', currencyRoute);
 const PORT = process.env.PORT || "4000";
 app.listen(PORT, () => console.log(`server running on port: ${PORT}`));
 
