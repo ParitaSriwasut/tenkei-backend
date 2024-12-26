@@ -1061,7 +1061,7 @@ model TD_WIP {
   plan         TD_Plan?     @relation("PlanToWIP", fields: [Order_No, Parts_No], references: [Order_No, Parts_No])
   processGroup TM_ProcessG? @relation(fields: [PPG], references: [ProcessG_CD])
 
-  processGroup TM_ProcessG? @relation(fields: [PPG], references: [ProcessG_CD])
+
 
   @@id([Order_No, Parts_No, Process_No]) // กำหนดให้ Order_No และ Parts_No เป็นคีย์หลักร่วมกัน
 }
