@@ -89,7 +89,10 @@ exports.login = async (req, res, next) => {
         let isMatch = false;
 
         // พยายามตรวจสอบรหัสผ่านแบบ bcrypt
-        if (existingUser.User_Pass.startsWith("$2b$")) { // ตรวจสอบว่ารหัสผ่านถูกเข้ารหัสด้วย bcrypt หรือไม่
+        // if (existingUser.User_Pass.startsWith("$2b$")) { // ตรวจสอบว่ารหัสผ่านถูกเข้ารหัสด้วย bcrypt หรือไม่
+
+        // ตรวจสอบว่ารหัสผ่านถูกเข้ารหัสด้วย bcrypt หรือไม่ ยอมรับทั้ง $2b$ และ $2a$
+        if (existingUser.User_Pass.startsWith('$2a$') || existingUser.User_Pass.startsWith('$2b$')) { 
             isMatch = await bcrypt.compare(User_Pass, existingUser.User_Pass);
         } else {
             // ตรวจสอบรหัสผ่านแบบไม่เข้ารหัส
