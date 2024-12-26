@@ -1058,7 +1058,8 @@ model TD_WIP {
   WIP_Remark     String?   @db.VarChar(50)
   Into_I         Boolean?  @db.Bit(1)
 
-  plan TD_Plan? @relation("PlanToWIP", fields: [Order_No, Parts_No], references: [Order_No, Parts_No])
+  plan         TD_Plan?     @relation("PlanToWIP", fields: [Order_No, Parts_No], references: [Order_No, Parts_No])
+  processGroup TM_ProcessG? @relation(fields: [PPG], references: [ProcessG_CD])
 
   @@id([Order_No, Parts_No, Process_No]) // กำหนดให้ Order_No และ Parts_No เป็นคีย์หลักร่วมกัน
 }
@@ -1421,6 +1422,8 @@ model TM_ProcessG {
   processes TM_Process[] @relation("ProcessGroupProcesses")
 
   TM_Process TM_Process[]
+
+  wips TD_WIP[] @relation()
 }
 
 model TM_Request1 {

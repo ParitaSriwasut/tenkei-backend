@@ -346,9 +346,10 @@ exports.editOrder = async (req, res, next) => {
 
     // อัปเดตข้อมูลในฐานข้อมูล
     const updatedOrder = await prisma.tD_Order.update({
-      where: { Order_No: orderData.Order_No }, // ระบุเงื่อนไขในการค้นหา
+      where: { Order_No: orderData.Order_No },
       data: {
-        ...orderData, // ข้อมูลที่ต้องการแก้ไข
+        ...orderData,
+        Od_Upd_Date: new Date(),
       },
     });
 
@@ -406,7 +407,13 @@ exports.createOrder = async (req, res, next) => {
     // ล็อกข้อมูลที่ต้องการเพิ่ม
     console.log("Order Data to be created:", orderData);
 
-    const newOrder = await prisma.tD_Order.create({ data: orderData });
+    const newOrder = await prisma.tD_Order.create({
+      data: {
+        ...orderData,
+        Od_Upd_Date: new Date(),
+        Od_Reg_Date: new Date(),
+      },
+    });
 
     // ตรวจสอบ Order_No และ Quantity
     if (!newOrder.Order_No) {
@@ -539,7 +546,6 @@ exports.editCalc = async (req, res, next) => {
           Pd_Split_Qty: referencedOrder.Pd_Split_Qty + Quantity,
           Calc_Process_Date: Calc_Process_Date,
           Od_Upd_Date: new Date(),
-
         },
       });
 
