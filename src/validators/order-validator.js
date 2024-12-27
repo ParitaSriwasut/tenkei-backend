@@ -41,7 +41,7 @@ const td_orderSchema = Joi.object({
     Quote_No: Joi.string().allow(null, '').optional(),
     Quote_CD: Joi.string().allow(null, '').optional(),
     Od_No_of_Pd_Split: Joi.string().allow(null, '').optional(),
-    ItemO_CD: Joi.string().allow(null, '').optional(),
+    Item0_CD: Joi.string().allow(null, '').optional(),
     Item1_CD: Joi.string().allow(null, '').optional(),
     Item2_CD: Joi.string().allow(null, '').optional(),
     Item3_CD: Joi.string().allow(null, '').optional(),
