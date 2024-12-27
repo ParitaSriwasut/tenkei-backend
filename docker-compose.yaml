@@ -1,18 +1,117 @@
-version: '3.1'
-
 services:
-  db:
+  # Application services
+  frontend-tenkei:
+    image: tenkei-frontend:fujilloy
+    build:
+      context: ../tenkei-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "24000:24000"
+    env_file:
+      - .env
+    depends_on:
+      backend-tenkei:
+          condition: service_started
+    networks:
+      - tenkei-network
+  backend-tenkei:
+    image: tenkei-backend:fujilloy
+    build:
+      context: .
+    ports:
+      - "4000:4000"
+    # run migrations
+    # command: >
+    #   sh -c "
+    #     echo 'Waiting for database...' &&
+    #     while ! nc -z db-tenkei 3306; do
+    #       sleep 1
+    #       echo 'Waiting for MySQL...'
+    #     done &&
+    #     echo 'MySQL is up!' &&
+    #     sleep 10 &&
+    #     npx prisma db push --force-reset &&
+    #     npx prisma migrate reset --force &&
+    #     npx prisma db push &&
+    #     npx prisma generate &&
+    #     node index.js
+    #   "
+      # work for 1stcompost version of all services
+      # sh -c "
+      #   echo 'Waiting for database...' &&
+      #   while ! nc -z db-tenkei 3306; do
+      #     sleep 1
+      #     echo 'Waiting for MySQL...'
+      #   done &&
+      #   echo 'MySQL is up!' &&
+      #   sleep 10 &&
+      #   npx prisma migrate reset --force &&
+      #   npx prisma generate &&
+      #   node index.js
+      # "
+      # worked but has to manually restart backend for it to find DB
+      # sh -c "
+      #   echo 'Waiting for database...' &&
+      #   sleep 5 &&
+      #   npx prisma migrate reset --force &&
+      #   npx prisma generate &&
+      #   node index.js
+      # "
+    environment:
+      - JWT_SECRET="i"
+      # - DATABASE_URL=mysql://root:root@host.docker.internal:3306/tenkei-project
+      - DATABASE_URL=mysql://root:root@db-tenkei:3306/tenkei-project
+    depends_on:
+      migration:
+          condition: service_completed_successfully
+    networks:
+      - tenkei-network
+  # Migration service
+  migration:
+    image: tenkei-backend:1stcompost
+    build:
+      context: .
+    command: >
+      sh -c "
+        while ! nc -z db-tenkei 3306; do
+          sleep 1
+        done &&
+        npx prisma migrate deploy"
+    environment:
+      - DATABASE_URL=mysql://root:root@db-tenkei:3306/tenkei-project
+    depends_on:
+      db-tenkei:
+          condition: service_healthy
+          restart: true
+    networks:
+      - tenkei-network
+  # DB service
+  db-tenkei:
+    container_name: db-tenkei
     image: mysql:8.0
-    volumes:
-      - my-db:/var/lib/mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: tenkei-project
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_HOST: '%'
     ports:
       - "33307:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - tenkei-network
+    volumes:
+      - mysql-data-tenkei:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    # command: --default-authentication-plugin=caching_sha2_password
+
+networks:
+  tenkei-network:
+    driver: bridge
 
 volumes:
-  my-db:
+  mysql-data-tenkei:
