@@ -1,6 +1,6 @@
 const Joi = require('joi');
 const procureSchema = Joi.object({
-  Order_No: Joi.string().optional().allow(null, ''), // หมายเลขคำสั่ง (Short Text)
+  Order_No: Joi.string().optional().allow(null, ''),
   Procure_No: Joi.string().optional().allow(null, ''), // หมายเลขการจัดซื้อ (Short Text)
   OdPc_No: Joi.string().optional().allow(null, ''), // หมายเลข OdPc (Short Text)
   OdPcLn_No: Joi.string().optional().allow(null, ''), // หมายเลข OdPcLn (Short Text) ต้องกรอก
@@ -16,7 +16,7 @@ const procureSchema = Joi.object({
   Short_Text_1: Joi.string().optional().allow(null, ''), // ข้อความสั้น 1 (Short Text)
   Number_1: Joi.number().integer().optional().allow(null), // หมายเลข 1 (Number)
   Number_2: Joi.number().integer().optional().allow(null), // หมายเลข 2 (Number)
-  Pc_Qty: Joi.number().integer().optional().allow(null), // จำนวนการจัดซื้อ
+  Pc_Qty: Joi.number().integer().optional().allow(null), 
   Pc_Unit_CD: Joi.string().optional().allow(null, ''), // รหัสหน่วยการจัดซื้อ (Short Text)
   Pc_Person_CD: Joi.string().optional().allow(null, ''), // รหัสบุคคลที่ทำการจัดซื้อ (Short Text)
   Pc_Date: Joi.date().optional().allow(null), // วันที่การจัดซื้อ
@@ -31,13 +31,14 @@ const procureSchema = Joi.object({
   Pc_Arrival_Qty: Joi.number().integer().optional().allow(null), // จำนวนที่ถึง (Arrival Quantity)
   Pc_Cancel_Date: Joi.date().optional().allow(null), // วันที่ยกเลิก
   Procure_Docu: Joi.string().optional().allow(null, ''), // เอกสารการจัดซื้อ (Hyperlink)
+  Price_CD: Joi.string().optional().allow(null, ''),
   Pc_Remark: Joi.string().optional().allow(null, ''), // หมายเหตุการจัดซื้อ (Short Text)
   Print: Joi.boolean().optional().allow(null), // พิมพ์ (Yes/No)
   Pc_Reg_Date: Joi.date().optional().allow(null), // วันที่ลงทะเบียนการจัดซื้อ
   Pc_Upd_Date: Joi.date().optional().allow(null), // วันที่อัปเดตการจัดซื้อ
   Pc_NAV_Reg_Date: Joi.date().optional().allow(null), // วันที่ลงทะเบียน NAV
   Pc_NAV_Upd_Date: Joi.date().optional().allow(null), // วันที่อัปเดต NAV
-  Pc_Line_No: Joi.number().integer().optional().allow(null), // หมายเลขบรรทัด (Line Number)
+  Pc_Line_No: Joi.number().integer().optional().allow(null),
 });
 
 

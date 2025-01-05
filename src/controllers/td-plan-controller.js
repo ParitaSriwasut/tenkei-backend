@@ -100,6 +100,34 @@ exports.Search_Parts_No_AfterUpdate = async (req, res, next) => {
           })
           .then((result) => (result ? result[`PPD${N}`] : null));
 
+        planpartsNO[`ASP${N}`] = await prisma.tD_Schedule
+          .findFirst({
+            where: { OdPt_No: planpartsNO.OdPt_No },
+            select: { [`ASP${N}`]: true },
+          })
+          .then((result) => (result ? result[`ASP${N}`] : null));
+
+        planpartsNO[`BKD${N}`] = await prisma.tD_Schedule
+          .findFirst({
+            where: { OdPt_No: planpartsNO.OdPt_No },
+            select: { [`BKD${N}`]: true },
+          })
+          .then((result) => (result ? result[`BKD${N}`] : null));
+
+        planpartsNO[`PML${N}`] = await prisma.tD_Schedule
+          .findFirst({
+            where: { OdPt_No: planpartsNO.OdPt_No },
+            select: { [`PML${N}`]: true },
+          })
+          .then((result) => (result ? result[`PML${N}`] : null));
+
+        planpartsNO[`PPL${N}`] = await prisma.tD_Schedule
+          .findFirst({
+            where: { OdPt_No: planpartsNO.OdPt_No },
+            select: { [`PPL${N}`]: true },
+          })
+          .then((result) => (result ? result[`PPL${N}`] : null));
+
         planpartsNO[`RPD${N}`] = await prisma.tD_Result
           .findFirst({
             where: { OdPt_No: planpartsNO.OdPt_No },
@@ -581,15 +609,87 @@ exports.deletePlans = async (req, res, next) => {
 
 exports.createPlan = async (req, res, next) => {
   try {
-    const { Order_No, Parts_No, ...otherFields } = req.body;
+    const {
+      Order_No,
+      Parts_No,
+      Parts_CD,
+      Pt_Material,
+      Pt_Delivery,
+      Pt_Qty,
+      Pt_Unit_CD,
+      Pt_Split,
+      Pt_Spare_Qty,
+      Pt_NG_Qty,
+      Pl_Reg_Person_CD,
+      Pt_CAT1,
+      Pt_CAT2,
+      Pt_CAT3,
+      Pt_Complete_Date,
+      Pt_I_Date,
+      Pl_Upd_Person_CD,
+      Pl_Schedule_CD,
+      Connect_Od_No,
+      Connect_Pt_No,
+      Connect_Pr_No,
+      Pt_Pending,
+      Outside,
+      Pl_St_Rev_Day,
+      Pl_Ed_Rev_Day,
+      Info1,
+      Info2,
+      Info3,
+      Info4,
+      Info5,
+      Info6,
+      Info_Chk1,
+      Info_Chk2,
+      Info_Chk3,
+      Info_Chk4,
+      Info_Chk5,
+      Info_Chk6,
+      Money_Object,
+    } = req.body;
+
+    const ppcValues = Array.from({ length: 36 }, (_, i) => {
+      const ppcKey = `PPC${i + 1}`;
+      return [
+        ppcKey,
+        req.body[ppcKey] || null, // Check if there's a value for each PPC
+      ];
+    });
+    const pmtValues = Array.from({ length: 36 }, (_, i) => {
+      const pmtKey = `PMT${i + 1}`;
+      return [
+        pmtKey,
+        req.body[pmtKey] !== undefined && req.body[pmtKey] !== ""
+          ? parseInt(req.body[pmtKey], 10)
+          : null,
+      ];
+    });
+
+    const pptValues = Array.from({ length: 36 }, (_, i) => {
+      const pptKey = `PPT${i + 1}`;
+      return [
+        pptKey,
+        req.body[pptKey] !== undefined && req.body[pptKey] !== ""
+          ? parseInt(req.body[pptKey], 10)
+          : null,
+      ];
+    });
+    const ppvValues = Array.from({ length: 36 }, (_, i) => {
+      const ppvKey = `PPV${i + 1}`;
+      return [
+        ppvKey,
+        req.body[ppvKey] || null, // Check if there's a value for each PPC
+      ];
+    });
 
     const OdPt_No = Order_No + Parts_No;
     let Pl_Progress_CD = "0";
-    let FG = 0; // ใช้สำหรับตรวจสอบ Money_Object
-    let KN = 0; // ตัวแปรสำหรับการนับ
-    let End_No = 0; // ตัวแปร End_No
+    let FG = 0;
+    let KN = 0;
     let Now_No = 0; // ตัวแปร Now_No
-
+    let End_No = 0;
     // ตรวจสอบค่า PPD1 ถึง PPD36
     for (let PD = 1; PD <= 36; PD++) {
       if (req.body[`PPD${PD}`] != null) {
@@ -598,7 +698,6 @@ exports.createPlan = async (req, res, next) => {
       }
     }
 
-    // ตรวจสอบค่า RPD1 ถึง RPD36 หากยังไม่ได้อัปเดต
     if (Pl_Progress_CD < 2) {
       for (let PD = 1; PD <= 36; PD++) {
         if (req.body[`RPD${PD}`] != null) {
@@ -608,7 +707,6 @@ exports.createPlan = async (req, res, next) => {
       }
     }
 
-    // ตรวจสอบ Od_Progress_CD
     const Od_Progress_CD = await prisma.tD_Order.findUnique({
       where: { Order_No },
       select: { Od_Progress_CD: true },
@@ -664,36 +762,19 @@ exports.createPlan = async (req, res, next) => {
     }
 
     // จัดการ Money_Object
-    if (FG === 0 && req.body.Money_Object === -1) {
-      req.body.Money_Object = 0; // เปลี่ยนค่าเป็น Off
-    } else if (FG > 0 && req.body.Money_Object === 0) {
-      req.body.Money_Object = -1; // เปลี่ยนค่าเป็น On
+    if (FG === 0 && req.body.Money_Object === false) {
+      req.body.Money_Object = true; // เปลี่ยนค่าเป็น On
+    } else if (FG > 0 && req.body.Money_Object === true) {
+      req.body.Money_Object = false; // เปลี่ยนค่าเป็น Off
     }
 
-    // Logic to determine End_No (based on PPC1 to PPC36)
-    FG = 0;
-    KN = 0;
-    while (FG < 1) {
-      KN++;
-      if (KN !== 36) {
-        if (req.body[`PPC${KN}`] === null) {
-          FG = 1;
-        } else {
-          End_No = KN;
-        }
-      } else {
-        End_No = KN;
-        FG = 1;
-      }
-    }
-
-    // Logic to determine Now_No (based on RPD1 to RPD36)
-    FG = 0;
-    KN = 0;
     while (FG < 1) {
       KN++;
       if (KN !== 37) {
-        if (req.body[`RPD${KN}`] === null) {
+        if (
+          req.body[`RPD${KN}`] === null ||
+          req.body[`RPD${KN}`] === undefined
+        ) {
           Now_No = KN;
           FG = 1;
         }
@@ -702,31 +783,73 @@ exports.createPlan = async (req, res, next) => {
         FG = 1;
       }
     }
-
-    // กำหนดค่า End_No และ Now_No ในข้อมูลที่เตรียมจะบันทึก
-    req.body.End_No = End_No;
-    req.body.Now_No = Now_No;
-
-    if (!otherFields.Pl_Reg_Date) {
-      Od_Progress_CD.Pl_Reg_Date = new Date();
+    while (FG < 1) {
+      KN++;
+      if (KN !== 36) {
+        const currentPPC = req.body[`PPC${KN}`];
+        if (currentPPC && currentPPC.trim() !== "") {
+          // ถ้า PPC มีค่าและไม่ใช่ค่าว่าง
+          End_No = KN;
+        } else {
+          // ถ้า PPC เป็นค่าว่าง
+          FG = 1;
+        }
+      } else {
+        // หยุดเมื่อ KN ถึง 36
+        End_No = KN;
+        FG = 1;
+      }
     }
-    Od_Progress_CD.Pl_Upd_Date = new Date();
-
-    // เตรียมข้อมูลสำหรับการบันทึก
     const planData = {
-      ...otherFields,
       Order_No,
       Parts_No,
       OdPt_No,
+      Parts_CD,
+      Pt_Material,
+      Pt_Delivery,
+      Pt_Qty: parseInt(Pt_Qty, 10),
+      Pt_Unit_CD,
+      Pt_Split,
+      Pt_Spare_Qty: parseInt(Pt_Spare_Qty, 10),
+      Pt_NG_Qty: parseInt(Pt_NG_Qty, 10),
+      Pl_Reg_Person_CD,
+      Pt_CAT1,
+      Pt_CAT2,
+      Pt_CAT3,
       Pl_Progress_CD,
+      Pt_Complete_Date,
+      Pt_I_Date,
+      Pl_Upd_Person_CD,
+      Pl_Schedule_CD,
+      Connect_Od_No,
+      Connect_Pt_No,
+      Connect_Pr_No: parseInt(Connect_Pr_No, 10),
+      Pt_Pending,
+      Outside,
+      Pl_St_Rev_Day,
+      Pl_Ed_Rev_Day,
+      Info1,
+      Info2,
+      Info3,
+      Info4,
+      Info5,
+      Info6,
+      Info_Chk1,
+      Info_Chk2,
+      Info_Chk3,
+      Info_Chk4,
+      Info_Chk5,
+      Info_Chk6,
+      Money_Object,
+      ...Object.fromEntries(ppcValues),
+      ...Object.fromEntries(pmtValues),
+      ...Object.fromEntries(pptValues),
+      ...Object.fromEntries(ppvValues),
       Max_No: Max_No.toString(),
+      Now_No: Now_No.toString(),
+      End_No: End_No.toString(),
     };
 
-    // ตรวจสอบ schema
-    const { error, value } = td_planSchema.validate(planData);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
     const existingPlan = await prisma.tD_Plan.findFirst({
       where: {
         OdPt_No: OdPt_No,
@@ -739,8 +862,8 @@ exports.createPlan = async (req, res, next) => {
           OdPt_No: OdPt_No,
         },
         data: {
-          ...value, // Include all other fields from the value object
-          Pl_Upd_Date: new Date(), // Set the current date and time for Pl_Upd_Date
+          ...planData,
+          Pl_Upd_Date: new Date(),
         },
       });
       return res.status(200).json({
@@ -748,7 +871,13 @@ exports.createPlan = async (req, res, next) => {
         result: updatedPlan,
       });
     } else {
-      const newPlan = await prisma.tD_Plan.create({ data: value });
+      const newPlan = await prisma.tD_Plan.create({
+        data: {
+          ...planData,
+          Pl_Upd_Date: new Date(),
+          Pl_Reg_Date: new Date(),
+        },
+      });
 
       return res
         .status(201)
@@ -762,28 +891,19 @@ exports.createPlan = async (req, res, next) => {
 
 exports.createSchedule = async (req, res, next) => {
   try {
-    const { Order_No, Parts_No, PPD, INN } = req.body;
+    const { Order_No, Parts_No } = req.body;
     const OdPt_No = Order_No + Parts_No;
 
-    // สร้างอ็อบเจ็กต์ข้อมูลสำหรับการบันทึก
+    const PPDValues = Array.from({ length: 36 }, (_, i) => {
+      const PPDKey = `PPD${i + 1}`;
+      return [PPDKey, req.body[PPDKey] || null];
+    });
+
     const scheduleData = {
       Order_No,
       Parts_No,
       OdPt_No,
-      Sc_Reg_Date: new Date().toISOString(),
-      Sc_Upd_Date: new Date().toISOString(),
-      ...Object.fromEntries(
-        Array.from({ length: 36 }, (_, i) => [
-          `PPD${i + 1}`,
-          PPD?.[i + 1] || null,
-        ])
-      ),
-      ...Object.fromEntries(
-        Array.from({ length: 36 }, (_, i) => [
-          `INN${i + 1}`,
-          INN?.[i + 1] || null,
-        ])
-      ),
+      ...Object.fromEntries(PPDValues),
     };
 
     const existingSchedule = await prisma.tD_Schedule.findFirst({
@@ -797,7 +917,7 @@ exports.createSchedule = async (req, res, next) => {
         where: {
           OdPt_No: OdPt_No,
         },
-        data: scheduleData,
+        data: { ...scheduleData, Sc_Upd_Date: new Date().toISOString() },
       });
       return res.status(200).json({
         message: "Schedule updated successfully",
@@ -805,7 +925,11 @@ exports.createSchedule = async (req, res, next) => {
       });
     } else {
       const newSchedule = await prisma.tD_Schedule.create({
-        data: scheduleData,
+        data: {
+          ...scheduleData,
+          Sc_Reg_Date: new Date().toISOString(),
+          Sc_Upd_Date: new Date().toISOString(),
+        },
       });
 
       return res
@@ -822,39 +946,46 @@ exports.createSchedule = async (req, res, next) => {
 
 exports.createResult = async (req, res, next) => {
   try {
-    const { Order_No, Parts_No, RPD, RMT, RPT, RPN } = req.body;
+    const { Order_No, Parts_No } = req.body;
     const OdPt_No = Order_No + Parts_No;
 
+    const rpdValues = Array.from({ length: 36 }, (_, i) => {
+      const rpdKey = `RPD${i + 1}`;
+      return [rpdKey, req.body[rpdKey] || null];
+    });
+    const rmtValues = Array.from({ length: 36 }, (_, i) => {
+      const rmtKey = `RMT${i + 1}`;
+      const value = req.body[rmtKey] !== undefined ? req.body[rmtKey] : null;
+      return [
+        rmtKey,
+        value !== null && !isNaN(value) ? parseInt(value, 10) : null,
+      ];
+    });
+    const rptValues = Array.from({ length: 36 }, (_, i) => {
+      const rptKey = `RPT${i + 1}`;
+      const value = req.body[rptKey] !== undefined ? req.body[rptKey] : null;
+      return [
+        rptKey,
+        value !== null && !isNaN(value) ? parseInt(value, 10) : null,
+      ];
+    });
+    const rpnValues = Array.from({ length: 36 }, (_, i) => {
+      const rpnKey = `RPN${i + 1}`;
+      const value = req.body[rpnKey] !== undefined ? req.body[rpnKey] : null;
+      return [
+        rpnKey,
+        value !== null && !isNaN(value) ? parseInt(value, 10) : null,
+      ];
+    });
     const resultData = {
       Order_No,
       Parts_No,
       OdPt_No,
-      Rs_Reg_Date: new Date().toISOString(),
-      Rs_Upd_Date: new Date().toISOString(),
-      ...Object.fromEntries(
-        Array.from({ length: 36 }, (_, i) => [
-          `RPD${i + 1}`,
-          RPD?.[i + 1] ? new Date(RPD[i + 1]).toISOString() : null, // Convert to ISO format
-        ])
-      ),
-      ...Object.fromEntries(
-        Array.from({ length: 36 }, (_, i) => [
-          `RMT${i + 1}`,
-          RMT?.[i + 1] || null,
-        ])
-      ),
-      ...Object.fromEntries(
-        Array.from({ length: 36 }, (_, i) => [
-          `RPT${i + 1}`,
-          RPT?.[i + 1] || null,
-        ])
-      ),
-      ...Object.fromEntries(
-        Array.from({ length: 36 }, (_, i) => [
-          `RPN${i + 1}`,
-          RPN?.[i + 1] || null,
-        ])
-      ),
+
+      ...Object.fromEntries(rpdValues),
+      ...Object.fromEntries(rmtValues),
+      ...Object.fromEntries(rptValues),
+      ...Object.fromEntries(rpnValues),
     };
     const existingResult = await prisma.tD_Result.findFirst({
       where: {
@@ -866,7 +997,7 @@ exports.createResult = async (req, res, next) => {
         where: {
           OdPt_No: OdPt_No,
         },
-        data: resultData,
+        data: { ...resultData, Rs_Upd_Date: new Date().toISOString() },
       });
       return res.status(200).json({
         message: "Result updated successfully",
@@ -874,7 +1005,11 @@ exports.createResult = async (req, res, next) => {
       });
     } else {
       const newResult = await prisma.tD_Result.create({
-        data: resultData,
+        data: {
+          ...resultData,
+          Rs_Upd_Date: new Date().toISOString(),
+          Rs_Reg_Date: new Date().toISOString(),
+        },
       });
       return res
         .status(201)
@@ -890,144 +1025,222 @@ exports.createResult = async (req, res, next) => {
 
 exports.createWip = async (req, res, next) => {
   try {
-    // รับข้อมูลจาก request body
-    const {
-      Order_No,
-      Parts_No,
-      PPG,
-      PPD,
-      PML,
-      PPL,
-      INN,
-      RPD,
-      RMT,
-      RPT,
-      RPN,
-      ASP,
-      Now_No,
-    } = req.body;
-    const OdPt_No = Order_No + Parts_No;
+    const { Order_No, Parts_No, PPG, PPD, INN, RPD, RPT, RPN, ASP } = req.body;
 
-    let Max_No = "0";
+    let Total_M_Time = 0;
+    let Total_P_Time = 0;
+    let Re_Total_M_Time = 0;
+    let Re_Total_P_Time = 0;
+    let Re_Total_N_Time = 0;
+    let Re_Pr_Qty = 0;
+    let FG = 0;
+    let KN = 0;
+    let Now_No = 0;
+    let End_No = 0;
+    while (FG < 1) {
+      KN++;
+      if (KN !== 37) {
+        if (
+          req.body[`RPD${KN}`] === null ||
+          req.body[`RPD${KN}`] === undefined
+        ) {
+          Now_No = KN;
+          FG = 1;
+        }
+      } else {
+        Now_No = KN;
+        FG = 1;
+      }
+    }
+
+    FG = 0;
+    KN = 0;
+    while (FG < 1) {
+      KN++;
+      if (KN !== 36) {
+        if (!req.body[`PPC${KN}`]) {
+          FG = 1;
+        } else {
+          End_No = KN;
+        }
+      } else {
+        End_No = KN;
+        FG = 1;
+      }
+    }
+
     for (let N = 1; N <= 36; N++) {
       const PPC = req.body[`PPC${N}`];
+      let T_Type = req.body[`T_Type${N}`];
+      let P_Type = req.body[`P_Type${N}`];
+      let S_Type = req.body[`S_Type${N}`];
 
       if (PPC) {
-        Max_No = N;
+        if (!T_Type) {
+          const process = await prisma.tM_Process.findUnique({
+            where: { Process_CD: PPC },
+            select: { T_Type: true, P_Type: true, S_Type: true },
+          });
 
-        // อัปเดต PMT
-        if (!req.body[`PMT${N}`]) {
-          req.body[`PMT${N}`] =
-            (await prisma.tM_Process.findUnique({
-              where: { Process_CD: PPC },
-              select: { Std_M_Time: true },
-            }).Std_M_Time) || null;
+          T_Type = process?.T_Type || null;
+          P_Type = process?.P_Type || null;
+          S_Type = process?.S_Type || null;
+
+          if (req.body[`PMT${N}`] > req.body[`PPT${N}`]) {
+            P_Type = "A";
+          }
+
+          req.body[`T_Type${N}`] = T_Type;
+          req.body[`P_Type${N}`] = P_Type;
+          req.body[`S_Type${N}`] = S_Type;
         }
 
-        // อัปเดต PPT
-        if (!req.body[`PPT${N}`]) {
-          req.body[`PPT${N}`] =
-            (await prisma.tM_Process.findUnique({
-              where: { Process_CD: PPC },
-              select: { Std_P_Time: true },
-            }).Std_P_Time) || null;
+        const PMT = parseInt(req.body[`PMT${N}`], 10) || 0;
+        const PPT = parseInt(req.body[`PPT${N}`], 10) || 0;
+        const Pt_Qty = parseInt(req.body[`Pt_Qty`], 10) || 0;
+        const Pt_Spare_Qty = parseInt(req.body[`Pt_Spare_Qty`], 10) || 0;
+        const Pt_NG_Qty = parseInt(req.body[`Pt_NG_Qty`], 10) || 0;
+
+        const PML =
+          T_Type === "L"
+            ? PMT
+            : isNaN(PMT) ||
+              isNaN(Pt_Qty) ||
+              isNaN(Pt_Spare_Qty) ||
+              isNaN(Pt_NG_Qty)
+            ? null
+            : PMT * (Pt_Qty + Pt_Spare_Qty - Pt_NG_Qty);
+
+        const PPL =
+          T_Type === "L"
+            ? PPT
+            : isNaN(PPT) ||
+              isNaN(Pt_Qty) ||
+              isNaN(Pt_Spare_Qty) ||
+              isNaN(Pt_NG_Qty)
+            ? null
+            : PPT * (Pt_Qty + Pt_Spare_Qty - Pt_NG_Qty);
+
+        Total_M_Time += PML;
+        Total_P_Time += PPL;
+
+        if (!req.body[`RPD${N}`]) {
+          Re_Pr_Qty += 1;
+          Re_Total_M_Time += req.body[`PML${N}`] || 0;
+          Re_Total_P_Time += req.body[`PPL${N}`] || 0;
+
+          if (req.body[`P_Type${N}`] === "M") {
+            Re_Total_N_Time += req.body[`PPL${N}`] || 0;
+          } else {
+            Re_Total_N_Time +=
+              (req.body[`PPL${N}`] || 0) + (req.body[`PML${N}`] || 0);
+          }
         }
+        const OdPtPr_No = `${Order_No}${Parts_No}${N}`;
+        const OdPt_No = `${Order_No}${Parts_No}`;
 
-        // ตรวจสอบ End
-        const isEnd = await prisma.tM_Process.findUnique({
-          where: { Process_CD: PPC },
-          select: { End: true },
-        }).End;
-
-        if (isEnd === -1) FG++;
-      } else {
-        // ล้างค่า PMT, PPT, T_Type, P_Type, S_Type
-        req.body[`PMT${N}`] = null;
-        req.body[`PPT${N}`] = null;
-        req.body[`T_Type${N}`] = null;
-        req.body[`P_Type${N}`] = null;
-        req.body[`S_Type${N}`] = null;
-      }
-
-      const OdPtPr_No = Order_No + Parts_No + N;
-
-      const existingWip = await prisma.tD_WIP.findFirst({
-        where: {
-          OdPtPr_No: OdPtPr_No,
-        },
-      });
-
-      if (existingWip) {
-        // ถ้ามีข้อมูลแล้วให้ทำการแก้ไข (Update)
-        await prisma.tD_WIP.updateMany({
-          where: {
-            OdPtPr_No: OdPtPr_No,
-          },
-          data: {
-            Order_No,
-            Parts_No,
-            Process_No: N.toString(),
-            OdPt_No,
-            OdPtPr_No,
-            PPG,
-            PPC,
-            PMT: req.body[`PMT${N}`],
-            PPT: req.body[`PPT${N}`],
-            T_Type: req.body[`T_Type${N}`],
-            P_Type: req.body[`P_Type${N}`],
-            S_Type: req.body[`S_Type${N}`],
-            PPD,
-            PML,
-            PPL,
-            INN,
-            RPD,
-            RMT,
-            RPT,
-            RPN,
-            ASP,
-            Now_No,
-          },
+        const existingWip = await prisma.tD_WIP.findFirst({
+          where: { OdPtPr_No },
         });
+
+        const wipData = {
+          Order_No,
+          Parts_No,
+          Process_No: N.toString(),
+          OdPt_No,
+          OdPtPr_No,
+          PPG,
+          PPC,
+          PMT,
+          PPT,
+          T_Type,
+          P_Type,
+          S_Type,
+          PPD,
+          PML,
+          PPL,
+          INN,
+          RPD,
+          RMT: parseInt(req.body[`RMT${N}`], 10) || null,
+          RPT,
+          RPN,
+          ASP,
+          Now_No: Now_No.toString(),
+        };
+        const scheduleData = {};
+
+        for (let i = 1; i <= 36; i++) {
+          const T_Type = req.body[`T_Type${i}`];
+          const PMT = parseInt(req.body[`PMT${i}`], 10) || 0;
+          const PPT = parseInt(req.body[`PPT${i}`], 10) || 0;
+          const Pt_Qty = parseInt(req.body[`Pt_Qty`], 10) || 0;
+          const Pt_Spare_Qty = parseInt(req.body[`Pt_Spare_Qty`], 10) || 0;
+          const Pt_NG_Qty = parseInt(req.body[`Pt_NG_Qty`], 10) || 0;
+
+          scheduleData[`PML${i}`] =
+            T_Type === "L"
+              ? PMT
+              : isNaN(PMT) ||
+                isNaN(Pt_Qty) ||
+                isNaN(Pt_Spare_Qty) ||
+                isNaN(Pt_NG_Qty)
+              ? null
+              : PMT * (Pt_Qty + Pt_Spare_Qty - Pt_NG_Qty);
+
+          scheduleData[`PPL${i}`] =
+            T_Type === "L"
+              ? PPT
+              : isNaN(PPT) ||
+                isNaN(Pt_Qty) ||
+                isNaN(Pt_Spare_Qty) ||
+                isNaN(Pt_NG_Qty)
+              ? null
+              : PPT * (Pt_Qty + Pt_Spare_Qty - Pt_NG_Qty);
+        }
+        await prisma.tD_Schedule.updateMany({
+          where: { OdPt_No },
+          data: scheduleData,
+        });
+        if (existingWip) {
+          await prisma.tD_WIP.updateMany({
+            where: { OdPtPr_No },
+            data: wipData,
+          });
+        } else {
+          await prisma.tD_WIP.create({ data: wipData });
+        }
       } else {
-        // ถ้าไม่มีข้อมูล ให้สร้างข้อมูลใหม่
-        await prisma.tD_WIP.create({
-          data: {
-            Order_No,
-            Parts_No,
-            Process_No: N.toString(),
-            OdPt_No,
-            OdPtPr_No,
-            PPG,
-            PPC,
-            PMT: req.body[`PMT${N}`],
-            PPT: req.body[`PPT${N}`],
-            T_Type: req.body[`T_Type${N}`],
-            P_Type: req.body[`P_Type${N}`],
-            S_Type: req.body[`S_Type${N}`],
-            PPD,
-            PML,
-            PPL,
-            INN,
-            RPD,
-            RMT,
-            RPT,
-            RPN,
-            ASP,
-            Now_No,
-          },
+        ["PMT", "PPT", "T_Type", "P_Type", "S_Type"].forEach((key) => {
+          req.body[`${key}${N}`] = null;
         });
       }
     }
 
-    // ส่งผลลัพธ์กลับไปยัง client
-    return res
-      .status(201)
-      .json({ message: "Wip created or updated successfully" });
+    const OdPt_No = `${Order_No}${Parts_No}`;
+    const planData = {
+      Now_No: Now_No.toString(),
+      End_No: End_No.toString(),
+      Re_Pr_Qty,
+      Total_M_Time,
+      Total_P_Time,
+      Re_Total_M_Time,
+      Re_Total_P_Time,
+      Re_Total_N_Time,
+      // Handle PTP values dynamically
+      ...Array.from({ length: 36 }, (_, i) => ({
+        [`PTP${i + 1}`]: `${req.body[`T_Type${i + 1}`] ?? ""}${
+          req.body[`P_Type${i + 1}`] ?? ""
+        }${req.body[`S_Type${i + 1}`] ?? ""}`,
+      })).reduce((acc, curr) => ({ ...acc, ...curr }), {}),
+    };
+    console.log(`PPC${KN}:`, req.body[`PPC${KN}`]);
+    await prisma.tD_Plan.updateMany({ where: { OdPt_No }, data: planData });
+
+    res.status(201).json({ message: "Wip created or updated successfully" });
   } catch (err) {
     console.error("Error creating or updating Wip:", err);
     return next(createError(500, "Internal Server Error"));
   } finally {
-    // ปิดการเชื่อมต่อฐานข้อมูล
     await prisma.$disconnect();
   }
 };
@@ -1037,12 +1250,11 @@ exports.deleteWip = async (req, res, next) => {
     const { Order_No, Parts_No } = req.body;
 
     for (let N = 1; N <= 36; N++) {
-      const Process_No = N.toString().padStart(2, '0'); // แปลง N เป็น String เช่น '01', '02'
-      const OdPtPr_No = Order_No + Parts_No + Process_No;
+      const OdPtPr_No = `${Order_No}${Parts_No}${N}`;
 
       const existingWip = await prisma.tD_WIP.findFirst({
         where: {
-          OdPtPr_No,
+          OdPtPr_No: OdPtPr_No,
         },
       });
 
@@ -1052,7 +1264,7 @@ exports.deleteWip = async (req, res, next) => {
             Order_No_Parts_No_Process_No: {
               Order_No,
               Parts_No,
-              Process_No, // ใช้ Process_No เป็น String
+              Process_No: N.toString(),
             },
           },
         });
@@ -1071,7 +1283,7 @@ exports.deleteWip = async (req, res, next) => {
 exports.deleteResult = async (req, res, next) => {
   try {
     const { Order_No, Parts_No } = req.body;
-    const OdPt_No = Order_No + Parts_No;
+    const OdPt_No = `${Order_No}${Parts_No}`;
 
     const existingResult = await prisma.tD_Result.findFirst({
       where: {
@@ -1109,7 +1321,7 @@ exports.deleteResult = async (req, res, next) => {
 exports.deleteSchedule = async (req, res, next) => {
   try {
     const { Order_No, Parts_No } = req.body;
-    const OdPt_No = Order_No + Parts_No;
+    const OdPt_No = `${Order_No}${Parts_No}`;
 
     const existingSchedule = await prisma.tD_Schedule.findFirst({
       where: {
@@ -1147,7 +1359,7 @@ exports.deleteSchedule = async (req, res, next) => {
 exports.deletePlan = async (req, res, next) => {
   try {
     const { Order_No, Parts_No } = req.body;
-    const OdPt_No = Order_No + Parts_No;
+    const OdPt_No = `${Order_No}${Parts_No}`;
 
     const existingPlan = await prisma.tD_Plan.findFirst({
       where: {
