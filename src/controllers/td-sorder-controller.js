@@ -1,4 +1,5 @@
 const createError = require("../utils/create-error");
+const { td_sorderSchema }= require("../validators/sorder-validator")
 const prisma = require("../models/prisma");
 
 exports.formLoad = async (req, res, next) => {
@@ -163,3 +164,100 @@ exports.get_contract_docu_SOrder = async (req, res, next) => {
     return next(createError(500, "Internal Server Error"));
   }
 };
+
+exports.post_createSOrder = async (req, res, next) => {
+  try {
+    // ตรวจสอบข้อมูล
+    const { error, value } = td_sorderSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    // ข้อมูลที่ตรวจสอบแล้ว
+    const sorderData = value;
+    
+
+    console.log("SOrder Data to be created:", sorderData);
+
+    // สร้างข้อมูลใหม่ในฐานข้อมูล
+    const newSOrder = await prisma.tD_SOrder.create({
+      data: {
+        ...sorderData, // ข้อมูลที่ต้องการบันทึก
+      },
+    });
+
+    // ส่งคำตอบกลับ
+    return res
+      .status(201)
+      .json({ message: "SOrder created successfully", sorder: newSOrder });
+  } catch (err) {
+    console.error("Error creating SOrder:", err);
+    return next(createError(500, "Internal Server Error"));
+  }
+};
+
+
+exports.edit_SOrder = async (req, res, next) => {
+  try {
+    // ตรวจสอบข้อมูลที่ส่งเข้ามา
+    const { error, value } = td_sorderSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    // ข้อมูลที่ตรวจสอบแล้วสามารถใช้งานได้
+    const sorderData = value;
+    
+    console.log("SOrder Data to be edited:", sorderData);
+
+    // อัปเดตข้อมูลในฐานข้อมูล
+    const updatedSOrder = await prisma.tD_SOrder.update({
+      where: { SOrder_No: sorderData.SOrder_No },
+      data: {
+        ...sorderData,
+        SO_Upd_Date: new Date(),
+      },
+    });
+
+    // ส่งคำตอบกลับ
+    return res
+      .status(200)
+      .json({ message: "SOrder updated successfully", sorder: updatedSOrder });
+  } catch (err) {
+    // ล็อกข้อผิดพลาดเพื่อการตรวจสอบ
+    console.error("Error editing SOrder:", err);
+    return next(createError(500, "Internal Server Error"));
+  }
+};
+
+
+
+exports.delete_SOrder = async (req, res, next) => {
+  try {
+    // ตรวจสอบข้อมูลที่ส่งเข้ามา
+    const { SOrder_No } = req.body; // สมมติว่า SOrder_No จะถูกส่งมาใน body
+
+    // ตรวจสอบว่ามีการส่ง SOrder_No มาหรือไม่
+    if (!SOrder_No) {
+      return res.status(400).json({ message: "SOrder_No is required" });
+    }
+
+    // ล็อกข้อมูลที่ต้องการลบ
+    console.log("SOrder No to be deleted:", SOrder_No);
+
+    // ลบ SOrder
+    const deletedSOrder = await prisma.tD_SOrder.delete({
+      where: { SOrder_No: SOrder_No }, // ระบุเงื่อนไขในการค้นหา
+    });
+
+    // ส่งคำตอบกลับ
+    return res
+      .status(200)
+      .json({ message: "SOrder deleted successfully", sorder: deletedSOrder });
+  } catch (err) {
+    // ล็อกข้อผิดพลาดเพื่อการตรวจสอบ
+    console.error("Error deleting SOrder:", err);
+    return next(createError(500, "Internal Server Error"));
+  }
+};
+
