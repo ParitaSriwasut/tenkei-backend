@@ -16,7 +16,7 @@ exports.import_purchase_csv = async (req, res, next) => {
     }
 
     let totalRecords = 0;
-
+    
     for (const file of csvFiles) {
       const filePath = path.join(folderPath, file);
       let recordCount = 0;
@@ -50,5 +50,21 @@ exports.import_purchase_csv = async (req, res, next) => {
 
 
 exports.delete_TT_NAV_Pc_CSV_Upd = async (req, res, next) => {
-
-};
+    
+        try {
+          
+          
+          const deletedPc_CSV_Upd = await prisma.tT_NAV_Pc_CSV_Upd.delete({
+            where: { Order_No: Order_No }, // ระบุเงื่อนไขในการค้นหา
+          });
+      
+         
+          return res
+            .status(200)
+            .json({ message: "TT_NAV_Pc_CSV_Upd deleted successfully", order: deletedPc_CSV_Upd });
+        } catch (err) {
+          // ล็อกข้อผิดพลาดเพื่อการตรวจสอบ
+          console.error("Error deleting TT_NAV_Pc_CSV_Upd:", err);
+          return next(createError(500, "Internal Server Error"));
+        }
+      };
