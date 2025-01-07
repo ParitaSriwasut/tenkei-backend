@@ -38,6 +38,7 @@ const holidayRoute = require("./src/routes/holiday-route");
 const planlistRoute = require("./src/routes/planlist-route")
 const sorderRoute = require("./src/routes/sorder-route");
 const currencyRoute = require("./src/routes/currency-route");
+const ordercsvRoute = require("./src/routes/navorder-csv-route");
 const logger = require('./src/middlewares/logger');
 
 const cors = require("cors");
