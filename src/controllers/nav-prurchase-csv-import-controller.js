@@ -19,6 +19,12 @@ exports.import_purchase_csv = async (req, res, next) => {
     // Step 2: Process the CSV files and count the records
     const folderPath = "C:/"; // Set the fixed folder path
     const backupFolderPath = "C:/TENKEI/Purchase_CSV/BK"; // Set the backup folder path
+    if (!fs.existsSync(backupFolderPath)) {
+        fs.mkdirSync(backupFolderPath, { recursive: true }); // Create folder if it doesn't exist
+        console.log(`Backup folder created at: ${backupFolderPath}`);
+      } else {
+        console.log(`Backup folder already exists at: ${backupFolderPath}`);
+      }
     const files = fs.readdirSync(folderPath); // Read files from the folder
     const csvFiles = files.filter((file) => file.endsWith(".csv")); // Filter CSV files
 
@@ -64,6 +70,8 @@ exports.import_purchase_csv = async (req, res, next) => {
               Pc_NAV_Reg_Date: parseDate(row["Insert Date"]),
               Pc_NAV_Upd_Date: parseDate(row["Modify Date"]),
               Pc_Progress_CD: row["Flag"],
+              OdPc_No: `${row["Sales Order No_"]}_${row["No_"]}`, // Concatenate Order_No and Procure_No
+              OdPcLn_No: `${row["Sales Order No_"]}_${row["No_"]}_${parseInt(row["Line No_"])}`, // Concatenate Order_No, Procure_No, and Pc_Line_No
             };
 
             // Step 4: Save record to the tT_NAV_Pc_CSV table
