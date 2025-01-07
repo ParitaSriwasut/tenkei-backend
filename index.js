@@ -88,6 +88,7 @@ app.use("/planlist", planlistRoute)
 app.use("/sorder", sorderRoute)
 app.use("/currency", currencyRoute)
 app.use("/status", statusRoute)
+app.use('/navordercsv', ordercsvRoute);
 const PORT = process.env.PORT || "4000"
 app.listen(PORT, () => console.log(`server running on port: ${PORT}`))
 
