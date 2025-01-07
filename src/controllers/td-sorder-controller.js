@@ -207,15 +207,19 @@ exports.edit_SOrder = async (req, res, next) => {
 
     // ข้อมูลที่ตรวจสอบแล้วสามารถใช้งานได้
     const sorderData = value;
-    
+
     console.log("SOrder Data to be edited:", sorderData);
+
+    // แปลงเวลาเป็น UTC+7
+    const currentDate = new Date();
+    const thailandTime = new Date(currentDate.getTime() + 7 * 60 * 60 * 1000); 
 
     // อัปเดตข้อมูลในฐานข้อมูล
     const updatedSOrder = await prisma.tD_SOrder.update({
       where: { SOrder_No: sorderData.SOrder_No },
       data: {
         ...sorderData,
-        SO_Upd_Date: new Date(),
+        SO_Upd_Date: thailandTime, // บันทึกเป็นเวลาของประเทศไทย (UTC+7)
       },
     });
 
