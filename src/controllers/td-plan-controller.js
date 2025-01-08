@@ -46,6 +46,511 @@ exports.Search_Order_No_AfterUpdate = async (req, res, next) => {
   }
 };
 
+exports.Schedule_Calc = async (req, res, next) => {
+  try {
+    let No,
+      St_Time,
+      St_Scale,
+      P_Scale,
+      M_Scale,
+      O_Scale,
+      MH_Scale,
+      St_Rev,
+      Sc_Scale,
+      Fix_N;
+    let N,
+      Now_No,
+      Final_No,
+      Now_Date,
+      Final_Date,
+      Holidays,
+      ReDays,
+      MinDays,
+      Temp_Date,
+      FG,
+      M_Holiday;
+    let PSL = new Array(36);
+    let Fix_Pr_N = new Array(36);
+    let Fix_Re_MH = new Array(36);
+    let Fix_Date_No = new Array(36);
+    let Fix_Date = new Array(36);
+
+    const isFirstConfirm =
+      req.body.Sc_Make_Type && req.body.Sc_Make_Type === "Execute";
+    if (isFirstConfirm) {
+      const isBackupConfirm =
+        req.body.BackupSchedule && req.body.BackupSchedule === "Yes";
+      if (isBackupConfirm) {
+        while (No < 36) {
+          No = No + 1;
+        }
+      }
+    }
+
+    while (No < 36) {
+      No = No + 1;
+      PSL[No] = 0;
+      Fix_Pr_N[No] = 0;
+      Fix_Re_MH[No] = 0;
+      Fix_Date_No[No] = 0;
+      Fix_Date[No] = 0;
+    }
+
+    const tsSet = await prisma.tS_Set.findUnique({
+      where: {
+        ID: 1,
+      },
+    });
+
+    St_Time = tsSet.Sc_Stagnat_Time;
+    St_Scale = tsSet.Sc_Stagnat_Scale;
+    P_Scale = tsSet.Sc_Person_Scale;
+    M_Scale = tsSet.Sc_Machine_Scale;
+    O_Scale = tsSet.Sc_Outside_Scale;
+    MH_Scale = tsSet.Sc_ManHour_Scale;
+
+    St_Rev = 0;
+    Sc_Scale = 1;
+
+    switch (req.body.Sc_Make_Type) {
+      case "Forward":
+        St_Scale = await prisma.tM_Schedule.findUnique({
+          where: {
+            Schedule_CD: req.body.Pl_Schedule_CD,
+          },
+          select: {
+            Stagnat_Scale: true,
+            ManHour_Scale: true,
+          },
+        });
+
+        MH_Scale = St_Scale.ManHour_Scale || 1;
+        St_Scale = St_Scale.Stagnat_Scale || 1;
+
+        let No = 0;
+        let PSL = Array(36).fill(0);
+        let End_No = parseInt(req.body.End_No, 10);
+
+        while (No < End_No) {
+          No += 1;
+
+          if (req.body[`RPD${No}`] !== null) {
+            if (req.body[`PPD${No}`] === null) {
+              req.body[`PPD${No}`] = req.body[`RPD${No}`];
+            }
+            PSL[No] = 0;
+          } else {
+            switch (req.body[`P_Type${No}`]) {
+              case "M":
+                PSL[No] =
+                  St_Time * St_Scale +
+                  req.body[`PPL${No}`] * P_Scale * MH_Scale;
+                break;
+              case "A":
+                PSL[No] =
+                  St_Time * St_Scale +
+                  req.body[`PPL${No}`] * P_Scale * MH_Scale +
+                  req.body[`PML${No}`] * M_Scale * MH_Scale;
+                break;
+              case "O":
+                PSL[No] = St_Time * St_Scale + req.body[`PPL${No}`] * O_Scale;
+                break;
+            }
+
+            if (No > 1) {
+              if (req.body[`P_Type${No - 1}`] === "O") {
+                PSL[No] += 720;
+              } else if (req.body[`S_Type${No - 1}`] === "F") {
+                PSL[No] += 720;
+              }
+            }
+          }
+
+          if (No === End_No) {
+            if (req.body[`PPD${No}`] === null) {
+              PSL[No] += 720;
+            }
+          }
+        }
+
+        let Now_No = parseInt(req.body.Now_No, 10) || 1;
+        let Now_Date = new Date(
+          new Date().setDate(new Date().getDate() + req.body.Pl_St_Rev_Day)
+        );
+        Now_Date =
+          new Date(Now_Date).toISOString().split("T")[0] + "T00:00:00.000Z";
+
+        if (Now_No === 1) {
+          if (req.body[`S_Type${1}`] === "F") {
+            if (
+              req.body[`PPD${1}`] !== null &&
+              req.body[`PPD${1}`] > new Date() - 1
+            ) {
+              Now_No = 2;
+              Now_Date = req.body[`PPD${1}`];
+            }
+          }
+        }
+
+        let Temp_Date = Now_Date;
+        while (No < End_No) {
+          No += 1;
+
+          if (req.body[`RPD${No}`] === null) {
+            Temp_Date = new Date(Temp_Date).setDate(
+              Temp_Date.getDate() + (PSL[No] / 1440) * Sc_Scale + St_Rev
+            );
+
+            let FG = 0;
+            while (FG < 1) {
+              if (await checkHoliday(Temp_Date, Now_Date)) {
+                M_Holiday = await getHolidayCount(Temp_Date, Now_Date);
+
+                while (M_Holiday > 0) {
+                  Temp_Date = Temp_Date + 1;
+                  if (!(await checkHoliday(Temp_Date))) {
+                    M_Holiday -= 1;
+                  }
+                }
+                FG = 1;
+              } else {
+                FG = 1;
+              }
+            }
+
+            if (No === End_No) {
+              Temp_Date = formatDate(Temp_Date);
+            }
+
+            req.body[`PPD${No}`] = Temp_Date;
+            Now_No = No + 1;
+            Now_Date = Temp_Date;
+          }
+        }
+
+      case "Equality":
+        Fix_N = 0;
+        No = 0;
+        N = 1;
+        while (No < parseInt(req.body.End_No, 10)) {
+          No += 1;
+          if (req.body[`RPD${No}`] !== null) {
+            if (req.body[`PPD${No}`] === null) {
+              req.body[`PPD${No}`] = req.body[`RPD${No}`];
+            }
+            PSL[No] = 0;
+          } else {
+            switch (req.body[`P_Type${No}`]) {
+              case "M":
+                PSL[No] =
+                  St_Time * St_Scale +
+                  req.body[`PPL${No}`] * P_Scale * MH_Scale;
+                break;
+              case "A":
+                PSL[No] =
+                  St_Time * St_Scale +
+                  req.body[`PPL${No}`] * P_Scale * MH_Scale +
+                  req.body[`PML${No}`] * M_Scale * MH_Scale;
+                break;
+              case "O":
+                PSL[No] = St_Time * St_Scale + req.body[`PPL${No}`] * O_Scale;
+                break;
+            }
+
+            if (No > 1) {
+              if (req.body[`P_Type${No - 1}`] === "O") {
+                PSL[No] += 720;
+              } else if (req.body[`S_Type${No - 1}`] === "F") {
+                PSL[No] += 720;
+              }
+            }
+          }
+
+          if (No === parseInt(req.body.End_No, 10)) {
+            PSL[No] += 720;
+          }
+
+          Fix_Pr_N[N] = Fix_Pr_N[N] + 1;
+          Fix_Re_MH[N] = Fix_Re_MH[N] + PSL[No];
+
+          if (req.body[`S_Type${No}`] === "F") {
+            if (req.body[`PPD${No}`] !== null) {
+              if (await checkHoliday(req.body[`PPD${No}`])) {
+                return res.status(400).send({
+                  message: `Cannot set [Fix_Date] to holiday for line ${No}. Please change the date!`,
+                });
+              }
+              Fix_Date_No[N] = No;
+              Fix_Date[N] = req.body[`PPD${No}`];
+              Fix_N += 1;
+              N += 1;
+            }
+          }
+
+          if (No === parseInt(req.body.End_No, 10)) {
+            req.body[`PPD${No}`] =
+              req.body.Pt_Delivery - req.body.Pl_Ed_Rev_Day;
+
+            if (await checkHoliday(req.body[`PPD${No}`])) {
+              return res.status(400).send({
+                message: `Cannot set [Pt_Delivery] - [Pl_Ed_Rev_Day] to holiday. Please adjust dates.`,
+              });
+            }
+
+            Fix_Date_No[N] = No;
+            Fix_Date[N] = req.body[`PPD${No}`];
+            Fix_N += 1;
+            N += 1;
+          }
+        }
+
+        Now_No = parseInt(req.body.Now_No, 10);
+        Final_No = Now_No - 1;
+        Now_Date = new Date(
+          new Date().setDate(new Date().getDate() + req.body.Pl_St_Rev_Day)
+        );
+        Final_Date = Now_Date;
+
+        N = 0;
+        if (Now_No === 1) {
+          if (
+            req.body[`S_Type${1}`] === "F" &&
+            req.body[`PPD${1}`] !== null &&
+            req.body[`PPD${1}`] > new Date()
+          ) {
+            Final_No = Now_No;
+            Now_No = 2;
+            Now_Date = req.body[`PPD${1}`];
+            Final_Date = Now_Date;
+            N = 1;
+          }
+        }
+
+        while (N < Fix_N) {
+          Holidays = await prisma.tM_Holiday.count({
+            where: {
+              Holiday: {
+                gte: new Date(Now_Date).toISOString(),
+                lte: new Date(Fix_Date[N]).toISOString(),
+              },
+            },
+          });
+
+          ReDays =
+            (new Date(Fix_Date[N]) - new Date(Now_Date)) /
+              (1000 * 60 * 60 * 24) -
+            Holidays;
+          MinDays = Fix_Re_MH[N] / 1440; 
+
+          let No = Now_No - 1;
+          let Temp_Date = Now_Date;
+
+          while (No < Fix_Date_No[N]) {
+            No += 1;
+            if (!req.body[`RPD${No}`]) {
+              Temp_Date = new Date(Temp_Date).setDate(
+                new Date(Temp_Date).getDate() +
+                  (PSL[No] / 1440) * Sc_Scale +
+                  St_Rev
+              );
+
+              let FG = 0;
+              while (FG < 1) {
+                const holidayCount = await prisma.tM_Holiday.count({
+                  where: {
+                    Holiday: {
+                      gte: new Date(Now_Date).toISOString(),
+                      lte: new Date(Temp_Date).toISOString(),
+                    },
+                  },
+                });
+
+                if (holidayCount > 0) {
+                  let M_Holiday = holidayCount;
+                  while (M_Holiday > 0) {
+                    Temp_Date = new Date(Temp_Date).setDate(
+                      new Date(Temp_Date).getDate() + 1
+                    );
+                    const nextDayHolidayCount = await prisma.tmHoliday.count({
+                      where: {
+                        Holiday: {
+                          gte: new Date(Temp_Date).toISOString(),
+                        },
+                      },
+                    });
+
+                    if (nextDayHolidayCount === 0) {
+                      M_Holiday -= 1;
+                    }
+                  }
+                  FG = 1;
+                } else {
+                  FG = 1;
+                }
+              }
+
+              if (No < Fix_Date_No[N]) {
+                req.body[`PPD${No}`] = new Date(Temp_Date).toISOString();
+                Now_No = No + 1;
+                Now_Date = Temp_Date;
+              } else {
+                if (new Date(Temp_Date) > new Date(Fix_Date[N])) {
+                  return res.status(400).send({
+                    message: `Cannot set [Fix_Date] to holiday for line ${No}. Please change the date!`,
+                  });
+                }
+                Fix_Date_No[N] = No;
+                Fix_Date[N] = Temp_Date;
+              }
+            }
+          }
+          N++;
+        }
+        break;
+        case "Backward":
+          MH_Scale = await prisma.tM_Schedule.findUnique({
+            where: {
+              Schedule_CD: req.body.Pl_Schedule_CD,
+            },
+            select: {
+              ManHour_Scale: true,
+            },
+          }).then(result => result?.ManHour_Scale || 1);
+          
+          St_Scale = await prisma.tM_Schedule.findUnique({
+            where: {
+              Schedule_CD: req.body.Pl_Schedule_CD,
+            },
+            select: {
+              Stagnat_Scale: true,
+            },
+          }).then(result => result?.Stagnat_Scale || 1);
+        
+           No = 0;
+           PSL = Array(36).fill(0);
+           End_No = parseInt(req.body.End_No, 10);
+        
+          while (No < End_No) {
+            No += 1;
+        
+            if (req.body[`RPD${No}`] !== null) {
+              if (req.body[`PPD${No}`] === null) {
+                req.body[`PPD${No}`] = req.body[`RPD${No}`];
+              }
+              PSL[No] = 0;
+            } else {
+              switch (req.body[`P_Type${No}`]) {
+                case "M":
+                  PSL[No] =
+                    St_Time * St_Scale +
+                    req.body[`PPL${No}`] * P_Scale * MH_Scale;
+                  break;
+                case "A":
+                  PSL[No] =
+                    St_Time * St_Scale +
+                    req.body[`PPL${No}`] * P_Scale * MH_Scale +
+                    req.body[`PML${No}`] * M_Scale * MH_Scale;
+                  break;
+                case "O":
+                  PSL[No] = St_Time * St_Scale + req.body[`PPL${No}`] * O_Scale;
+                  break;
+              }
+        
+              if (No > 1) {
+                if (req.body[`P_Type${No - 1}`] === "O") {
+                  PSL[No] += 720;
+                } else if (req.body[`S_Type${No - 1}`] === "F") {
+                  PSL[No] += 720;
+                }
+              }
+            }
+        
+            if (No === End_No) {
+              if (req.body[`PPD${No}`] === null) {
+                PSL[No] += 720;
+              }
+            }
+          }
+        
+           Now_No = parseInt(req.body.Now_No, 10) || 1;
+           Now_Date = new Date(
+            new Date().setDate(new Date().getDate() + req.body.Pl_St_Rev_Day)
+          );
+          Now_Date =
+            new Date(Now_Date).toISOString().split("T")[0] + "T00:00:00.000Z";
+        
+          if (Now_No === 1) {
+            if (req.body[`S_Type${1}`] === "F") {
+              if (
+                req.body[`PPD${1}`] !== null &&
+                req.body[`PPD${1}`] > new Date() - 1
+              ) {
+                Now_No = 2;
+                Now_Date = req.body[`PPD${1}`];
+              }
+            }
+          }
+        
+           Temp_Date = Now_Date;
+          while (No < End_No) {
+            No += 1;
+        
+            if (req.body[`RPD${No}`] === null) {
+              Temp_Date = new Date(Temp_Date).setDate(
+                Temp_Date.getDate() - (PSL[No] / 1440) * Sc_Scale - St_Rev
+              );
+        
+              let FG = 0;
+              while (FG < 1) {
+                if (await checkHoliday(Temp_Date, Now_Date)) {
+                  M_Holiday = await getHolidayCount(Temp_Date, Now_Date);
+        
+                  while (M_Holiday > 0) {
+                    Temp_Date = Temp_Date - 1;
+                    if (!(await checkHoliday(Temp_Date))) {
+                      M_Holiday -= 1;
+                    }
+                  }
+                  FG = 1;
+                } else {
+                  FG = 1;
+                }
+              }
+        
+              if (No === End_No) {
+                Temp_Date = formatDate(Temp_Date);
+              }
+        
+              req.body[`PPD${No}`] = Temp_Date;
+              Now_No = No + 1;
+              Now_Date = Temp_Date;
+            }
+          }
+        break;
+    }
+    
+  } catch (err) {
+    console.error("Error Error occurs when Schedule_Calc_Click:", err);
+    return next(createError(500, "Internal Server Error"));
+  }
+};
+
+exports.fetchplan = async (req, res, next) => {
+  try {
+    const plan = await prisma.tD_Plan.findMany();
+
+    return res.status(200).json({
+      status: "success",
+      data: {
+        plan: plan,
+      },
+    });
+  } catch (err) {
+    console.error("Error searching NAVWI:", err);
+    return next(createError(500, "Internal Server Error"));
+  }
+};
+
 exports.Search_Parts_No_AfterUpdate = async (req, res, next) => {
   // ล็อกข้อมูลที่รับเข้ามา
   console.log("Request Body:", req.body);
@@ -750,7 +1255,7 @@ exports.createPlan = async (req, res, next) => {
           select: { End: true },
         }).End;
 
-        if (isEnd === -1) FG++;
+        if (isEnd === true) FG++;
       } else {
         // ล้างค่า PMT, PPT, T_Type, P_Type, S_Type
         req.body[`PMT${N}`] = null;
