@@ -7,6 +7,7 @@ router.post("/search-part-plan", tdPlanController.Search_Parts_No_AfterUpdate);
 router.put("/edits-plan", tdPlanController.editplan);
 router.delete("/delete-plans", tdPlanController.deletePlans);
 router.post("/graph", tdPlanController.graph);
+router.get("/fetch-all-plan", tdPlanController.fetchplan);
 router.post("/create-plan",tdPlanController.createPlan);
 router.post("/create-schedule",tdPlanController.createSchedule);
 router.post("/create-result",tdPlanController.createResult);
