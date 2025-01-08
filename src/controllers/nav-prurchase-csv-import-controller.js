@@ -70,8 +70,8 @@ exports.import_purchase_csv = async (req, res, next) => {
               Pc_NAV_Reg_Date: parseDate(row["Insert Date"]),
               Pc_NAV_Upd_Date: parseDate(row["Modify Date"]),
               Pc_Progress_CD: row["Flag"],
-              OdPc_No: `${row["Sales Order No_"]}_${row["No_"]}`, // Concatenate Order_No and Procure_No
-              OdPcLn_No: `${row["Sales Order No_"]}_${row["No_"]}_${parseInt(row["Line No_"])}`, // Concatenate Order_No, Procure_No, and Pc_Line_No
+              OdPc_No: `${row["Sales Order No_"]}${row["No_"]}`, // Concatenate Order_No and Procure_No
+              OdPcLn_No: `${row["Sales Order No_"]}${row["No_"]}${parseInt(row["Line No_"])}`, // Concatenate Order_No, Procure_No, and Pc_Line_No
             };
 
             // Step 4: Save record to the tT_NAV_Pc_CSV table
@@ -157,10 +157,57 @@ exports.import_purchase_csv = async (req, res, next) => {
       });
     }
 
-    res.status(200).json({ message: `Successfully processed ${totalRecords} records.` });
-  } catch (error) {
-    next(error); // Pass errors to the error-handling middleware
+  // Step 6: Fetch the tT_NAV_Pc_CSV_Upd table data
+  const updatedRecords = await prisma.tT_NAV_Pc_CSV_Upd.findMany();
+  const procureRecords = await prisma.tD_Procure.findMany();
+
+  // Step 1: Loop through each updated record from TT_NAV_Pc_CSV_Upd
+  for (const updatedRecord of updatedRecords) {
+    // Step 2: Find matching record from TD_Procure based on Procure_No and Vendor_CD
+    const matchingProcure = procureRecords.find(
+      (procure) =>
+        procure.Procure_No === updatedRecord.Procure_No &&
+        procure.Vendor_CD === updatedRecord.Vendor_CD
+    );
+  
+    // Step 3: If matching record is found, perform the desired action
+    if (matchingProcure) {
+      // For example, you can log the matching records or perform an update
+      console.log('Matching record found:', {
+        updatedRecord,
+        matchingProcure,
+      });
+  
+      // Optional: Update the TD_Procure table with the data from TT_NAV_Pc_CSV_Upd if needed
+      try {
+        await prisma.tD_Procure.update({
+          where: {
+            OdPcLn_No: matchingProcure.OdPcLn_No, // Assuming OdPcLn_No is the unique identifier for TD_Procure
+          },
+          data: {
+            // Update the fields as required
+            Pc_Name: updatedRecord.Pc_Name,
+            Unit_Price: updatedRecord.Unit_Price,
+            Pc_Qty: updatedRecord.Pc_Qty,
+            // Add other fields you want to update
+          },
+        });
+        console.log('Record updated in TD_Procure');
+      } catch (updateErr) {
+        console.error('Error updating TD_Procure:', updateErr.message);
+      }
+    }
   }
+
+
+  // Step 7: Send response with total records and updated table data
+  res.status(200).json({
+    message: `Successfully processed ${totalRecords} records.`,
+    data: updatedRecords, // Include updated table data
+  });
+} catch (error) {
+  next(error); // Pass errors to the error-handling middleware
+}
 };
 
 
