@@ -64,167 +64,287 @@ exports.fetchtt_purchase_csv = async (req, res, next) => {
   }
 };
 
+
+
+// exports.TT_NAV_PC_CSV = async (req, res, next) => {
+//   try {
+//     const sourceDir = 'C:/TENKEI/Purchase_CSV';
+//     const destDir = 'C:/TENKEI/Purchase_CSV/BK';
+    
+//     // Check if the destination directory exists, if not, create it
+//     if (!fs.existsSync(destDir)) {
+//       fs.mkdirSync(destDir, { recursive: true });
+//     }
+
+//     // List all files in the source directory
+//     fs.readdir(sourceDir, (err, files) => {
+//       if (err) {
+//         console.error('Error reading directory', err);
+//         return next(createError(500, 'Internal Server Error'));
+//       }
+
+//       // Filter only CSV files
+//       const csvFiles = files.filter(file => path.extname(file).toLowerCase() === '.csv');
+      
+//       // Move each CSV file to the destination directory
+//       csvFiles.forEach(file => {
+//         const sourcePath = path.join(sourceDir, file);
+//         const destPath = path.join(destDir, file);
+
+        
+//         fs.rename(sourcePath, destPath, (moveErr) => {
+//           if (moveErr) {
+//             console.error('Error moving file', moveErr);
+//             return next(createError(500, 'Internal Server Error'));
+//           }
+//           console.log(`${file} moved successfully.`);
+//         });
+//       });
+//     });
+
+//     res.status(200).send("CSV files processed and moved successfully");
+//   } catch (err) {
+//     console.error("Error processing CSV", err);
+//     return next(createError(500, "Internal Server Error"));
+//   }
+// };
+
+
 exports.TT_NAV_PC_CSV = async (req, res, next) => {
   try {
     await prisma.tT_NAV_Pc_CSV.deleteMany();
-
-    const orderCsvDrive =
-      "C:\\TENKEI\\Purchase_CSV";
-    const orderCsvMoveDrive =
-      "C:\\TENKEI\\Purchase_CSV\\BK";
-    const orderCsvCopyDrive =
-      "C:\\TENKEI\\Purchase_CSV";
-    const fileNamePattern = "Procure_20220112145720.csv";
-
-    const files = fs.readdirSync(orderCsvDrive);
-
-    for (const file of files) {
-      if (file.includes(fileNamePattern)) {
-        const filePath = path.join(orderCsvDrive, file);
-        console.log(`Processing file: ${filePath}`);
-
-        if (fs.existsSync(filePath)) {
-          await importCsvToDatabase(filePath);
-
-          if (orderCsvMoveDrive !== "") {
-            fs.copyFileSync(filePath, path.join(orderCsvMoveDrive, file));
-          }
-
-          if (orderCsvCopyDrive !== "") {
-            fs.copyFileSync(filePath, path.join(orderCsvCopyDrive, file));
-          }
-
-          fs.unlinkSync(filePath);
-        } else {
-          console.error(`File not found: ${filePath}`);
-        }
-      }
+    const sourceDir = 'C:/TENKEI/Purchase_CSV';
+    const destDir = 'C:/TENKEI/Purchase_CSV/BK';
+    
+    // Check if the destination directory exists, if not, create it
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
     }
 
-    res.status(200).send("CSV processed successfully");
+    // List all files in the source directory
+    fs.readdir(sourceDir, async (err, files) => {
+      if (err) {
+        console.error('Error reading directory', err);
+        return next(createError(500, 'Internal Server Error'));
+      }
+
+      // Filter only CSV files
+      const csvFiles = files.filter(file => path.extname(file).toLowerCase() === '.csv');
+
+      // Process each CSV file
+      for (const file of csvFiles) {
+        const sourcePath = path.join(sourceDir, file);
+        const destPath = path.join(destDir, file);
+
+        // Move the file to destination
+        try {
+          await moveFile(sourcePath, destPath);
+          console.log(`${file} moved successfully.`);
+        } catch (moveErr) {
+          console.error('Error moving file', moveErr);
+          return next(createError(500, 'Internal Server Error'));
+        }
+
+        // Read the CSV and save records to the database
+        const results = [];
+        fs.createReadStream(destPath)
+          .pipe(csvParser())
+          .on('data', (row) => {
+            results.push({
+              Procure_No: row["No_"],
+              Vendor_CD: row["Buy-from Vendor No_"],
+              Pc_Date: parseDate(row["Order Date"]),
+              Pc_Line_No: parseInt(row["Line No_"]),
+              Order_No: row["Sales Order No_"],
+              Pc_Name: row["Description"],
+              Pc_Material: row["Description 2"],
+              Unit_Price: parseFloat(row["Direct Unit Cost"]),
+              Pc_Qty: parseFloat(row["Quantity"]),
+              Pc_Unit_CD: row["Unit of Measure Code"],
+              Pc_Person_CD: row["Purchaser Code"],
+              Pc_Req_Delivery: parseDate(row["Expected Receipt Date"]),
+              Pc_Ans_Delivery: parseDate(row["Vendor Confirm Delivery Date"]),
+              Pc_Arrival_Date: parseDate(row["Date Received"]),
+              Pc_Arrival_Qty: parseFloat(row["Quantity Received"]),
+              Pc_NAV_Reg_Date: parseDate(row["Insert Date"]),
+              Pc_NAV_Upd_Date: parseDate(row["Modify Date"]),
+              Pc_Progress_CD: row["Flag"],
+              OdPc_No: `${row["Sales Order No_"]}${row["No_"]}`, // Concatenate Order_No and Procure_No
+              OdPcLn_No: `${row["Sales Order No_"]}${row["No_"]}${parseInt(row["Line No_"])}`,
+            });
+          })
+          .on('end', async () => {
+            try {
+              // Use Prisma to save all rows to the database
+              await prisma.tT_NAV_Pc_CSV.createMany({
+                data: results,
+              });
+             
+              console.log('CSV records saved successfully.');
+            } catch (err) {
+              console.error('Error saving records to the database', err);
+              return next(createError(500, 'Internal Server Error'));
+            }
+          });
+      }
+    });
+
+    res.status(200).send("CSV files processed and moved successfully");
   } catch (err) {
-    console.error("Error inserting data into TT_NAV_Od_CSV", err);
+    console.error("Error processing CSV", err);
     return next(createError(500, "Internal Server Error"));
   }
 };
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-async function importCsvToDatabase(filePath) {
-  
-  const results =[];
 
+// Helper function to move a file asynchronously
+async function moveFile(sourcePath, destPath) {
   return new Promise((resolve, reject) => {
-    fs.createReadStream(filePath)
-      .on("error", (err) => {
-        console.error(`Error reading file ${filePath}:`, err.message);
+    fs.rename(sourcePath, destPath, (err) => {
+      if (err) {
         reject(err);
-      })
-      .pipe(csvParser())
-      .on("data", (data) => {
-        const mappedData = mapFiledRow(data);
-     
-        function formatToDateTime(date) {
-          if (!date) {
-            return null; 
-          }
-        
-       
-          const [day, month, year] = date.split("/"); 
-        
-       
-          const formattedDate = new Date(`${year}-${month}-${day}`);
-        
-        
-          if (!isNaN(formattedDate.getTime())) {
-            const year = formattedDate.getFullYear();
-            const month = String(formattedDate.getMonth() + 1).padStart(2, "0");
-            const day = String(formattedDate.getDate()).padStart(2, "0");
-            const hours = String(formattedDate.getHours()).padStart(2, "0");
-            const minutes = String(formattedDate.getMinutes()).padStart(2, "0");
-            const seconds = String(formattedDate.getSeconds()).padStart(2, "0");
-        
-            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`;
-          } else {
-            console.warn(`Invalid date format: ${date}`);
-            return null;
-          }
-        }
-        if (mappedData.Pc_Date) {
-          mappedData.Pc_Date = formatToDateTime(mappedData.Pc_Date);
-          if (!mappedData.Pc_Date) {
-            console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_Date}`);
-          }
-        }
-        if (mappedData.Pc_Req_Delivery) {
-          mappedData.Pc_Req_Delivery = formatToDateTime(mappedData.Pc_Req_Delivery);
-          if (!mappedData.Pc_Req_Delivery) {
-            console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_Req_Delivery}`);
-          }
-        }
-        if (mappedData.Pc_Ans_Delivery) {
-          mappedData.Pc_Ans_Delivery = formatToDateTime(mappedData.Pc_Ans_Delivery);
-          if (!mappedData.Pc_Ans_Delivery) {
-            console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_Ans_Delivery}`);
-          }
-        }
-        if (mappedData.Pc_Arrival_Date) {
-          mappedData.Pc_Arrival_Date = formatToDateTime(mappedData.Pc_Arrival_Date);
-          if (!mappedData.Pc_Arrival_Date) {
-            console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_Arrival_Date}`);
-          }
-        }
-        if (mappedData.Pc_Arrival_Qty) {
-          mappedData.Pc_Arrival_Qty = formatToDateTime(mappedData.Pc_Arrival_Qty);
-          if (!mappedData.Pc_Arrival_Qty) {
-            console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_Arrival_Qty}`);
-          }
-        }
-        if (mappedData.Pc_NAV_Reg_Date) {
-          mappedData.Pc_NAV_Reg_Date = formatToDateTime(mappedData.Pc_NAV_Reg_Date);
-          if (!mappedData.Pc_NAV_Reg_Date) {
-            console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_NAV_Reg_Date}`);
-          }
-        }
-        if (mappedData.Pc_NAV_Upd_Date) {
-          mappedData.Pc_NAV_Upd_Date = formatToDateTime(mappedData.Pc_NAV_Upd_Date);
-          if (!mappedData.Pc_NAV_Upd_Date) {
-            console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_NAV_Upd_Date}`);
-          }
-        }
-        
-        
-
-
-
-        results.push(mappedData);
-      })
-      .on("end", async () => {
-        try {
-          if (results.length > 0) {
-            await prisma.tT_NAV_Pc_CSV.createMany({
-              data: results,
-            });
-              // Adding delay before deleting the file
-            await delay(1000); // Wait 1 second
-
-            // Ensure file is not in use before attempting to delete
-            if (fs.existsSync(filePath)) {
-              await fs.promises.unlink(filePath);
-            }
-
-            resolve();
-          } else {
-            console.warn(`No data found in file ${filePath}`);
-            resolve();
-          }
-        } catch (err) {
-          console.error("Error importing CSV into database", err.message);
-          reject(err);
-        }
-      });
+      } else {
+        resolve();
+      }
+    });
   });
 }
+
+// Helper function to parse dates (You may need to adjust date formats)
+function parseDate(dateStr) {
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  return isNaN(date) ? null : date; // Return null if the date is invalid
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// function delay(ms) {
+//   return new Promise(resolve => setTimeout(resolve, ms));
+// }
+// async function importCsvToDatabase(filePath) {
+  
+//   const results =[];
+
+//   return new Promise((resolve, reject) => {
+//     fs.createReadStream(filePath)
+//       .on("error", (err) => {
+//         console.error(`Error reading file ${filePath}:`, err.message);
+//         reject(err);
+//       })
+//       .pipe(csvParser())
+//       .on("data", (data) => {
+//         const mappedData = mapFiledRow(data);
+     
+//         function formatToDateTime(date) {
+//           if (!date) {
+//             return null; 
+//           }
+        
+       
+//           const [day, month, year] = date.split("/"); 
+        
+       
+//           const formattedDate = new Date(`${year}-${month}-${day}`);
+        
+        
+//           if (!isNaN(formattedDate.getTime())) {
+//             const year = formattedDate.getFullYear();
+//             const month = String(formattedDate.getMonth() + 1).padStart(2, "0");
+//             const day = String(formattedDate.getDate()).padStart(2, "0");
+//             const hours = String(formattedDate.getHours()).padStart(2, "0");
+//             const minutes = String(formattedDate.getMinutes()).padStart(2, "0");
+//             const seconds = String(formattedDate.getSeconds()).padStart(2, "0");
+        
+//             return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`;
+//           } else {
+//             console.warn(`Invalid date format: ${date}`);
+//             return null;
+//           }
+//         }
+//         if (mappedData.Pc_Date) {
+//           mappedData.Pc_Date = formatToDateTime(mappedData.Pc_Date);
+//           if (!mappedData.Pc_Date) {
+//             console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_Date}`);
+//           }
+//         }
+//         if (mappedData.Pc_Req_Delivery) {
+//           mappedData.Pc_Req_Delivery = formatToDateTime(mappedData.Pc_Req_Delivery);
+//           if (!mappedData.Pc_Req_Delivery) {
+//             console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_Req_Delivery}`);
+//           }
+//         }
+//         if (mappedData.Pc_Ans_Delivery) {
+//           mappedData.Pc_Ans_Delivery = formatToDateTime(mappedData.Pc_Ans_Delivery);
+//           if (!mappedData.Pc_Ans_Delivery) {
+//             console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_Ans_Delivery}`);
+//           }
+//         }
+//         if (mappedData.Pc_Arrival_Date) {
+//           mappedData.Pc_Arrival_Date = formatToDateTime(mappedData.Pc_Arrival_Date);
+//           if (!mappedData.Pc_Arrival_Date) {
+//             console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_Arrival_Date}`);
+//           }
+//         }
+//         if (mappedData.Pc_Arrival_Qty) {
+//           mappedData.Pc_Arrival_Qty = formatToDateTime(mappedData.Pc_Arrival_Qty);
+//           if (!mappedData.Pc_Arrival_Qty) {
+//             console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_Arrival_Qty}`);
+//           }
+//         }
+//         if (mappedData.Pc_NAV_Reg_Date) {
+//           mappedData.Pc_NAV_Reg_Date = formatToDateTime(mappedData.Pc_NAV_Reg_Date);
+//           if (!mappedData.Pc_NAV_Reg_Date) {
+//             console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_NAV_Reg_Date}`);
+//           }
+//         }
+//         if (mappedData.Pc_NAV_Upd_Date) {
+//           mappedData.Pc_NAV_Upd_Date = formatToDateTime(mappedData.Pc_NAV_Upd_Date);
+//           if (!mappedData.Pc_NAV_Upd_Date) {
+//             console.warn(`Invalid date format for Order_Date: ${mappedData.Pc_NAV_Upd_Date}`);
+//           }
+//         }
+        
+        
+
+
+
+//         results.push(mappedData);
+//       })
+//       .on("end", async () => {
+//         try {
+//           if (results.length > 0) {
+//             await prisma.tT_NAV_Pc_CSV.createMany({
+//               data: results,
+//             });
+//               // Adding delay before deleting the file
+//             await delay(1000); // Wait 1 second
+
+//             // Ensure file is not in use before attempting to delete
+//             if (fs.existsSync(filePath)) {
+//               await fs.promises.unlink(filePath);
+//             }
+
+//             resolve();
+//           } else {
+//             console.warn(`No data found in file ${filePath}`);
+//             resolve();
+//           }
+//         } catch (err) {
+//           console.error("Error importing CSV into database", err.message);
+//           reject(err);
+//         }
+//       });
+//   });
+// }
 
 exports.QT_NAV_Pc_CSV_Upd_Add = async (req, res, next) => {
   try {
