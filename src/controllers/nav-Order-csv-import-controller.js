@@ -7,34 +7,35 @@ const prisma = require("../models/prisma");
 
 
 
-exports.fetchtt_purchase_csv_upd = async (req, res, next) => {
+
+exports.fetchtt_OD_csv_upd = async (req, res, next) => {
   try {
-    const NAVPCUPD = await prisma.tT_NAV_Pc_CSV_Upd.findMany();
+    const NAVPCUPD = await prisma.tT_NAV_Od_CSV_Upd.findMany();
 
     return res.status(200).json({
       status: "success",
       data: {
-        NAVPCUPD: NAVPCUPD,
+        NAVOdUPD: NAVOdUPD,
       },
     });
   } catch (err) {
-    console.error("Error searching NAVPCUPD:", err);
+    console.error("Error searching NAVOdUPD:", err);
     return next(createError(500, "Internal Server Error"));
   }
 };
 
-exports.fetchtt_purchase_csv = async (req, res, next) => {
+exports.fetchtt_OD_csv = async (req, res, next) => {
   try {
-    const NAVPC = await prisma.tT_NAV_Pc_CSV.findMany();
+    const NAVPC = await prisma.tT_NAV_Od_CSV.findMany();
 
     return res.status(200).json({
       status: "success",
       data: {
-        NAVPC: NAVPC,
+        NAVOd: NAVOd,
       },
     });
   } catch (err) {
-    console.error("Error searching NAVPC:", err);
+    console.error("Error searching NAVOd:", err);
     return next(createError(500, "Internal Server Error"));
   }
 };
@@ -42,14 +43,15 @@ exports.fetchtt_purchase_csv = async (req, res, next) => {
 
 
 
-exports.TT_NAV_PC_CSV = async (req, res, next) => {
+exports.TT_NAV_OD_CSV = async (req, res, next) => {
   try {
-    // await prisma.tT_NAV_Pc_CSV_Upd.deleteMany();
-    await prisma.tT_NAV_Pc_CSV.deleteMany();
-    await prisma.tT_NAV_Pc_CSV_Upd.deleteMany();
-    const sourceDir = 'C:/TENKEI/Purchase_CSV';
-    const destDir = 'C:/TENKEI/Purchase_CSV/BK';
-    
+    // Clean up old data
+    await prisma.tT_NAV_Od_CSV.deleteMany();
+    await prisma.tT_NAV_Od_CSV_Upd.deleteMany();
+
+    const sourceDir = 'C:/TENKEI/Order_CSV';
+    const destDir = 'C:/TENKEI/Order_CSV/BK';
+
     // Check if the destination directory exists, if not, create it
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
@@ -81,43 +83,66 @@ exports.TT_NAV_PC_CSV = async (req, res, next) => {
 
         // Read the CSV and save records to the database
         const results = [];
+        const seenOrderNos = new Set();
+
+        // Read the file and collect unique records
         fs.createReadStream(destPath)
           .pipe(csvParser())
           .on('data', (row) => {
-            results.push({
-              Procure_No: row["No_"],
-              Vendor_CD: row["Buy-from Vendor No_"],
-              Pc_Date: parseDate(row["Order Date"]),
-              Pc_Line_No: parseInt(row["Line No_"]),
-              Order_No: row["Sales Order No_"],
-              Pc_Name: row["Description"],
-              Pc_Material: row["Description 2"],
-              Unit_Price: parseFloat(row["Direct Unit Cost"]),
-              Pc_Qty: parseFloat(row["Quantity"]),
-              Pc_Unit_CD: row["Unit of Measure Code"],
-              Pc_Person_CD: row["Purchaser Code"],
-              Pc_Req_Delivery: parseDate(row["Expected Receipt Date"]),
-              Pc_Ans_Delivery: parseDate(row["Vendor Confirm Delivery Date"]),
-              Pc_Arrival_Date: parseDate(row["Date Received"]),
-              Pc_Arrival_Qty: parseFloat(row["Quantity Received"]),
-              Pc_NAV_Reg_Date: parseDate(row["Insert Date"]),
-              Pc_NAV_Upd_Date: parseDate(row["Modify Date"]),
-              Pc_Progress_CD: row["Flag"],
-              OdPc_No: `${row["Sales Order No_"]}${row["No_"]}`, // Concatenate Order_No and Procure_No
-              OdPcLn_No: `${row["Sales Order No_"]}${row["No_"]}${parseInt(row["Line No_"])}`,
-            });
+            if (!seenOrderNos.has(row["Order_No"])) {
+              seenOrderNos.add(row["Order_No"]);
+              results.push({
+                Order_No: row["Order_No"], // Prisma Order_No field as primary key
+                Request1_CD: row["Request1_CD"] ? parseInt(row["Request1_CD"]) : null,
+                Customer_CD: row["Customer_CD"],
+                Sales_Person_CD: row["Sales_Person_CD"],
+                Order_Date: parseDate(row["Order_Date"]),
+                Request_Delivery: parseDate(row["Request_Delivery"]),
+                Od_Upd_Date: parseDate(row["Od_Upd_Date"]),
+                Item1_CD: row["Item1_CD"],
+                NAV_Name: row["NAV_Name"],
+                NAV_Size: row["NAV_Size"],
+                Quantity: row["Quantity"] ? parseFloat(row["Quantity"]) : null,
+                Unit_CD: row["Unit_CD"],
+                Unit_Price: row["Unit_Price"] ? parseFloat(row["Unit_Price"]) : null,
+                Amount: row["Amount"] ? parseFloat(row["Amount"]) : null,
+                Customer_Draw: row["Customer_Draw"],
+                Company_Draw: row["Company_Draw"],
+                Tolerance: row["Tolerance"],
+                Coating: row["Coating"],
+                Material1: row["Material1"],
+                Material2: row["Material2"],
+                H_Treatment1: row["H_Treatment1"],
+                H_Treatment2: row["H_Treatment2"],
+                Material3: row["Material3"],
+                Material4: row["Material4"],
+                Material5: row["Material5"],
+                H_Treatment3: row["H_Treatment3"],
+                H_Treatment4: row["H_Treatment4"],
+                H_Treatment5: row["H_Treatment5"],
+                Customer_Abb: row["Customer_Abb"],
+                Sl_Person_Name: row["Sl_Person_Name"],
+                PO_No: row["PO_No"],
+              });
+            }
           })
           .on('end', async () => {
             try {
-              // Use Prisma to save all rows to the database
-              await prisma.tT_NAV_Pc_CSV.createMany({
-                data: results,
-              });
-             
-              console.log('CSV records saved successfully.');
+              // Use Prisma to save unique records to the database
+              if (results.length > 0) {
+                await prisma.tT_NAV_Od_CSV.createMany({
+                  data: results,
+                  skipDuplicates: true, // Prisma will skip duplicates based on primary key
+                });
+                console.log('CSV records saved successfully.');
+              }
             } catch (err) {
-              console.error('Error saving records to the database', err);
-              return next(createError(500, 'Internal Server Error'));
+              if (err.code === 'P2002') {
+                console.error('Duplicate primary key error:', err.meta);
+              } else {
+                console.error('Error saving records to the database', err);
+                return next(createError(500, 'Internal Server Error'));
+              }
             }
           });
       }
@@ -280,10 +305,10 @@ function parseDate(dateStr) {
 //   });
 // }
 
-exports.QT_NAV_Pc_CSV_Upd_Add = async (req, res, next) => {
+exports.QT_NAV_OD_CSV_Upd_Add = async (req, res, next) => {
   try {
     // Step 1: Fetch data with INNER JOIN
-    const data = await prisma.tT_NAV_Pc_CSV.findMany({
+    const data = await prisma.tT_NAV_Od_CSV.findMany({
       include: {
         // Include related fields if necessary
       },
@@ -292,9 +317,9 @@ exports.QT_NAV_Pc_CSV_Upd_Add = async (req, res, next) => {
     // Step 2: Insert each row of data into TT_NAV_Pc_CSV_Upd
     for (const row of data) {
       // Check if the record already exists in TT_NAV_Pc_CSV_Upd using findFirst
-      const existingRecord = await prisma.tT_NAV_Pc_CSV_Upd.findUnique({
+      const existingRecord = await prisma.tT_NAV_Od_CSV_Upd.findUnique({
         where: {
-          OdPcLn_No: row.OdPcLn_No,  // Use OdPcLn_No or any unique identifier
+          Order_No: row.Order_No,  // Use OdPcLn_No or any unique identifier
         },
       });
 
@@ -302,33 +327,44 @@ exports.QT_NAV_Pc_CSV_Upd_Add = async (req, res, next) => {
       if (existingRecord) {
         return res.status(400).json({
           status: "error",
-          message: `Record with OdPcLn_No ${row.OdPcLn_No} already exists in TT_NAV_Pc_CSV_Upd, cannot insert duplicate data.`,
+          message: `Record with OdPcLn_No ${row.Order_No} already exists in TT_NAV_Pc_CSV_Upd, cannot insert duplicate data.`,
         });
       }
 
       // If no existing record, proceed with the insert
-      await prisma.tT_NAV_Pc_CSV_Upd.create({
-        data: {
-          Procure_No: row.Procure_No,
-          Vendor_CD: row.Vendor_CD,
-          Pc_Date: row.Pc_Date,
-          Pc_Line_No: row.Pc_Line_No,
+      await prisma.tT_NAV_Od_CSV_Upd.create({
+        data : {
           Order_No: row.Order_No,
-          Pc_Name: row.Pc_Name,
-          Pc_Material: row.Pc_Material,
+          Request1_CD: row.Request1_CD,
+          Customer_CD: row.Customer_CD,
+          Sales_Person_CD: row.Sales_Person_CD,
+          Order_Date: row.Order_Date,
+          Request_Delivery: row.Request_Delivery,
+          Od_Upd_Date: row.Od_Upd_Date,
+          Item1_CD: row.Item1_CD,
+          NAV_Name: row.NAV_Name,
+          NAV_Size: row.NAV_Size,
+          Quantity: row.Quantity,
+          Unit_CD: row.Unit_CD,
           Unit_Price: row.Unit_Price,
-          Pc_Qty: row.Pc_Qty,
-          Pc_Unit_CD: row.Pc_Unit_CD,
-          Pc_Person_CD: row.Pc_Person_CD,
-          Pc_Req_Delivery: row.Pc_Req_Delivery,
-          Pc_Ans_Delivery: row.Pc_Ans_Delivery,
-          Pc_Arrival_Date: row.Pc_Arrival_Date,
-          Pc_Arrival_Qty: row.Pc_Arrival_Qty,
-          Pc_NAV_Reg_Date: row.Pc_NAV_Reg_Date,
-          Pc_NAV_Upd_Date: row.Pc_NAV_Upd_Date,
-          Pc_Progress_CD: row.Pc_Progress_CD,
-          OdPc_No: row.OdPc_No,
-          OdPcLn_No: row.OdPcLn_No,
+          Amount: row.Amount,
+          Customer_Draw: row.Customer_Draw,
+          Company_Draw: row.Company_Draw,
+          Tolerance: row.Tolerance,
+          Coating: row.Coating,
+          Material1: row.Material1,
+          Material2: row.Material2,
+          H_Treatment1: row.H_Treatment1,
+          H_Treatment2: row.H_Treatment2,
+          Material3: row.Material3,
+          Material4: row.Material4,
+          Material5: row.Material5,
+          H_Treatment3: row.H_Treatment3,
+          H_Treatment4: row.H_Treatment4,
+          H_Treatment5: row.H_Treatment5,
+          Customer_Abb: row.Customer_Abb,
+          Sl_Person_Name: row.Sl_Person_Name,
+          PO_Nomap: row.PO_Nomap
         },
       });
     }
@@ -344,15 +380,15 @@ exports.QT_NAV_Pc_CSV_Upd_Add = async (req, res, next) => {
   }
 };
 
-exports.QT_NAV_Pc_CSV_Upd_Upd = async (req, res, next) => {
+exports.QT_NAV_OD_CSV_Upd_Upd = async (req, res, next) => {
   try {
     // Step 1: Fetch all data from TT_NAV_Pc_CSV
-    const data = await prisma.tT_NAV_Pc_CSV.findMany();
+    const data = await prisma.tT_NAV_Od_CSV.findMany();
 
     // Step 2: Process updates and inserts
     const operations = data.map(async (row) => {
       // Validate required field
-      if (!row.OdPcLn_No) {
+      if (!row.Order_No) {
         console.warn("Missing OdPcLn_No for row:", row);
         return null;
       }
@@ -360,33 +396,45 @@ exports.QT_NAV_Pc_CSV_Upd_Upd = async (req, res, next) => {
       try {
         // Check if record exists
         const existingRecord = await prisma.tT_NAV_Pc_CSV_Upd.findUnique({
-          where: { OdPcLn_No: row.OdPcLn_No },
+          where: { Order_No: row.Order_No },
         });
 
         if (existingRecord) {
           // Update existing record
-          return prisma.tT_NAV_Pc_CSV_Upd.update({
-            where: { OdPcLn_No: row.OdPcLn_No },
-            data: {
-              Procure_No: row.Procure_No,
-              Vendor_CD: row.Vendor_CD,
-              Pc_Date: row.Pc_Date,
-              Pc_Line_No: row.Pc_Line_No,
+          return prisma.tT_NAV_Od_CSV_Upd.update({
+            where: { Order_No: row.Order_No },
+            data : {
               Order_No: row.Order_No,
-              Pc_Name: row.Pc_Name,
-              Pc_Material: row.Pc_Material,
+              Request1_CD: row.Request1_CD,
+              Customer_CD: row.Customer_CD,
+              Sales_Person_CD: row.Sales_Person_CD,
+              Order_Date: row.Order_Date,
+              Request_Delivery: row.Request_Delivery,
+              Od_Upd_Date: row.Od_Upd_Date,
+              Item1_CD: row.Item1_CD,
+              NAV_Name: row.NAV_Name,
+              NAV_Size: row.NAV_Size,
+              Quantity: row.Quantity,
+              Unit_CD: row.Unit_CD,
               Unit_Price: row.Unit_Price,
-              Pc_Qty: row.Pc_Qty,
-              Pc_Unit_CD: row.Pc_Unit_CD,
-              Pc_Person_CD: row.Pc_Person_CD,
-              Pc_Req_Delivery: row.Pc_Req_Delivery,
-              Pc_Ans_Delivery: row.Pc_Ans_Delivery,
-              Pc_Arrival_Date: row.Pc_Arrival_Date,
-              Pc_Arrival_Qty: row.Pc_Arrival_Qty,
-              Pc_NAV_Reg_Date: row.Pc_NAV_Reg_Date,
-              Pc_NAV_Upd_Date: row.Pc_NAV_Upd_Date,
-              Pc_Progress_CD: row.Pc_Progress_CD,
-              OdPc_No: row.OdPc_No,
+              Amount: row.Amount,
+              Customer_Draw: row.Customer_Draw,
+              Company_Draw: row.Company_Draw,
+              Tolerance: row.Tolerance,
+              Coating: row.Coating,
+              Material1: row.Material1,
+              Material2: row.Material2,
+              H_Treatment1: row.H_Treatment1,
+              H_Treatment2: row.H_Treatment2,
+              Material3: row.Material3,
+              Material4: row.Material4,
+              Material5: row.Material5,
+              H_Treatment3: row.H_Treatment3,
+              H_Treatment4: row.H_Treatment4,
+              H_Treatment5: row.H_Treatment5,
+              Customer_Abb: row.Customer_Abb,
+              Sl_Person_Name: row.Sl_Person_Name,
+              PO_Nomap: row.PO_Nomap
             },
           });
         } else {
@@ -394,7 +442,7 @@ exports.QT_NAV_Pc_CSV_Upd_Upd = async (req, res, next) => {
           console.log("pass");
         }
       } catch (err) {
-        console.error(`Error processing row with OdPcLn_No: ${row.OdPcLn_No}`, err);
+        console.error(`Error processing row with OdPcLn_No: ${row.Order_No}`, err);
       }
     });
 
@@ -412,10 +460,10 @@ exports.QT_NAV_Pc_CSV_Upd_Upd = async (req, res, next) => {
 };
 
 
-exports.QT_NAV_Pc_CSV_Add = async (req, res, next) => {
+exports.QT_NAV_OD_CSV_Add = async (req, res, next) => {
   try {
     // Step 1: Fetch the data using an INNER JOIN between TT_NAV_Pc_CSV and TD_Procure
-    const data = await prisma.tT_NAV_Pc_CSV.findMany({
+    const data = await prisma.tT_NAV_Od_CSV.findMany({
       include: {
         // Include any related fields from the TD_Procure table if necessary
       },
@@ -427,44 +475,63 @@ exports.QT_NAV_Pc_CSV_Add = async (req, res, next) => {
     const insertPromises = data.map(async (row) => {
       try {
         // Check if the record already exists in TD_Procure
-        const existingRecord = await prisma.tD_Procure.findUnique({
-          where: { OdPcLn_No: row.OdPcLn_No },
+        const existingRecord = await prisma.tD_Order.findUnique({
+          where: { Order_No: row.Order_No },
         });
 
         if (existingRecord) {
           // If the record exists, skip the insertion
-          console.log(`Record with OdPcLn_No ${row.OdPcLn_No} already exists, skipping insert.`);
+          console.log(`Record with OdPcLn_No ${row.Order_No} already exists, skipping insert.`);
           return null; // Or handle as needed (e.g., reject or log)
         }
 
         // If the record doesn't exist, insert it into TD_Procure
-        return prisma.tD_Procure.create({
-          data: {
-            Procure_No: row.Procure_No,
-            Vendor_CD: row.Vendor_CD,
-            Pc_Date: row.Pc_Date,
-            Pc_Line_No: row.Pc_Line_No,
+        return prisma.tD_Order.create({
+          data : {
             Order_No: row.Order_No,
-            Pc_Name: row.Pc_Name,
-            Pc_Material: row.Pc_Material,
+            Request1_CD: String(row.Request1_CD),
+            TM_Customer: {
+              connect: {
+                Customer_CD: row.Customer_CD
+              }
+            },
+            Sales_Person_CD: row.Sales_Person_CD,
+            Order_Date: row.Order_Date,
+            Request_Delivery: row.Request_Delivery,
+            Od_Upd_Date: row.Od_Upd_Date,
+            TM_Item1: {
+              connect: {
+                Item1_CD: row.Item1_CD
+              }
+            },
+            NAV_Name: row.NAV_Name,
+            NAV_Size: row.NAV_Size,
+            Quantity: row.Quantity,
+            Unit_CD: row.Unit_CD,
             Unit_Price: row.Unit_Price,
-            Pc_Qty: row.Pc_Qty,
-            Pc_Unit_CD: row.Pc_Unit_CD,
-            Pc_Person_CD: row.Pc_Person_CD,
-            Pc_Req_Delivery: row.Pc_Req_Delivery,
-            Pc_Ans_Delivery: row.Pc_Ans_Delivery,
-            Pc_Arrival_Date: row.Pc_Arrival_Date,
-            Pc_Arrival_Qty: row.Pc_Arrival_Qty,
-            Pc_NAV_Reg_Date: row.Pc_NAV_Reg_Date,
-            Pc_NAV_Upd_Date: row.Pc_NAV_Upd_Date,
-            Pc_Progress_CD: row.Pc_Progress_CD,
-            OdPc_No: row.OdPc_No,
-            OdPcLn_No: row.OdPcLn_No,
+            // Amount: row.Amount,
+            Customer_Draw: row.Customer_Draw,
+            Company_Draw: row.Company_Draw,
+            Tolerance: row.Tolerance,
+            Coating: row.Coating,
+            Material1: row.Material1,
+            Material2: row.Material2,
+            H_Treatment1: row.H_Treatment1,
+            H_Treatment2: row.H_Treatment2,
+            Material3: row.Material3,
+            Material4: row.Material4,
+            Material5: row.Material5,
+            H_Treatment3: row.H_Treatment3,
+            H_Treatment4: row.H_Treatment4,
+            H_Treatment5: row.H_Treatment5,
+            // Customer_Abb: row.Customer_Abb,
+            // Sl_Person_Name: row.Sl_Person_Name,
+            PO_Nomap: row.PO_Nomap
           }
         });
       } catch (error) {
         console.error("Error inserting row:", row, error);
-        throw new Error("Failed to insert row with OdPcLn_No: " + row.OdPcLn_No);
+        throw new Error("Failed to insert row with OdPcLn_No: " + row.Order_No);
       }
     });
 
@@ -473,21 +540,13 @@ exports.QT_NAV_Pc_CSV_Add = async (req, res, next) => {
     const newRecords = insertedRecords.filter(record => record !== null);
 
     // Step 3: Fetch the most recent record from TD_Procure
-    const recentRecord = await prisma.tD_Procure.findFirst({
-      orderBy: {
-        Pc_NAV_Upd_Date: 'desc', // Assuming Pc_NAV_Upd_Date to determine the most recent record
-      },
-    });
-
-    // Log the most recent record
-    console.log('Most recent record inserted into TD_Procure:', recentRecord);
-
+    
     // Step 4: Return success response with the most recent record and the new records
     return res.status(200).json({
       status: "success",
       message: "Data inserted successfully into TD_Procure!",
       newRecords: newRecords,  // Include only new records that were inserted
-      recentRecord: recentRecord,  // Include the most recent record in the response
+       // Include the most recent record in the response
     });
   } catch (err) {
     console.error("Error inserting data into TD_Procure:", err);
@@ -497,10 +556,10 @@ exports.QT_NAV_Pc_CSV_Add = async (req, res, next) => {
 
 
 
-exports.QT_NAV_Pc_CSV_Upd_Ref = async (req, res, next) => {
+exports.QT_NAV_OC_CSV_Upd_Ref = async (req, res, next) => {
   try {
     // Step 1: Fetch the necessary data from TT_NAV_Pc_CSV_Upd and TD_Procure by joining these tables
-    const dataToUpdate = await prisma.tT_NAV_Pc_CSV_Upd.findMany({
+    const dataToUpdate = await prisma.tT_NAV_Od_CSV_Upd.findMany({
       where: {
         OdPcLn_No: {
           in: await prisma.tD_Procure.findMany({

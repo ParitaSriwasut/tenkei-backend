@@ -40,6 +40,7 @@ const sorderRoute = require("./src/routes/sorder-route")
 const currencyRoute = require("./src/routes/currency-route")
 const statusRoute = require("./src/routes/status-route")
 const navCSVRouteVariant = require("./src/routes/nav-pc-csv")
+const navCSVRouteOD = require("./src/routes/nav-od-csv")
 const logger = require("./src/middlewares/logger")
 
 const cors = require("cors")
@@ -90,6 +91,7 @@ app.use("/currency", currencyRoute)
 app.use("/status", statusRoute)
 
 app.use("/navPCCSV", navCSVRouteVariant)
+app.use("/navODCSV", navCSVRouteOD)
 
 const PORT = process.env.PORT || "4000"
 app.listen(PORT, () => console.log(`server running on port: ${PORT}`)) 
