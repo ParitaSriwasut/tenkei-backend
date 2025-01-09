@@ -5,31 +5,31 @@ const createError = require("../utils/create-error");
 const prisma = require("../models/prisma");
 
 
-function mapFiledRow(row) {
-  return {
-    Procure_No: row["No_"],
-    Vendor_CD: row["Buy-from Vendor No_"],
-    Pc_Date: (row["Order Date"]),
-    Pc_Line_No: parseInt(row["Line No_"]),
-    Order_No: row["Sales Order No_"],
-    Pc_Name: row["Description"],
-    Pc_Material: row["Description 2"],
-    Unit_Price: parseFloat(row["Direct Unit Cost"]),
-    Pc_Qty: parseFloat(row["Quantity"]),
-    Pc_Unit_CD: row["Unit of Measure Code"],
-    Pc_Person_CD: row["Purchaser Code"],
-    Pc_Req_Delivery: (row["Expected Receipt Date"]),
-    Pc_Ans_Delivery: (row["Vendor Confirm Delivery Date"]),
-    Pc_Arrival_Date:(row["Date Received"]),
-    Pc_Arrival_Qty: parseFloat(row["Quantity Received"]),
-    Pc_NAV_Reg_Date: (row["Insert Date"]),
-    Pc_NAV_Upd_Date: (row["Modify Date"]),
-    Pc_Progress_CD: row["Flag"],
-    OdPc_No: `${row["Sales Order No_"]}${row["No_"]}`, // Concatenate Order_No and Procure_No
-    OdPcLn_No: `${row["Sales Order No_"]}${row["No_"]}${parseInt(row["Line No_"])}`
-    // Add more mappings as needed
-  };
-}
+// function mapFiledRow(row) {
+//   return {
+//     Procure_No: row["No_"],
+//     Vendor_CD: row["Buy-from Vendor No_"],
+//     Pc_Date: (row["Order Date"]),
+//     Pc_Line_No: parseInt(row["Line No_"]),
+//     Order_No: row["Sales Order No_"],
+//     Pc_Name: row["Description"],
+//     Pc_Material: row["Description 2"],
+//     Unit_Price: parseFloat(row["Direct Unit Cost"]),
+//     Pc_Qty: parseFloat(row["Quantity"]),
+//     Pc_Unit_CD: row["Unit of Measure Code"],
+//     Pc_Person_CD: row["Purchaser Code"],
+//     Pc_Req_Delivery: (row["Expected Receipt Date"]),
+//     Pc_Ans_Delivery: (row["Vendor Confirm Delivery Date"]),
+//     Pc_Arrival_Date:(row["Date Received"]),
+//     Pc_Arrival_Qty: parseFloat(row["Quantity Received"]),
+//     Pc_NAV_Reg_Date: (row["Insert Date"]),
+//     Pc_NAV_Upd_Date: (row["Modify Date"]),
+//     Pc_Progress_CD: row["Flag"],
+//     OdPc_No: `${row["Sales Order No_"]}${row["No_"]}`, // Concatenate Order_No and Procure_No
+//     OdPcLn_No: `${row["Sales Order No_"]}${row["No_"]}${parseInt(row["Line No_"])}`
+//     // Add more mappings as needed
+//   };
+// }
 
 
 exports.fetchtt_purchase_csv_upd = async (req, res, next) => {
@@ -112,7 +112,9 @@ exports.fetchtt_purchase_csv = async (req, res, next) => {
 
 exports.TT_NAV_PC_CSV = async (req, res, next) => {
   try {
+    // await prisma.tT_NAV_Pc_CSV_Upd.deleteMany();
     await prisma.tT_NAV_Pc_CSV.deleteMany();
+    await prisma.tT_NAV_Pc_CSV_Upd.deleteMany();
     const sourceDir = 'C:/TENKEI/Purchase_CSV';
     const destDir = 'C:/TENKEI/Purchase_CSV/BK';
     
@@ -348,14 +350,58 @@ function parseDate(dateStr) {
 
 exports.QT_NAV_Pc_CSV_Upd_Add = async (req, res, next) => {
   try {
-    const insertQuery = `
-        INSERT INTO TT_NAV_Pc_CSV_Upd ( Procure_No, Vendor_CD, Pc_Date, Pc_Line_No, Order_No, Pc_Name, Pc_Material, Unit_Price, Pc_Qty, Pc_Unit_CD, Pc_Person_CD, Pc_Req_Delivery, Pc_Ans_Delivery, Pc_Arrival_Date, Pc_Arrival_Qty, Pc_NAV_Reg_Date, Pc_NAV_Upd_Date, Pc_Progress_CD, OdPc_No, OdPcLn_No )
-SELECT TT_NAV_Pc_CSV.Procure_No, TT_NAV_Pc_CSV.Vendor_CD, TT_NAV_Pc_CSV.Pc_Date, TT_NAV_Pc_CSV.Pc_Line_No, TT_NAV_Pc_CSV.Order_No, TT_NAV_Pc_CSV.Pc_Name, TT_NAV_Pc_CSV.Pc_Material, TT_NAV_Pc_CSV.Unit_Price, TT_NAV_Pc_CSV.Pc_Qty, TT_NAV_Pc_CSV.Pc_Unit_CD, TT_NAV_Pc_CSV.Pc_Person_CD, TT_NAV_Pc_CSV.Pc_Req_Delivery, TT_NAV_Pc_CSV.Pc_Ans_Delivery, TT_NAV_Pc_CSV.Pc_Arrival_Date, TT_NAV_Pc_CSV.Pc_Arrival_Qty, TT_NAV_Pc_CSV.Pc_NAV_Reg_Date, TT_NAV_Pc_CSV.Pc_NAV_Upd_Date, TT_NAV_Pc_CSV.Pc_Progress_CD, TT_NAV_Pc_CSV.OdPc_No, TT_NAV_Pc_CSV.OdPcLn_No
-FROM TT_NAV_Pc_CSV INNER JOIN TD_Procure ON TT_NAV_Pc_CSV.[OdPcLn_No] = TD_Procure.[OdPcLn_No];
-        `;
+    // Step 1: Fetch data with INNER JOIN
+    const data = await prisma.tT_NAV_Pc_CSV.findMany({
+      include: {
+        // Include related fields if necessary
+      },
+    });
 
-    await prisma.$executeRawUnsafe(insertQuery);
+    // Step 2: Insert each row of data into TT_NAV_Pc_CSV_Upd
+    for (const row of data) {
+      // Check if the record already exists in TT_NAV_Pc_CSV_Upd using findFirst
+      const existingRecord = await prisma.tT_NAV_Pc_CSV_Upd.findUnique({
+        where: {
+          OdPcLn_No: row.OdPcLn_No,  // Use OdPcLn_No or any unique identifier
+        },
+      });
 
+      // If the record exists, reject the insertion and return an error
+      if (existingRecord) {
+        return res.status(400).json({
+          status: "error",
+          message: `Record with OdPcLn_No ${row.OdPcLn_No} already exists in TT_NAV_Pc_CSV_Upd, cannot insert duplicate data.`,
+        });
+      }
+
+      // If no existing record, proceed with the insert
+      await prisma.tT_NAV_Pc_CSV_Upd.create({
+        data: {
+          Procure_No: row.Procure_No,
+          Vendor_CD: row.Vendor_CD,
+          Pc_Date: row.Pc_Date,
+          Pc_Line_No: row.Pc_Line_No,
+          Order_No: row.Order_No,
+          Pc_Name: row.Pc_Name,
+          Pc_Material: row.Pc_Material,
+          Unit_Price: row.Unit_Price,
+          Pc_Qty: row.Pc_Qty,
+          Pc_Unit_CD: row.Pc_Unit_CD,
+          Pc_Person_CD: row.Pc_Person_CD,
+          Pc_Req_Delivery: row.Pc_Req_Delivery,
+          Pc_Ans_Delivery: row.Pc_Ans_Delivery,
+          Pc_Arrival_Date: row.Pc_Arrival_Date,
+          Pc_Arrival_Qty: row.Pc_Arrival_Qty,
+          Pc_NAV_Reg_Date: row.Pc_NAV_Reg_Date,
+          Pc_NAV_Upd_Date: row.Pc_NAV_Upd_Date,
+          Pc_Progress_CD: row.Pc_Progress_CD,
+          OdPc_No: row.OdPc_No,
+          OdPcLn_No: row.OdPcLn_No,
+        },
+      });
+    }
+
+    // Step 3: Return success response after processing all data
     return res.status(201).json({
       status: "success",
       message: "Data inserted successfully into TT_NAV_Pc_CSV_Upd!",
@@ -368,30 +414,60 @@ FROM TT_NAV_Pc_CSV INNER JOIN TD_Procure ON TT_NAV_Pc_CSV.[OdPcLn_No] = TD_Procu
 
 exports.QT_NAV_Pc_CSV_Upd_Upd = async (req, res, next) => {
   try {
-    const updateQuery = `
-            UPDATE TT_NAV_Pc_CSV INNER JOIN TT_NAV_Pc_CSV_Upd ON TT_NAV_Pc_CSV.[OdPcLn_No] = TT_NAV_Pc_CSV_Upd.[OdPcLn_No] SET TT_NAV_Pc_CSV_Upd.Procure_No = [TT_NAV_Pc_CSV]![Procure_No], 
-            TT_NAV_Pc_CSV_Upd.Vendor_CD = [TT_NAV_Pc_CSV]![Vendor_CD], 
-            TT_NAV_Pc_CSV_Upd.Pc_Date = [TT_NAV_Pc_CSV]![Pc_Date], 
-            TT_NAV_Pc_CSV_Upd.Pc_Line_No = [TT_NAV_Pc_CSV]![Pc_Line_No], 
-            TT_NAV_Pc_CSV_Upd.Order_No = [TT_NAV_Pc_CSV]![Order_No], 
-            TT_NAV_Pc_CSV_Upd.Pc_Name = [TT_NAV_Pc_CSV]![Pc_Name], 
-            TT_NAV_Pc_CSV_Upd.Pc_Material = [TT_NAV_Pc_CSV]![Pc_Material], 
-            TT_NAV_Pc_CSV_Upd.Unit_Price = [TT_NAV_Pc_CSV]![Unit_Price], 
-            TT_NAV_Pc_CSV_Upd.Pc_Qty = [TT_NAV_Pc_CSV]![Pc_Qty], 
-            TT_NAV_Pc_CSV_Upd.Pc_Unit_CD = [TT_NAV_Pc_CSV]![Pc_Unit_CD], 
-            TT_NAV_Pc_CSV_Upd.Pc_Person_CD = [TT_NAV_Pc_CSV]![Pc_Person_CD], 
-            TT_NAV_Pc_CSV_Upd.Pc_Req_Delivery = [TT_NAV_Pc_CSV]![Pc_Req_Delivery], 
-            TT_NAV_Pc_CSV_Upd.Pc_Ans_Delivery = [TT_NAV_Pc_CSV]![Pc_Ans_Delivery], 
-            TT_NAV_Pc_CSV_Upd.Pc_Arrival_Date = [TT_NAV_Pc_CSV]![Pc_Arrival_Date], 
-            TT_NAV_Pc_CSV_Upd.Pc_Arrival_Qty = [TT_NAV_Pc_CSV]![Pc_Arrival_Qty], 
-            TT_NAV_Pc_CSV_Upd.Pc_NAV_Reg_Date = [TT_NAV_Pc_CSV]![Pc_NAV_Reg_Date], 
-            TT_NAV_Pc_CSV_Upd.Pc_NAV_Upd_Date = [TT_NAV_Pc_CSV]![Pc_NAV_Upd_Date], 
-            TT_NAV_Pc_CSV_Upd.Pc_Progress_CD = [TT_NAV_Pc_CSV]![Pc_Progress_CD], 
-            TT_NAV_Pc_CSV_Upd.OdPc_No = [TT_NAV_Pc_CSV]![OdPc_No], 
-            TT_NAV_Pc_CSV_Upd.OdPcLn_No = [TT_NAV_Pc_CSV]![OdPcLn_No];
-        `;
+    // Step 1: Fetch all data from TT_NAV_Pc_CSV
+    const data = await prisma.tT_NAV_Pc_CSV.findMany();
 
-    await prisma.$executeRawUnsafe(updateQuery);
+    // Step 2: Process updates and inserts
+    const operations = data.map(async (row) => {
+      // Validate required field
+      if (!row.OdPcLn_No) {
+        console.warn("Missing OdPcLn_No for row:", row);
+        return null;
+      }
+
+      try {
+        // Check if record exists
+        const existingRecord = await prisma.tT_NAV_Pc_CSV_Upd.findUnique({
+          where: { OdPcLn_No: row.OdPcLn_No },
+        });
+
+        if (existingRecord) {
+          // Update existing record
+          return prisma.tT_NAV_Pc_CSV_Upd.update({
+            where: { OdPcLn_No: row.OdPcLn_No },
+            data: {
+              Procure_No: row.Procure_No,
+              Vendor_CD: row.Vendor_CD,
+              Pc_Date: row.Pc_Date,
+              Pc_Line_No: row.Pc_Line_No,
+              Order_No: row.Order_No,
+              Pc_Name: row.Pc_Name,
+              Pc_Material: row.Pc_Material,
+              Unit_Price: row.Unit_Price,
+              Pc_Qty: row.Pc_Qty,
+              Pc_Unit_CD: row.Pc_Unit_CD,
+              Pc_Person_CD: row.Pc_Person_CD,
+              Pc_Req_Delivery: row.Pc_Req_Delivery,
+              Pc_Ans_Delivery: row.Pc_Ans_Delivery,
+              Pc_Arrival_Date: row.Pc_Arrival_Date,
+              Pc_Arrival_Qty: row.Pc_Arrival_Qty,
+              Pc_NAV_Reg_Date: row.Pc_NAV_Reg_Date,
+              Pc_NAV_Upd_Date: row.Pc_NAV_Upd_Date,
+              Pc_Progress_CD: row.Pc_Progress_CD,
+              OdPc_No: row.OdPc_No,
+            },
+          });
+        } else {
+          // Insert new record
+          console.log("pass");
+        }
+      } catch (err) {
+        console.error(`Error processing row with OdPcLn_No: ${row.OdPcLn_No}`, err);
+      }
+    });
+
+    // Execute all operations in parallel
+    await Promise.all(operations);
 
     return res.status(200).json({
       status: "success",
@@ -403,84 +479,218 @@ exports.QT_NAV_Pc_CSV_Upd_Upd = async (req, res, next) => {
   }
 };
 
+
 exports.QT_NAV_Pc_CSV_Add = async (req, res, next) => {
   try {
-    const insertQuery = `INSERT INTO TT_NAV_Pc_CSV_Upd ( Procure_No, Vendor_CD, Pc_Date, Pc_Line_No, Order_No, Pc_Name, Pc_Material, Unit_Price, Pc_Qty, Pc_Unit_CD, Pc_Person_CD, Pc_Req_Delivery, Pc_Ans_Delivery, Pc_Arrival_Date, Pc_Arrival_Qty, Pc_NAV_Reg_Date, Pc_NAV_Upd_Date, Pc_Progress_CD, OdPc_No, OdPcLn_No )
-SELECT TT_NAV_Pc_CSV.Procure_No, TT_NAV_Pc_CSV.Vendor_CD, TT_NAV_Pc_CSV.Pc_Date, TT_NAV_Pc_CSV.Pc_Line_No, TT_NAV_Pc_CSV.Order_No, TT_NAV_Pc_CSV.Pc_Name, TT_NAV_Pc_CSV.Pc_Material, TT_NAV_Pc_CSV.Unit_Price, TT_NAV_Pc_CSV.Pc_Qty, TT_NAV_Pc_CSV.Pc_Unit_CD, TT_NAV_Pc_CSV.Pc_Person_CD, TT_NAV_Pc_CSV.Pc_Req_Delivery, TT_NAV_Pc_CSV.Pc_Ans_Delivery, TT_NAV_Pc_CSV.Pc_Arrival_Date, TT_NAV_Pc_CSV.Pc_Arrival_Qty, TT_NAV_Pc_CSV.Pc_NAV_Reg_Date, TT_NAV_Pc_CSV.Pc_NAV_Upd_Date, TT_NAV_Pc_CSV.Pc_Progress_CD, TT_NAV_Pc_CSV.OdPc_No, TT_NAV_Pc_CSV.OdPcLn_No
-FROM TT_NAV_Pc_CSV INNER JOIN TD_Procure ON TT_NAV_Pc_CSV.[OdPcLn_No] = TD_Procure.[OdPcLn_No];
+    // Step 1: Fetch the data using an INNER JOIN between TT_NAV_Pc_CSV and TD_Procure
+    const data = await prisma.tT_NAV_Pc_CSV.findMany({
+      include: {
+        // Include any related fields from the TD_Procure table if necessary
+      },
+    });
 
-        `;
+    console.log("Query Result:", data);
 
-    // Execute the SQL query
-    await prisma.$executeRawUnsafe(insertQuery);
+    // Step 2: Insert the data into TT_NAV_Pc_CSV_Upd table
+    const insertPromises = data.map((row) => {
+      try {
+        // Upsert logic to handle both insert and update
+        return prisma.tD_Procure.upsert({
+          where: {
+            OdPcLn_No: row.OdPcLn_No, // Assuming `OdPcLn_No` is the unique constraint
+          },
+          update: {
+            Procure_No: row.Procure_No,
+            Vendor_CD: row.Vendor_CD,
+            Pc_Date: row.Pc_Date,
+            Pc_Line_No: row.Pc_Line_No,
+            Order_No: row.Order_No,
+            Pc_Name: row.Pc_Name,
+            Pc_Material: row.Pc_Material,
+            Unit_Price: row.Unit_Price,
+            Pc_Qty: row.Pc_Qty,
+            Pc_Unit_CD: row.Pc_Unit_CD,
+            Pc_Person_CD: row.Pc_Person_CD,
+            Pc_Req_Delivery: row.Pc_Req_Delivery,
+            Pc_Ans_Delivery: row.Pc_Ans_Delivery,
+            Pc_Arrival_Date: row.Pc_Arrival_Date,
+            Pc_Arrival_Qty: row.Pc_Arrival_Qty,
+            Pc_NAV_Reg_Date: row.Pc_NAV_Reg_Date,
+            Pc_NAV_Upd_Date: row.Pc_NAV_Upd_Date,
+            Pc_Progress_CD: row.Pc_Progress_CD,
+            OdPc_No: row.OdPc_No,
+          },
+          create: {
+            Procure_No: row.Procure_No,
+            Vendor_CD: row.Vendor_CD,
+            Pc_Date: row.Pc_Date,
+            Pc_Line_No: row.Pc_Line_No,
+            Order_No: row.Order_No,
+            Pc_Name: row.Pc_Name,
+            Pc_Material: row.Pc_Material,
+            Unit_Price: row.Unit_Price,
+            Pc_Qty: row.Pc_Qty,
+            Pc_Unit_CD: row.Pc_Unit_CD,
+            Pc_Person_CD: row.Pc_Person_CD,
+            Pc_Req_Delivery: row.Pc_Req_Delivery,
+            Pc_Ans_Delivery: row.Pc_Ans_Delivery,
+            Pc_Arrival_Date: row.Pc_Arrival_Date,
+            Pc_Arrival_Qty: row.Pc_Arrival_Qty,
+            Pc_NAV_Reg_Date: row.Pc_NAV_Reg_Date,
+            Pc_NAV_Upd_Date: row.Pc_NAV_Upd_Date,
+            Pc_Progress_CD: row.Pc_Progress_CD,
+            OdPc_No: row.OdPc_No,
+            OdPcLn_No: row.OdPcLn_No,
+          }
+        });
+      } catch (error) {
+        console.error("Error inserting row:", row, error);
+        throw new Error("Failed to insert row with OdPcLn_No: " + row.OdPcLn_No);
+      }
+    });
+    
+    // Wait for all insert promises to complete
+    await Promise.all(insertPromises);
 
+    // Step 3: Fetch the most recent record from TT_NAV_Pc_CSV_Upd
+    const recentRecord = await prisma.tD_Procure.findFirst({
+      orderBy: {
+        Pc_NAV_Upd_Date: 'desc', // Assuming Pc_NAV_Upd_Date to determine the most recent record
+      },
+    });
+
+    // Log the most recent record
+    console.log('Most recent record inserted into TT_NAV_Pc_CSV_Upd:', recentRecord);
+
+    // Step 4: Delete all records from TT_NAV_Pc_CSV_Upd (After insertion to avoid losing data)
+    //await prisma.tT_NAV_Pc_CSV_Upd.deleteMany();
+
+    // Return success response with the most recent record data
     return res.status(200).json({
       status: "success",
-      message: "Data inserted successfully into TD_Order!",
+      message: "Data inserted successfully into TT_NAV_Pc_CSV_Upd!",
+      recentRecord: recentRecord,  // Include the recent record in the response
     });
   } catch (err) {
-    console.error("Error inserting data into TD_Procure", err);
+    console.error("Error inserting data into TT_NAV_Pc_CSV_Upd:", err);
     return next(createError(500, "Internal Server Error"));
   }
 };
+
 
 exports.QT_NAV_Pc_CSV_Upd_Ref = async (req, res, next) => {
   try {
-    const insertQuery = `UPDATE TD_Procure 
-    INNER JOIN TT_NAV_Pc_CSV_Upd ON 
-    TD_Procure.[OdPcLn_No] = TT_NAV_Pc_CSV_Upd.[OdPcLn_No] 
-    SET TD_Procure.Order_No = [TT_NAV_Pc_CSV_Upd]![Order_No],
-     TD_Procure.Procure_No = [TT_NAV_Pc_CSV_Upd]![Procure_No],
-      TD_Procure.OdPc_No = [TT_NAV_Pc_CSV_Upd]![OdPc_No],
-      TD_Procure.OdPcLn_No = [TT_NAV_Pc_CSV_Upd]![OdPcLn_No],
-      TD_Procure.Vendor_CD = [TT_NAV_Pc_CSV_Upd]![Vendor_CD],
-      TD_Procure.Pc_Name = [TT_NAV_Pc_CSV_Upd]![Pc_Name],
-      TD_Procure.Pc_Material = [TT_NAV_Pc_CSV_Upd]![Pc_Material],
-      TD_Procure.Unit_Price = [TT_NAV_Pc_CSV_Upd]![Unit_Price],
-      TD_Procure.Pc_Qty = [TT_NAV_Pc_CSV_Upd]![Pc_Qty],
-      TD_Procure.Pc_Unit_CD = [TT_NAV_Pc_CSV_Upd]![Pc_Unit_CD], 
-      TD_Procure.Pc_Person_CD = [TT_NAV_Pc_CSV_Upd]![Pc_Person_CD],
-      TD_Procure.Pc_Date = [TT_NAV_Pc_CSV_Upd]![Pc_Date], 
-      TD_Procure.Pc_Req_Delivery = [TT_NAV_Pc_CSV_Upd]![Pc_Req_Delivery], 
-      TD_Procure.Pc_Ans_Delivery = [TT_NAV_Pc_CSV_Upd]![Pc_Ans_Delivery], 
-      TD_Procure.Pc_Progress_CD = [TT_NAV_Pc_CSV_Upd]![Pc_Progress_CD], 
-      TD_Procure.Pc_Arrival_Date = [TT_NAV_Pc_CSV_Upd]![Pc_Arrival_Date], 
-      TD_Procure.Pc_Arrival_Qty = [TT_NAV_Pc_CSV_Upd]![Pc_Arrival_Qty], 
-      TD_Procure.Pc_Upd_Date = Now(), TD_Procure.Pc_NAV_Reg_Date = [TT_NAV_Pc_CSV_Upd]![Pc_NAV_Reg_Date], 
-      TD_Procure.Pc_NAV_Upd_Date = [TT_NAV_Pc_CSV_Upd]![Pc_NAV_Upd_Date], 
-      TD_Procure.Pc_Line_No = [TT_NAV_Pc_CSV_Upd]![Pc_Line_No];
+    // Step 1: Fetch the necessary data from TT_NAV_Pc_CSV_Upd and TD_Procure by joining these tables
+    const dataToUpdate = await prisma.tT_NAV_Pc_CSV_Upd.findMany({
+      where: {
+        OdPcLn_No: {
+          in: await prisma.tD_Procure.findMany({
+            select: {
+              OdPcLn_No: true,
+            },
+          }).then((rows) => rows.map((row) => row.OdPcLn_No)),
+        },
+      },
+      select: {
+        OdPcLn_No: true,
+        Order_No: true,
+        Procure_No: true,
+        OdPc_No: true,
+        Vendor_CD: true,
+        Pc_Name: true,
+        Pc_Material: true,
+        Unit_Price: true,
+        Pc_Qty: true,
+        Pc_Unit_CD: true,
+        Pc_Person_CD: true,
+        Pc_Date: true,
+        Pc_Req_Delivery: true,
+        Pc_Ans_Delivery: true,
+        Pc_Progress_CD: true,
+        Pc_Arrival_Date: true,
+        Pc_Arrival_Qty: true,
+        Pc_NAV_Reg_Date: true,
+        Pc_NAV_Upd_Date: true,
+        Pc_Line_No: true,
+      },
+    });
 
-        `;
+    // Step 2: Fetch the old records from TD_Procure before updating
+    const oldRecords = await prisma.tD_Procure.findMany({
+      where: {
+        OdPcLn_No: {
+          in: dataToUpdate.map((row) => row.OdPcLn_No),
+        },
+      },
+    });
 
-    // Execute the SQL query
-    await prisma.$executeRawUnsafe(insertQuery);
+    // Step 3: Update the TD_Procure table using the fetched data
+    const updatePromises = dataToUpdate.map((row) => {
+      return prisma.tD_Procure.update({
+        where: { OdPcLn_No: row.OdPcLn_No },
+        data: {
+          Order_No: row.Order_No,
+          Procure_No: row.Procure_No,
+          OdPc_No: row.OdPc_No,
+          Vendor_CD: row.Vendor_CD,
+          Pc_Name: row.Pc_Name,
+          Pc_Material: row.Pc_Material,
+          Unit_Price: row.Unit_Price,
+          Pc_Qty: row.Pc_Qty,
+          Pc_Unit_CD: row.Pc_Unit_CD,
+          Pc_Person_CD: row.Pc_Person_CD,
+          Pc_Date: row.Pc_Date,
+          Pc_Req_Delivery: row.Pc_Req_Delivery,
+          Pc_Ans_Delivery: row.Pc_Ans_Delivery,
+          Pc_Progress_CD: row.Pc_Progress_CD,
+          Pc_Arrival_Date: row.Pc_Arrival_Date,
+          Pc_Arrival_Qty: row.Pc_Arrival_Qty,
+          Pc_Upd_Date: new Date(), // Setting the update date to current time
+          Pc_NAV_Reg_Date: row.Pc_NAV_Reg_Date,
+          Pc_NAV_Upd_Date: row.Pc_NAV_Upd_Date,
+          Pc_Line_No: row.Pc_Line_No,
+        },
+      });
+    });
 
+    // Step 4: Wait for all update operations to complete
+    await Promise.all(updatePromises);
+
+    // Step 5: Send old records to the frontend along with success message
     return res.status(200).json({
       status: "success",
-      message: "Data inserted successfully into TD_Procure!",
+      message: "Data updated successfully in TD_Procure!",
+      oldRecords: oldRecords, // Return old records to the frontend
     });
   } catch (err) {
-    console.error("Error inserting data into TD_Procure", err);
+    console.error("Error updating data in TD_Procure:", err);
     return next(createError(500, "Internal Server Error"));
   }
 };
 
+
+
 exports.RD_NAV_Pc_Upd_Ref = async (req, res, next) => {
   try {
-    const insertQuery = `SELECT TD_Order.*, TD_Procure.*, TT_NAV_Pc_CSV_Upd.* FROM TD_Order INNER JOIN (TD_Procure INNER JOIN TT_NAV_Pc_CSV_Upd ON [TD_Procure].[OdPcLn_No]=[TT_NAV_Pc_CSV_Upd].[OdPcLn_No]) ON [TD_Order].[Order_No]=[TD_Procure].[Order_No];  
-    
-        `;
+    // Execute the raw SQL query
+    const result = await prisma.$queryRawUnsafe(`
+      SELECT TD_Order.*, TD_Procure.*, TT_NAV_Pc_CSV_Upd.*
+      FROM TD_Order 
+      INNER JOIN (TD_Procure 
+        INNER JOIN TT_NAV_Pc_CSV_Upd 
+        ON TD_Procure.OdPcLn_No = TT_NAV_Pc_CSV_Upd.OdPcLn_No
+      ) ON TD_Order.Order_No = TD_Procure.Order_No;
+    `);
 
-    // Execute the SQL query
-    const result = await prisma.$queryRaw(insertQuery)
-
+    // Return the result to the client
     return res.status(200).json({
       status: "success",
-      message: "Data inserted successfully into TD_Order!",
+      message: "Data fetched successfully!",
       data: result,
     });
   } catch (err) {
-    console.error("Error inserting data into TD_Procure", err);
+    // Log the error and return an internal server error
+    console.error("Error fetching data:", err);
     return next(createError(500, "Internal Server Error"));
   }
 };
