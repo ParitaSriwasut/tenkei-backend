@@ -46,6 +46,55 @@ exports.Search_Order_No_AfterUpdate = async (req, res, next) => {
   }
 };
 
+const updatePlan = async (req, res) => {
+  try {
+    const {
+      End_No,
+      Now_No,
+      Total_M_Time,
+      Total_P_Time,
+      Re_Pr_Qty,
+      Re_Total_M_Time,
+      Re_Total_P_Time,
+      Re_Total_N_Time,
+      OdPt_No
+    } = req.body;
+
+ 
+    let updateData = {
+      End_No,
+      Now_No,
+      Total_M_Time,
+      Total_P_Time,
+      Re_Pr_Qty,
+      Re_Total_M_Time,
+      Re_Total_P_Time,
+      Re_Total_N_Time
+    };
+
+    for (let i = 1; i <= 36; i++) {
+      const T_Type = req.body[`T_Type${i}`];
+      const P_Type = req.body[`P_Type${i}`];
+      const S_Type = req.body[`S_Type${i}`];
+
+    
+      updateData[`PTP${i}`] = `${T_Type}${P_Type}${S_Type}`;
+    }
+
+    const updatedPlan = await prisma.tD_Plan.update({
+      where: {
+        OdPt_No 
+      },
+      data: updateData, 
+    });
+
+    res.status(200).json(updatedPlan);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error updating plan');
+  }
+};
+
 exports.Schedule_Calc = async (req, res, next) => {
   try {
     let No,
@@ -371,7 +420,7 @@ exports.Schedule_Calc = async (req, res, next) => {
                     Temp_Date = new Date(Temp_Date).setDate(
                       new Date(Temp_Date).getDate() + 1
                     );
-                    const nextDayHolidayCount = await prisma.tmHoliday.count({
+                    const nextDayHolidayCount = await prisma.tM_Holiday.count({
                       where: {
                         Holiday: {
                           gte: new Date(Temp_Date).toISOString(),
@@ -528,7 +577,7 @@ exports.Schedule_Calc = async (req, res, next) => {
           }
         break;
     }
-    
+    updatePlan();
   } catch (err) {
     console.error("Error Error occurs when Schedule_Calc_Click:", err);
     return next(createError(500, "Internal Server Error"));
