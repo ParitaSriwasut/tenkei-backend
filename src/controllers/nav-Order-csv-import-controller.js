@@ -364,7 +364,7 @@ exports.QT_NAV_OD_CSV_Upd_Add = async (req, res, next) => {
           H_Treatment5: row.H_Treatment5,
           Customer_Abb: row.Customer_Abb,
           Sl_Person_Name: row.Sl_Person_Name,
-          PO_Nomap: row.PO_Nomap
+          PO_No: row.PO_No
         },
       });
     }
@@ -434,7 +434,7 @@ exports.QT_NAV_OD_CSV_Upd_Upd = async (req, res, next) => {
               H_Treatment5: row.H_Treatment5,
               Customer_Abb: row.Customer_Abb,
               Sl_Person_Name: row.Sl_Person_Name,
-              PO_Nomap: row.PO_Nomap
+              PO_No: row.PO_No
             },
           });
         } else {
@@ -526,7 +526,7 @@ exports.QT_NAV_OD_CSV_Add = async (req, res, next) => {
             H_Treatment5: row.H_Treatment5,
             // Customer_Abb: row.Customer_Abb,
             // Sl_Person_Name: row.Sl_Person_Name,
-            PO_Nomap: row.PO_Nomap
+            PO_No: row.PO_No
           }
         });
       } catch (error) {
@@ -556,108 +556,147 @@ exports.QT_NAV_OD_CSV_Add = async (req, res, next) => {
 
 
 
-exports.QT_NAV_OC_CSV_Upd_Ref = async (req, res, next) => {
-  try {
-    // Step 1: Fetch the necessary data from TT_NAV_Pc_CSV_Upd and TD_Procure by joining these tables
-    const dataToUpdate = await prisma.tT_NAV_Od_CSV_Upd.findMany({
-      where: {
-        OdPcLn_No: {
-          in: await prisma.tD_Procure.findMany({
-            select: {
-              OdPcLn_No: true,
-            },
-          }).then((rows) => rows.map((row) => row.OdPcLn_No)),
+  exports.QT_NAV_OD_CSV_Upd_Ref = async (req, res, next) => {
+    try {
+      // Step 1: Fetch the necessary data from TT_NAV_Pc_CSV_Upd and TD_Procure by joining these tables
+      const dataToUpdate = await prisma.tT_NAV_Od_CSV_Upd.findMany({
+        where: {
+          Order_No: {
+            in: await prisma.tD_Order.findMany({
+              select: {
+                Order_No: true,
+              },
+            }).then((rows) => rows.map((row) => row.Order_No)),
+          },
         },
-      },
-      select: {
-        OdPcLn_No: true,
-        Order_No: true,
-        Procure_No: true,
-        OdPc_No: true,
-        Vendor_CD: true,
-        Pc_Name: true,
-        Pc_Material: true,
-        Unit_Price: true,
-        Pc_Qty: true,
-        Pc_Unit_CD: true,
-        Pc_Person_CD: true,
-        Pc_Date: true,
-        Pc_Req_Delivery: true,
-        Pc_Ans_Delivery: true,
-        Pc_Progress_CD: true,
-        Pc_Arrival_Date: true,
-        Pc_Arrival_Qty: true,
-        Pc_NAV_Reg_Date: true,
-        Pc_NAV_Upd_Date: true,
-        Pc_Line_No: true,
-      },
-    });
-
-    // Step 2: Fetch the old records from TD_Procure before updating
-    const oldRecords = await prisma.tD_Procure.findMany({
-      where: {
-        OdPcLn_No: {
-          in: dataToUpdate.map((row) => row.OdPcLn_No),
-        },
-      },
-    });
-
-    // Step 3: Update the TD_Procure table using the fetched data
-    const updatePromises = dataToUpdate.map((row) => {
-      return prisma.tD_Procure.update({
-        where: { OdPcLn_No: row.OdPcLn_No },
-        data: {
-          Order_No: row.Order_No,
-          Procure_No: row.Procure_No,
-          OdPc_No: row.OdPc_No,
-          Vendor_CD: row.Vendor_CD,
-          Pc_Name: row.Pc_Name,
-          Pc_Material: row.Pc_Material,
-          Unit_Price: row.Unit_Price,
-          Pc_Qty: row.Pc_Qty,
-          Pc_Unit_CD: row.Pc_Unit_CD,
-          Pc_Person_CD: row.Pc_Person_CD,
-          Pc_Date: row.Pc_Date,
-          Pc_Req_Delivery: row.Pc_Req_Delivery,
-          Pc_Ans_Delivery: row.Pc_Ans_Delivery,
-          Pc_Progress_CD: row.Pc_Progress_CD,
-          Pc_Arrival_Date: row.Pc_Arrival_Date,
-          Pc_Arrival_Qty: row.Pc_Arrival_Qty,
-          Pc_Upd_Date: new Date(), // Setting the update date to current time
-          Pc_NAV_Reg_Date: row.Pc_NAV_Reg_Date,
-          Pc_NAV_Upd_Date: row.Pc_NAV_Upd_Date,
-          Pc_Line_No: row.Pc_Line_No,
+        select: {
+          
+              Order_No: true,
+              Request1_CD: true,            
+              Customer_CD:true,            
+              Sales_Person_CD: true,
+              Order_Date: true,
+              Request_Delivery: true,
+              Od_Upd_Date: true,
+              Item1_CD: true,
+              NAV_Name: true,
+              NAV_Size: true,
+              Quantity: true,
+              Unit_CD: true,
+              Unit_Price: true,
+              // Amount: row.Amount,
+              Customer_Draw:true,
+              Company_Draw: true,
+              Tolerance: true,
+              Coating: true,
+              Material1: true,
+              Material2: true,
+              H_Treatment1: true,
+              H_Treatment2: true,
+              Material3: true,
+              Material4: true,
+              Material5: true,
+              H_Treatment3: true,
+              H_Treatment4: true,
+              H_Treatment5: true,
+              // Customer_Abb: row.Customer_Abb,
+              // Sl_Person_Name: row.Sl_Person_Name,
+              PO_No: true,
         },
       });
-    });
 
-    // Step 4: Wait for all update operations to complete
-    await Promise.all(updatePromises);
+      // Step 2: Fetch the old records from TD_Procure before updating
+      const oldRecords = await prisma.tD_Order.findMany({
+        where: {
+          Order_No: {
+            in: dataToUpdate.map((row) => row.Order_No),
+          },
+        },
+      });
 
-    // Step 5: Send old records to the frontend along with success message
-    return res.status(200).json({
-      status: "success",
-      message: "Data updated successfully in TD_Procure!",
-      oldRecords: oldRecords, // Return old records to the frontend
-    });
-  } catch (err) {
-    console.error("Error updating data in TD_Procure:", err);
-    return next(createError(500, "Internal Server Error"));
-  }
-};
+      // Step 3: Update the TD_Procure table using the fetched data
+      const updatePromises = dataToUpdate.map((row) => {
+        return prisma.tD_Order.update({
+          where: { Order_No: row.Order_No },
+          data: {
+            Order_No: row.Order_No,
+              Request1_CD: String(row.Request1_CD),
+              TM_Customer: {
+                connect: {
+                  Customer_CD: row.Customer_CD
+                }
+              },
+              Sales_Person_CD: row.Sales_Person_CD,
+              Order_Date: row.Order_Date,
+              Request_Delivery: row.Request_Delivery,
+              Od_Upd_Date: row.Od_Upd_Date,
+              TM_Item1: {
+                connect: {
+                  Item1_CD: row.Item1_CD
+                }
+              },
+              NAV_Name: row.NAV_Name,
+              NAV_Size: row.NAV_Size,
+              Quantity: row.Quantity,
+              Unit_CD: row.Unit_CD,
+              Unit_Price: row.Unit_Price,
+              // Amount: row.Amount,
+              Customer_Draw: row.Customer_Draw,
+              Company_Draw: row.Company_Draw,
+              Tolerance: row.Tolerance,
+              Coating: row.Coating,
+              Material1: row.Material1,
+              Material2: row.Material2,
+              H_Treatment1: row.H_Treatment1,
+              H_Treatment2: row.H_Treatment2,
+              Material3: row.Material3,
+              Material4: row.Material4,
+              Material5: row.Material5,
+              H_Treatment3: row.H_Treatment3,
+              H_Treatment4: row.H_Treatment4,
+              H_Treatment5: row.H_Treatment5,
+              // Customer_Abb: row.Customer_Abb,
+              // Sl_Person_Name: row.Sl_Person_Name,
+              PO_Nomap: row.PO_Nomap
+          },
+        });
+      });
+
+      // Step 4: Wait for all update operations to complete
+      await Promise.all(updatePromises);
+      const updatedRecords = await prisma.tD_Order.findMany({
+        where: {
+          Order_No: {
+            in: dataToUpdate.map((row) => row.Order_No),
+          },
+        },
+      });
+      // Step 5: Send old records to the frontend along with success message
+      return res.status(200).json({
+        status: "success",
+        message: "Data updated successfully in TD_Procure!",
+        oldRecords: oldRecords,
+        updatedRecords: updatedRecords, // Return old records to the frontend
+      });
+    } catch (err) {
+      console.error("Error updating data in TD_Procure:", err);
+      return next(createError(500, "Internal Server Error"));
+    }
+  };
 
 
 
-exports.RD_NAV_Pc_Upd_Ref = async (req, res, next) => {
+exports.RD_NAV_OD_Upd_Ref = async (req, res, next) => {
   try {
-    // Execute the raw SQL query
+    // Execute the raw SQL query with a LEFT JOIN to check if TT_NAV_Od_CSV_Upd has data
     const result = await prisma.$queryRawUnsafe(`
       SELECT TD_Order.*, TD_Procure.*, TT_NAV_Pc_CSV_Upd.*
       FROM TD_Order 
-      INNER JOIN (TD_Procure 
-        INNER JOIN TT_NAV_Pc_CSV_Upd 
+      INNER JOIN TD_Procure 
+        ON TD_Order.Order_No = TD_Procure.Order_No
+      LEFT JOIN TT_NAV_Pc_CSV_Upd 
         ON TD_Procure.OdPcLn_No = TT_NAV_Pc_CSV_Upd.OdPcLn_No
-      ) ON TD_Order.Order_No = TD_Procure.Order_No;
+      WHERE TT_NAV_Pc_CSV_Upd.OdPcLn_No IS NOT NULL;  -- Only include records where TT_NAV_Pc_CSV_Upd has matching data
     `);
 
     // Return the result to the client
@@ -672,3 +711,4 @@ exports.RD_NAV_Pc_Upd_Ref = async (req, res, next) => {
     return next(createError(500, "Internal Server Error"));
   }
 };
+
