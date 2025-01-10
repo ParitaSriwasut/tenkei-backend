@@ -613,3 +613,47 @@ exports.RD_NAV_Pc_Upd_Ref = async (req, res, next) => {
     return next(createError(500, "Internal Server Error"));
   }
 };
+
+
+
+exports.import_purchase = async (req, res, next) => {
+  try {
+   
+
+    // Step 1: 
+    console.log("Processing NAV_Pc_CSV files...");
+    await exports.TT_NAV_PC_CSV(req, res, next);
+
+    // Step 2: 
+    console.log("Adding NAV_Pc_CSV data to NAV_Pc_CSV_Upd...");
+    await exports.QT_NAV_Pc_CSV_Upd_Add(req, res, next);
+   
+
+    // Step 3: 
+    console.log("Adding NAV_Pc_CSV data to NAV_Pc_CSV_Upd...");
+    await  exports.QT_NAV_Pc_CSV_Upd_Upd(req, res, next);
+
+    // Step 4: 
+    console.log("Adding NAV_Pc_CSV data to NAV_Pc_CSV_Upd...");
+    await  exports.QT_NAV_Pc_CSV_Add(req, res, next);
+
+    // Step 4: 
+    console.log("Adding NAV_Pc_CSV data to NAV_Pc_CSV_Upd...");
+    await  exports.QT_NAV_Pc_CSV_Upd_Ref(req, res, next);
+
+
+    // Final success response
+    return res.status(200).json({
+      status: "success",
+      message: "All functions executed successfully.",
+    });
+  } catch (error) {
+    console.error("Error in import_purchase:", error);
+    return next(createError(500, "Internal Server Error"));
+  }
+};
+
+
+
+
+
