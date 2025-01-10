@@ -82,6 +82,7 @@ const parseDate = (dateStr) => {
                   where: { OdPcLn_No: record.OdPcLn_No },
                   data: {
                     ...record,
+                    Pc_Upd_Date: new Date(),
                     Pc_Ans_Delivery: record.Pc_Ans_Delivery ? record.Pc_Ans_Delivery : null,
                     Pc_Arrival_Date: record.Pc_Arrival_Date ? record.Pc_Arrival_Date : null,
                   },

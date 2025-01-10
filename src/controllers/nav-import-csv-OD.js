@@ -103,7 +103,8 @@ exports.import_order = async (req, res, next) => {
             // Update existing order if there are changes
             const updatedOrder = await prisma.tD_Order.update({
               where: { Order_No: Order_No },
-              data: record,
+              data: { ...record, // Spread the original record data
+                Od_NAV_Upd_Date: new Date(),}
             });
           
             // Set the flag to true as an update occurred
