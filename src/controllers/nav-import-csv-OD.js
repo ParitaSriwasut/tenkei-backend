@@ -20,6 +20,8 @@ exports.import_order = async (req, res, next) => {
     const files = fs.readdirSync(sourceDir); // Read all files in the source directory
 
     const result = []; // To store the result of old and updated records
+    const old =[];
+    const updated=[];
     let hasUpdate = false; // Flag to track if any updates occurred
 
     for (const file of files) {
@@ -83,6 +85,8 @@ exports.import_order = async (req, res, next) => {
             where: { Order_No: Order_No },
           });
 
+
+
           if (existingOrder) {
             // Check if all values are the same, skip the update if no changes
             const isSame = Object.keys(record).every(key => {
@@ -113,9 +117,14 @@ exports.import_order = async (req, res, next) => {
             // Only send the old and updated data when the status is "update"
             result.push({
               status: 'updated',
-              old: existingOrder,
-              updated: updatedOrder,
+              
+             
             });
+            old.push({
+            existingOrder
+            });
+            updated.push({updatedOrder
+            })
           } else {
             // Insert new order
             const newOrder = await prisma.tD_Order.create({
@@ -124,7 +133,7 @@ exports.import_order = async (req, res, next) => {
 
             // Send only the status when a new record is created
             result.push({
-              status: 'added',
+              status: 'on-update',
             });
           }
         }
@@ -140,9 +149,12 @@ exports.import_order = async (req, res, next) => {
 
     // Return the result to the frontend
     res.status(200).json({
+      old:old,
+      updated:updated,
       success: true,
-      data: result,
-      stage: stage, // Set 'update' if updates occurred, else 'create'
+      data: result, 
+      stage: stage,
+      mode:"Order" // Set 'update' if updates occurred, else 'create'
     });
   } catch (error) {
     // Handle errors
