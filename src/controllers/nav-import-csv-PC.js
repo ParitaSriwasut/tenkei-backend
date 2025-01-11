@@ -110,9 +110,10 @@ const parseDate = (dateStr) => {
         updated: updatedData,
         old: oldData,
         stage: updatedData.length > 0 ? "update" : "no-updates",
+        mode:"Purchase"
       });
     } catch (err) {
       console.error("Error during CSV import:", err);
       next(createError(500, "Error importing CSV", err));
     }
-  };
+  };  
