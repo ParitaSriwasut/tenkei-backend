@@ -35,42 +35,47 @@ exports.import_order = async (req, res, next) => {
         for await (const row of stream) {
           // Map the CSV row to Prisma fields
           const orderData = {
-            Order_No: row.Order_No,
-            Request1_CD: String(row.Request1_CD),
-            TM_Customer: {
-              connect: {
-                Customer_CD: row.Customer_CD,
-              },
-            },
-            Sales_Person_CD: row.Sales_Person_CD,
-            Order_Date: parseDate(row.Order_Date),
-            Request_Delivery: parseDate(row.Request_Delivery),
-            Od_Upd_Date: parseDate(row.Od_Upd_Date),
+            Order_No: row.Order_No || row.No_,
+            Request1_CD: String(row.Request1_CD || row["Business Type New"] || ""),
+            TM_Customer: row.Customer_CD || row["Sell-to Customer No_"]
+                ? {
+                    connect: {
+                      Customer_CD: row.Customer_CD || row["Sell-to Customer No_"],
+                    },
+                  }
+                : undefined,
+            Sales_Person_CD: row.Sales_Person_CD|| row["Salesperson Code"],
+            Order_Date: parseDate(row.Order_Date)|| new Date(row["Order Date"]),
+            Request_Delivery: parseDate(row.Request_Delivery || row["Requested Delivery Date"]),            
+            Od_Upd_Date: parseDate(row.Od_Upd_Date) || new Date(row["Modify Date"]),
+            Od_NAV_Upd_Date:row.Od_Upd_Date|| new Date(row["Modify Date"]),
+            
             TM_Item1: {
               connect: {
-                Item1_CD: row.Item1_CD,
+                Item1_CD: row.Item1_CD|| row["Item No_"],
               },
             },
-            NAV_Name: row.NAV_Name,
-            NAV_Size: row.NAV_Size,
-            Quantity: row.Quantity ? parseFloat(row.Quantity) : null,
-            Unit_CD: row.Unit_CD,
-            Unit_Price: row.Unit_Price ? parseFloat(row.Unit_Price) : null,
-            Customer_Draw: row.Customer_Draw,
-            Company_Draw: row.Company_Draw,
+            NAV_Name: row.NAV_Name|| row["Description"],
+            NAV_Size: row.NAV_Size|| row["Description 2"],
+            Quantity: parseFloat(row.Quantity|| row["Quantity"]),
+            Unit_CD: row.Unit_CD|| row["Unit of Measure Code"],
+            Unit_Price: parseFloat(row.Unit_Price|| row["Unit Price"]),
+
+            Customer_Draw: row.Customer_Draw|| row["Customer Draw"],
+            Company_Draw: row.Company_Draw|| row["Company Draw"],
             Tolerance: row.Tolerance,
             Coating: row.Coating,
-            Material1: row.Material1,
-            Material2: row.Material2,
-            H_Treatment1: row.H_Treatment1,
-            H_Treatment2: row.H_Treatment2,
-            Material3: row.Material3,
-            Material4: row.Material4,
-            Material5: row.Material5,
-            H_Treatment3: row.H_Treatment3,
-            H_Treatment4: row.H_Treatment4,
-            H_Treatment5: row.H_Treatment5,
-            //PO_No: row.PO_No,
+            Material1: row.Material1|| row["Carbide1"],
+            Material2: row.Material2|| row["Carbide2"],
+            H_Treatment1: row.H_Treatment1|| row["HIP1"],
+            H_Treatment2: row.H_Treatment2|| row["HIP2"],
+            Material3: row.Material3|| row["Steel1"],
+            Material4: row.Material4|| row["Steel2"],
+            Material5: row.Material5|| row["Steel3"],
+            H_Treatment3: row.H_Treatment3|| row["HRC1"],
+            H_Treatment4: row.H_Treatment4|| row["HRC2"],
+            H_Treatment5: row.H_Treatment5|| row["HRC3"],            
+            PO_No: row.PO_No,
           };
 
           records.push(orderData);
@@ -108,7 +113,8 @@ exports.import_order = async (req, res, next) => {
             const updatedOrder = await prisma.tD_Order.update({
               where: { Order_No: Order_No },
               data: { ...record, // Spread the original record data
-                Od_NAV_Upd_Date: new Date(),}
+                Od_Upd_Date: new Date(),}
+
             });
           
             // Set the flag to true as an update occurred
@@ -128,7 +134,10 @@ exports.import_order = async (req, res, next) => {
           } else {
             // Insert new order
             const newOrder = await prisma.tD_Order.create({
-              data: record,
+              data: {
+                ...record,
+              Od_Reg_Date: new Date(),
+              Od_Upd_Date: new Date(),}
             });
 
             // Send only the status when a new record is created
