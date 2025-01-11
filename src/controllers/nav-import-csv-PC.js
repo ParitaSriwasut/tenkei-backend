@@ -92,7 +92,10 @@ const parseDate = (dateStr) => {
               }
             } else {
               // If the record doesn't exist, create a new one
-              await prisma.tD_Procure.create({ data: record });
+              await prisma.tD_Procure.create({ data: {...record,
+                Pc_NAV_Reg_Date: new Date(),
+                Pc_Upd_Date: new Date(),
+              } });
             }
           } catch (prismaError) {
             console.error(`Error processing record ${record.OdPcLn_No}:`, prismaError);
