@@ -78,7 +78,7 @@ model TD_Order {
   Pd_Complete_Qty   Int?      @db.SmallInt
   I_Complete_Qty    Int?      @db.SmallInt
   Shipment_Qty      Int?      @db.SmallInt
-  Pd_Split_Qty      Int?      @db.SmallInt
+  Pd_Split_Qty      Int?      @db.SmallInt 
   Pd_Calc_Qty       Int?      @db.SmallInt
   NG_Qty            Int?      @db.SmallInt
   Unit_CD           String?   @db.VarChar(10)
